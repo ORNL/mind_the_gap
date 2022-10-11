@@ -1,8 +1,0 @@
-###### Requirements with version specifiers ######
-pandas>=1.4.2
-geopandas>=0.9.0
-numpy>=1.22.3
-Shapely>=1.7.1
-matplotlib>=3.5.1
-libpysal>=4.6.2
-numba>=0.55.1
