@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+
+        gdal31:
+          build:
+            context: .
+            dockerfile: Dockerfile
+          container_name: mind-the-gap-container
+          volumes:
+            - ./:/files
+            - /mnt/LS_HD:/gistcloud/LS_HD
+            - /data:/data
+          environment:
+            - REL_FILEPATH=/gistcloud/LS_HD/
+          command: tail -f dev/null
