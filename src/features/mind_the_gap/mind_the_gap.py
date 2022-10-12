@@ -1033,18 +1033,18 @@ def get_outer_points(x_inds, y_inds, gaps):
 
             Returns
             -------
-            testPoint : array_like
-                        The next point in clockwise order
+            test_point : array_like
+                         The next point in clockwise order
             """
 
             i = 0
             while True:
-                testPoint = points_df.iloc[i].to_numpy()                
+                test_point = points_df.iloc[i].to_numpy()                
                 # Test to see if the test point has been sorted already
                 test = True
-                for cwPoint in clock_w_points:
-                    if testPoint[0] == cwPoint[0] and \
-                       testPoint[1] == cwPoint[1]:
+                for cw_point in clock_w_points:
+                    if test_point[0] == cw_point[0] and \
+                       test_point[1] == cw_point[1]:
                            test = False
                           
                            
@@ -1053,12 +1053,12 @@ def get_outer_points(x_inds, y_inds, gaps):
                 else:
                     break
                 
-            return testPoint
+            return test_point
 
         # Find closest points
         dists = np.linalg.norm(point - all_points, axis=-1 )
-        pointsDists = np.column_stack((all_points,dists))
-        df = pd.DataFrame(pointsDists)
+        points_dists = np.column_stack((all_points,dists))
+        df = pd.DataFrame(points_dists)
         df = df.sort_values(2)
         
         next_point = take_step(df, clock_w_points)
@@ -1068,70 +1068,72 @@ def get_outer_points(x_inds, y_inds, gaps):
     
     for ind in x_inds:
         this_gap = gaps[ind,:]
-        crossingInds = get_cross_inds(this_gap,gaps[y_inds,:])
-        crossingInds = list(itemgetter(*crossingInds)(y_inds))
-        crossingYs = gaps[:,1]
-        crossingYs = list(itemgetter(*crossingInds)(crossingYs))
-        minY = min(crossingYs)
-        maxY = max(crossingYs)
+        crossing_inds = get_cross_inds(this_gap,gaps[y_inds,:])
+        crossing_inds = list(itemgetter(*crossing_inds)(y_inds))
+        crossing_ys = gaps[:,1]
+        crossing_ys = list(itemgetter(*crossing_inds)(crossing_ys))
+        min_y = min(crossing_ys)
+        maxY = max(crossing_ys)
         x = gaps[ind,1]
-        thesePoints = np.asarray([np.asarray([x,minY]),np.asarray([x,maxY])])
-        outer_points.append(thesePoints)
+        these_points = np.asarray([np.asarray([x,min_y]),np.asarray([x,maxY])])
+        outer_points.append(these_points)
     
     for ind in y_inds:
         this_gap = gaps[ind,:]
-        crossingInds = get_cross_inds(this_gap,gaps[x_inds,:])
-        crossingInds = list(itemgetter(*crossingInds)(x_inds))
+        crossing_inds = get_cross_inds(this_gap,gaps[x_inds,:])
+        crossing_inds = list(itemgetter(*crossing_inds)(x_inds))
         crossingXs = gaps[:,1]
-        crossingXs = list(itemgetter(*crossingInds)(crossingXs))
-        minX = min(crossingXs)
-        maxX = max(crossingXs)
+        crossingXs = list(itemgetter(*crossing_inds)(crossingXs))
+        min_x = min(crossingXs)
+        max_x = max(crossingXs)
         y = gaps[ind,1]
-        thesePoints = np.asarray([np.asarray([minX,y]),np.asarray([maxX,y])])
-        outer_points.append(thesePoints)
+        these_points = np.asarray([np.asarray([min_x,y]),np.asarray([max_x,y])])
+        outer_points.append(these_points)
     
     # Convert to list of 2-element arrays
     outer_points = np.vstack(outer_points)
     outer_points = list(outer_points)
     # Remove any duplicates
-    outerUnique = pd.DataFrame(outer_points)
-    outerUnique = list(outerUnique.drop_duplicates().values)
-    outer_points = np.asarray(outerUnique)
+    outer_unique = pd.DataFrame(outer_points)
+    outer_unique = list(outer_unique.drop_duplicates().values)
+    outer_points = np.asarray(outer_unique)
     
     
     # Walk around the perimter and put all the points in clockwise order
     # Get starting point
-    topRowInds = np.where(outer_points[:,1] == max(outer_points[:,1]))[0]
-    topRowPoints = outer_points[topRowInds,:]
-    rightCornerInd = np.where(topRowPoints[:,0] == max(topRowPoints[:,0]))[0]
-    topRightPoint = topRowPoints[rightCornerInd,:][0]
-    xMatches = np.where(topRightPoint[0] == outer_points[:,0])[0]
-    yMatches = np.where(topRightPoint[1] == outer_points[:,1])[0]
-    startRowInd = np.intersect1d(xMatches, yMatches)
-    antiCWNeighborPoint = topRowPoints[np.argsort(topRowPoints[:,0], 
+    top_row_inds = np.where(outer_points[:,1] == max(outer_points[:,1]))[0]
+    top_row_points = outer_points[top_row_inds,:]
+    right_corner_ind = (np.where(top_row_points[:,0] == 
+                        max(top_row_points[:,0]))[0])
+    top_right_point = top_row_points[right_corner_ind,:][0]
+    x_matches = np.where(top_right_point[0] == outer_points[:,0])[0]
+    y_matches = np.where(top_right_point[1] == outer_points[:,1])[0]
+    start_row_ind = np.intersect1d(x_matches, y_matches)
+    anti_cw_neighbor_point = top_row_points[np.argsort(top_row_points[:,0], 
                                                   axis=0)[-2],:]
     
-    cw_sorted_points = [antiCWNeighborPoint, topRightPoint]
+    cw_sorted_points = [anti_cw_neighbor_point, top_right_point]
     
     global next_point
-    next_point = step_by_step(outer_points[startRowInd], 
-                           outer_points, 
-                           cw_sorted_points)
+    next_point = step_by_step(outer_points[start_row_ind], 
+                              outer_points, 
+                              cw_sorted_points)
     
     while True: 
-        if min(np.linalg.norm(next_point[0:2]-  cw_sorted_points, axis=-1)) == 0:
+        if (min(np.linalg.norm(next_point[0:2] - cw_sorted_points, axis=-1)) ==
+            0):
             break
         else:
             cw_sorted_points.append(next_point[0:2])
             next_point = step_by_step(next_point[0:2], 
-                                   outer_points, 
-                                   cw_sorted_points)
+                                      outer_points, 
+                                      cw_sorted_points)
     
     # return outer_points
     return cw_sorted_points
 
 # ---------------Find intersections in clusters---------------
-def clusterIntersections(x_inds, y_inds, gaps):
+def cluster_intersections(x_inds, y_inds, gaps):
     """Finds intersections of lines in a cluster of connected lines.
     
     Finds all the intersection points between x_gaps and y_gaps, and returns a
@@ -1178,7 +1180,6 @@ def clusterIntersections(x_inds, y_inds, gaps):
 def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
     """Generates polygons for data gaps using alphashape.
 
-
     Returns shapely polygons in a GeoDataFrame. Less precise polygons, but more
     resilient than generateRimPolygons.
 
@@ -1192,6 +1193,11 @@ def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
            List of all gap line segment endpoints
     alpha : int
             Alpha value for alphashape
+
+    Returns
+    -------
+    df : Geodataframe
+        Contains alpha shape polygons
     """
 
     def make_alpha_shape(points, alpha):
@@ -1206,7 +1212,7 @@ def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
 
         Returns
         -------
-        alpha_shape : GeoDataFrame
+        shape : GeoDataFrame
                       shapely polygon or multipolygon of alpha shapes
         """
        
@@ -1225,7 +1231,7 @@ def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
         x_inds = x_clusters[i]
         y_inds = y_clusters[i]
         
-        inters = clusterIntersections(x_inds, y_inds, gaps)
+        inters = cluster_intersections(x_inds, y_inds, gaps)
         global aShape
         aShape = make_alpha_shape(inters, alpha)[0]
         
