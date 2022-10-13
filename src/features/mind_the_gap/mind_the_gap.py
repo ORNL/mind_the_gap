@@ -695,7 +695,6 @@ def find_clusters(x_gaps, y_gaps):
         except IndexError:
             break
         
-        # global in_cluster
         in_cluster = take_a_walk(all_gaps, 
                                  walk_ind, 
                                  done_inds=[], 
@@ -935,9 +934,6 @@ def find_corners(points):
             true_corners.append(t_corner)
             
     # for point in points:
-    #     # global p
-    #     # global q
-    #     # global r
     #     p = np.hstack([point,0])
     #     # find neighboring points
     #     dists = (np.linalg.norm(point - points[:],axis=-1))
@@ -987,7 +983,6 @@ def get_outer_points(x_inds, y_inds, gaps):
     """
 
     # outer_points = np.zeros([np.shape(gaps[:,1])[0]*2,2])
-    global outer_points # Does this need to be global??
     outer_points = []
     
     def get_cross_inds(test_gap, cross_gaps):
@@ -1129,7 +1124,6 @@ def get_outer_points(x_inds, y_inds, gaps):
     
     cw_sorted_points = [anti_cw_neighbor_point, top_right_point]
     
-    global next_point
     next_point = step_by_step(outer_points[start_row_ind], 
                               outer_points, 
                               cw_sorted_points)
@@ -1249,7 +1243,6 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         y_inds = y_clusters[i]
         
         inters = cluster_intersections(x_inds, y_inds, gaps)
-        global a_shape
         a_shape = make_alpha_shape(inters, alpha)[0]
         
         if type(a_shape) == MultiPolygon: # Only put polygons into list
