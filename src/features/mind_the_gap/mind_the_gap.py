@@ -255,11 +255,11 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
         
             # If large gaps are present, where are they?
             if dist_max >= (gap_length_threshold):
-                bid_dist_inds = np.where(successive_dists >= 
-                                       (gap_length_threshold))[0]
+                big_dist_inds = np.where(successive_dists >= 
+                                         (gap_length_threshold))[0]
             
                 # Append each gap's info to list of all gaps
-                for gap_ind in bid_dist_inds:
+                for gap_ind in big_dist_inds:
                     this_gap = [i,
                                 bin,
                                 gap_ind,
@@ -276,7 +276,7 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
     return gaps
 
 # ----------------Go through y_bins to find gaps---------------
-def findLonGaps(points, bins, gap_length_threshold=0.05):
+def find_lon_gaps(points, bins, gap_length_threshold=0.05):
     """Finds data gaps in latitude bins.
     
     For each latitude bin, this function takes all points that fall within 
@@ -333,18 +333,18 @@ def findLonGaps(points, bins, gap_length_threshold=0.05):
         
             # If large gaps are present, where are they?
             if dist_max >= (gap_length_threshold):
-                bid_dist_inds = np.where(successive_dists >= 
-                                       (gap_length_threshold))[0]
+                big_dist_inds = np.where(successive_dists >= 
+                                         (gap_length_threshold))[0]
             
                 # Append each gap's info to list of all gaps
-                for gap_ind in bid_dist_inds:
+                for gap_ind in big_dist_inds:
                     this_gap = [i,
-                               bin,
-                               gap_ind,
-                               lons_sorted[gap_ind],
-                               gap_ind + 1,
-                               lons_sorted[gap_ind + 1],
-                               successive_dists[gap_ind][0]]
+                                bin,
+                                gap_ind,
+                                lons_sorted[gap_ind],
+                                gap_ind + 1,
+                                lons_sorted[gap_ind + 1],
+                                successive_dists[gap_ind][0]]
                     gaps.append(this_gap)
         except Exception:
             pass
@@ -459,7 +459,7 @@ def find_intersections(gap_LineStrings):
     Parameters
     ----------
     gap_LineStrings : list
-                     List containing LineString objects
+                      List containing LineString objects
     
     Returns
     -------
@@ -488,7 +488,10 @@ def find_intersections(gap_LineStrings):
     return intersections
 
 # -----------Filter out gaps with few intersections-----------    
-def intersection_filter(x_gaps,y_gaps,x_minIntersections=3,y_minIntersections=3):
+def intersection_filter(x_gaps,
+                        y_gaps,
+                        x_min_intersections=3,
+                        y_min_intersections=3):
     """Removes lines that don't meet a minimum number of intersections.
     
     Filters out gaps that don't intersect with a minimum number of other
@@ -506,10 +509,10 @@ def intersection_filter(x_gaps,y_gaps,x_minIntersections=3,y_minIntersections=3)
              bin lat coordinates, endpoint 1 indices, endpoint 1 lon 
              coordinates, endpoint 2 indices, endpoint 2 coordinates, and 
              length
-    x_minIntersections : int, optional
+    x_min_intersections : int, optional
                         Minumum number of intersections a gap in `x_gaps` must 
                         have with other gaps in order to be retained.
-    y_minIntersections : int, optional
+    y_min_intersections : int, optional
                         Minumum number of intersections a gap in `y_gaps` must 
                         have with other gaps in order to be retained.
 
@@ -528,13 +531,13 @@ def intersection_filter(x_gaps,y_gaps,x_minIntersections=3,y_minIntersections=3)
     y_gaps = np.asarray(y_gaps)
     
     # Filter repeatedly until things stop changing
-    prevx_gapsNum = 0
-    prevy_gapsNum = 0
+    prev_x_gaps_num = 0
+    prev_y_gaps_num = 0
     iterations = 0
 
     while True:
-        x_gapdoes_cross = np.zeros(np.shape(x_gaps[:,1])[0])
-        y_gapdoes_cross = np.zeros(np.shape(y_gaps[:,1])[0])
+        x_gap_does_cross = np.zeros(np.shape(x_gaps[:,1])[0])
+        y_gap_does_cross = np.zeros(np.shape(y_gaps[:,1])[0])
 
         for i in range(np.shape(x_gaps[:,1])[0]):
             thisx_gap = x_gaps[i,:]
@@ -542,25 +545,27 @@ def intersection_filter(x_gaps,y_gaps,x_minIntersections=3,y_minIntersections=3)
                 thisy_gap = y_gaps[o,:]
                 
                 if does_cross(thisx_gap, thisy_gap):
-                    y_gapdoes_cross[o] += 1
-                    x_gapdoes_cross[i] += 1
+                    y_gap_does_cross[o] += 1
+                    x_gap_does_cross[i] += 1
 
         # Remove gaps that don't have any connections
-        connectingx_gaps = np.where(x_gapdoes_cross >= x_minIntersections)[0] 
-        x_gaps = x_gaps[connectingx_gaps]
-        connectingy_gaps = np.where(y_gapdoes_cross >= y_minIntersections)[0]         
-        y_gaps = y_gaps[connectingy_gaps]
+        connecting_x_gaps = np.where(x_gap_does_cross >= 
+                                     x_min_intersections)[0] 
+        x_gaps = x_gaps[connecting_x_gaps]
+        connecting_y_gaps = np.where(y_gap_does_cross >= 
+                                     y_min_intersections)[0]         
+        y_gaps = y_gaps[connecting_y_gaps]
         
         # Compare number of gaps to previous iteration
-        x_gapsNumDiff = np.shape(x_gaps[:,1])[0] - prevx_gapsNum
-        y_gapsNumDiff = np.shape(y_gaps[:,1])[0] - prevy_gapsNum
+        x_gaps_num_diff = np.shape(x_gaps[:,1])[0] - prev_x_gaps_num
+        y_gaps_num_diff = np.shape(y_gaps[:,1])[0] - prev_y_gaps_num
         
-        if (x_gapsNumDiff == 0) and (y_gapsNumDiff == 0):
+        if (x_gaps_num_diff == 0) and (y_gaps_num_diff == 0):
             break
         
         # Save number of gaps for this iteration
-        prevx_gapsNum = np.shape(x_gaps[:,1])[0]
-        prevy_gapsNum = np.shape(y_gaps[:,1])[0]
+        prev_x_gaps_num = np.shape(x_gaps[:,1])[0]
+        prev_y_gaps_num = np.shape(y_gaps[:,1])[0]
         
         iterations += 1
     
@@ -569,7 +574,7 @@ def intersection_filter(x_gaps,y_gaps,x_minIntersections=3,y_minIntersections=3)
     return x_gaps, y_gaps
 
 # -------------Find clusters of connecting lines--------------         
-def findClusters(x_gaps, y_gaps):
+def find_clusters(x_gaps, y_gaps):
     """Finds discrete clusters of interconnecting lines.
     
     Gaps are often isolated from one another, resulting in discrete newtorks
@@ -670,24 +675,24 @@ def findClusters(x_gaps, y_gaps):
     in_clusters = []
 
     # Make list of all gap indices
-    allgap_inds = list(range(0,len(all_gaps[:,0])))
+    all_gap_inds = list(range(0,len(all_gaps[:,0])))
 
     # start cluster ID
     cluster_id = 0 
     
     # Sort into clusters
-    while in_clusters.sort() != allgap_inds:
+    while in_clusters.sort() != all_gap_inds:
         # Find the gap we want to walk from: the first gap that hasn't yet been
         # assigned to a cluster. If an IndexError is thrown, then all gaps have
         # been sorted into clusters and we break out of the loop
         try:
-            walkInd = np.where(gap_cluster_IDs == 0)[0][0]
+            walk_ind = np.where(gap_cluster_IDs == 0)[0][0]
         except IndexError:
             break
         
         # global in_cluster
         in_cluster = take_a_walk(all_gaps, 
-                                 walkInd, 
+                                 walk_ind, 
                                  done_inds=[], 
                                  cross_inds=[])
         
@@ -703,7 +708,7 @@ def findClusters(x_gaps, y_gaps):
         # Move to next cluster ID
         cluster_id += 1
                 
-    return all_gaps, gap_cluster_IDs, clusters, split_index#Return gaps with cluster ID
+    return all_gaps, gap_cluster_IDs, clusters, split_index
 
 # ---------------------Find corner points---------------------         
 def find_corners(points):
@@ -918,11 +923,9 @@ def find_corners(points):
         if is_true_corner(outer_points, corner):
             true_corners.append(corner)
         else:
-            tCorner = find_true_corner(outer_points, corner)
-            true_corners.append(tCorner)
+            t_corner = find_true_corner(outer_points, corner)
+            true_corners.append(t_corner)
             
-        
-        
     # for point in points:
     #     # global p
     #     # global q
@@ -951,8 +954,6 @@ def find_corners(points):
     #     neighbors = np.vstack([neighbor_1,neighbor_2])
     #     # plt.scatter(neighbors[:,0],neighbors[:,1],c='#bcbd22')
     #     # break
-
-        
     
     return true_corners
             
@@ -1073,21 +1074,23 @@ def get_outer_points(x_inds, y_inds, gaps):
         crossing_ys = gaps[:,1]
         crossing_ys = list(itemgetter(*crossing_inds)(crossing_ys))
         min_y = min(crossing_ys)
-        maxY = max(crossing_ys)
+        max_y = max(crossing_ys)
         x = gaps[ind,1]
-        these_points = np.asarray([np.asarray([x,min_y]),np.asarray([x,maxY])])
+        these_points = np.asarray([np.asarray([x,min_y]),
+                                  np.asarray([x,max_y])])
         outer_points.append(these_points)
     
     for ind in y_inds:
         this_gap = gaps[ind,:]
         crossing_inds = get_cross_inds(this_gap,gaps[x_inds,:])
         crossing_inds = list(itemgetter(*crossing_inds)(x_inds))
-        crossingXs = gaps[:,1]
-        crossingXs = list(itemgetter(*crossing_inds)(crossingXs))
-        min_x = min(crossingXs)
-        max_x = max(crossingXs)
+        crossing_xs = gaps[:,1]
+        crossing_xs = list(itemgetter(*crossing_inds)(crossing_xs))
+        min_x = min(crossing_xs)
+        max_x = max(crossing_xs)
         y = gaps[ind,1]
-        these_points = np.asarray([np.asarray([min_x,y]),np.asarray([max_x,y])])
+        these_points = np.asarray([np.asarray([min_x,y]),
+                                  np.asarray([max_x,y])])
         outer_points.append(these_points)
     
     # Convert to list of 2-element arrays
@@ -1109,8 +1112,8 @@ def get_outer_points(x_inds, y_inds, gaps):
     x_matches = np.where(top_right_point[0] == outer_points[:,0])[0]
     y_matches = np.where(top_right_point[1] == outer_points[:,1])[0]
     start_row_ind = np.intersect1d(x_matches, y_matches)
-    anti_cw_neighbor_point = top_row_points[np.argsort(top_row_points[:,0], 
-                                                  axis=0)[-2],:]
+    anti_cw_neighbor_point = top_row_points[np.argsort(top_row_points[:,0], \
+                                                       axis=0)[-2],:]
     
     cw_sorted_points = [anti_cw_neighbor_point, top_right_point]
     
@@ -1142,9 +1145,9 @@ def cluster_intersections(x_inds, y_inds, gaps):
     Parameters
     ----------
     x_inds : array_like
-            Indices of x_gaps in the cluster
+             Indices of x_gaps in the cluster
     y_inds : array_like
-            Indices of y_gaps in the cluster
+             Indices of y_gaps in the cluster
     gaps : array_like
            List of all gap line segment endpoints
 
@@ -1165,23 +1168,23 @@ def cluster_intersections(x_inds, y_inds, gaps):
     gap_LineStrings = []
     
     for gap in x_gaps:
-        this_gapLS = LineString(gap)
-        gap_LineStrings.append(this_gapLS)
+        this_gap_LS = LineString(gap)
+        gap_LineStrings.append(this_gap_LS)
             
     for gap in y_gaps:
-        this_gapLS = LineString(gap)
-        gap_LineStrings.append(this_gapLS)
+        this_gap_LS = LineString(gap)
+        gap_LineStrings.append(this_gap_LS)
         
     intersections = find_intersections(gap_LineStrings)
     
     return intersections
 
-# -------------Generate polygons with alphashapes------------- 
-def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
-    """Generates polygons for data gaps using alphashape.
+# -------------Generate polygons with alpha_shapes------------- 
+def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
+    """Generates polygons for data gaps using alpha_shape.
 
     Returns shapely polygons in a GeoDataFrame. Less precise polygons, but more
-    resilient than generateRimPolygons.
+    resilient than generate_rim_polygons.
 
     Parameters
     ----------
@@ -1192,7 +1195,7 @@ def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
     gaps : array_like
            List of all gap line segment endpoints
     alpha : int
-            Alpha value for alphashape
+            Alpha value for alpha_shape
 
     Returns
     -------
@@ -1201,7 +1204,7 @@ def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
     """
 
     def make_alpha_shape(points, alpha):
-        """Generate alphashapes with the libpysal alpha_shape module.
+        """Generate alpha_shapes with the libpysal alpha_shape module.
         
         Parameters
         ----------
@@ -1232,14 +1235,14 @@ def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
         y_inds = y_clusters[i]
         
         inters = cluster_intersections(x_inds, y_inds, gaps)
-        global aShape
-        aShape = make_alpha_shape(inters, alpha)[0]
+        global a_shape
+        a_shape = make_alpha_shape(inters, alpha)[0]
         
-        if type(aShape) == MultiPolygon: # Only put polygons into list
-            for sh in aShape: 
+        if type(a_shape) == MultiPolygon: # Only put polygons into list
+            for sh in a_shape: 
                 shapes.append(sh)
         else:
-            shapes.append(aShape)
+            shapes.append(a_shape)
     
     df = gpd.GeoDataFrame(shapes,columns=['geometry'],crs="EPSG:4326")
     df.set_geometry(col='geometry', inplace=True)
@@ -1247,7 +1250,7 @@ def generateAlphaPolygons(x_clusters, y_clusters, gaps, alpha):
     return df
 
 # -------------Generate polygons with outer poitns------------ 
-def generateRimPolygons(x_clusters,y_clusters, gapSegments, gaps):
+def generate_rim_polygons(x_clusters,y_clusters, gap_segments, gaps):
     """Generates polygons by finding the corners of the gap region.
 
     Generates polygons by finding the outer rim of intersections between x
@@ -1257,10 +1260,10 @@ def generateRimPolygons(x_clusters,y_clusters, gapSegments, gaps):
     Parameters
     ---------
     x_clusters : array_like
-                x_gap indices in each cluster
+                 x_gap indices in each cluster
     y_clusters : array_like
-                y_gap indices in each cluster
-    gapSegments : array_like
+                 y_gap indices in each cluster
+    gap_segments : array_like
                   All gap line segment endpoints
     gaps : array_like
            Array of all data gaps
@@ -1271,7 +1274,7 @@ def generateRimPolygons(x_clusters,y_clusters, gapSegments, gaps):
         Polygons of data gaps
     """
 
-    def cleanPoints(points):
+    def clean_points(points):
         """Cleans an array of points of unnecessary points"""
         return find_corners(points)
     
@@ -1292,16 +1295,16 @@ def generateRimPolygons(x_clusters,y_clusters, gapSegments, gaps):
     df.set_geometry(col='geometry', inplace=True)
     return df
 
-def mindTheGap(inFile,
-                x_bin_size, 
-                y_bin_size,
-                x_gapLenThreshold,
-                y_gapLenThreshold,
-                x_minIntersections, 
-                y_minIntersections,
-                polygonType='alpha',
-                alpha=22,
-                writePoints = False):
+def mind_the_gap(in_file,
+                 x_bin_size, 
+                 y_bin_size,
+                 x_gap_len_threshold,
+                 y_gap_len_threshold,
+                 x_min_intersections, 
+                 y_min_intersections,
+                 polygon_type='alpha',
+                 alpha=22,
+                 write_points = False):
     """Finds gaps in geographic point data.
     
     Given a set of points in 2D space, this function will find gaps in
@@ -1312,30 +1315,30 @@ def mindTheGap(inFile,
     gaps or points filling in the gap area.
 
     Parameters : 
-    inFile : string
+    in_file : string
              Point data (e.g. buildings centroids) input file path
     x_bin_size : float
-               Width of vertical strips to identify gaps in whatever units the
-               data is projected in
+                 Width of vertical strips to identify gaps in whatever units the
+                 data is projected in
     y_bin_size : float
-               Width of horizontal strips to identify gaps in whatever units
-               the data is projected in
-    x_gapLenThreshold : float
-                       Minimum length data projection units for an x_gap to be 
-                       retained
-    y_gapLenThreshold : float
-                       Minimum length in projection units for a y_gap to be
-                       retained
-    x_minIntersections : int
-                        Minimum number of intersections to filter gap lines
-    y_minIntersections : int
-                        Minimum number of intersections to filter gap lines
-    polygonType : string
-                  Either 'alpha' or 'rim'. The type of polygon generation to 
-                  be used
-    writePoints : boolean
-                  If True, this function will return a GeoDataFrame of points 
-                  that fill in the data gap instead of polygons.
+                 Width of horizontal strips to identify gaps in whatever units
+                 the data is projected in
+    x_gap_len_threshold : float
+                          Minimum length data projection units for an x_gap to be 
+                          retained
+    y_gap_len_threshold : float
+                          Minimum length in projection units for a y_gap to be
+                          retained
+    x_min_intersections : int
+                          Minimum number of intersections to filter gap lines
+    y_min_intersections : int
+                          Minimum number of intersections to filter gap lines
+    polygon_type : string
+                   Either 'alpha' or 'rim'. The type of polygon generation to 
+                   be used
+    write_points : boolean
+                   If True, this function will return a GeoDataFrame of points 
+                   that fill in the data gap instead of polygons.
 
     Returns
     -------
@@ -1343,59 +1346,59 @@ def mindTheGap(inFile,
         Either polygons or points representing the data gap
     """
 
-    def gengap_LineStrings(x_gaps, y_gaps):
+    def gen_gap_LineStrings(x_gaps, y_gaps):
         """Converts data gaps from ndarrays to shapely linestrings"""
         x_gaps = np.asarray(x_gaps)
-        x_gapSegments = []
+        x_gap_segments = []
         x_gap_LineStrings = []
         for o in range(np.shape(x_gaps[:,0])[0]):
             # Get segments ready to plot
             this_gapSegment = [(x_gaps[o,1], x_gaps[o,3]),\
                               (x_gaps[o,1], x_gaps[o,5])]
-            x_gapSegments.append(this_gapSegment)
+            x_gap_segments.append(this_gapSegment)
             
             # Make LineStrings for Shapely
-            thisLine = LineString([(x_gaps[o,1], x_gaps[o,3]),\
+            this_line = LineString([(x_gaps[o,1], x_gaps[o,3]),\
                                    (x_gaps[o,1], x_gaps[o,5])])
-            x_gap_LineStrings.append(thisLine)
+            x_gap_LineStrings.append(this_line)
             
-        all_gapsegments = x_gapSegments
-        allgap_LineStrings = x_gap_LineStrings
+        all_gap_segments = x_gap_segments
+        all_gap_LineStrings = x_gap_LineStrings
         y_gaps = np.asarray(y_gaps)
-        y_gapSegments = []
+        y_gap_segments = []
         y_gap_LineStrings = []
         for u in range(np.shape(y_gaps[:,0])[0]):
             # Get segments ready to plot
             this_gapSegment = [(y_gaps[u,3], y_gaps[u,1]),\
-                              (y_gaps[u,5], y_gaps[u,1])]
-            y_gapSegments.append(this_gapSegment)
-            all_gapsegments.append(this_gapSegment)
+                               (y_gaps[u,5], y_gaps[u,1])]
+            y_gap_segments.append(this_gapSegment)
+            all_gap_segments.append(this_gapSegment)
             
             # Make LineStrings for Shapely
-            thisLine = LineString([(y_gaps[u,3], y_gaps[u,1]),\
-                                   (y_gaps[u,5], y_gaps[u,1])])
-            y_gap_LineStrings.append(thisLine)
-            allgap_LineStrings.append(thisLine)
+            this_line = LineString([(y_gaps[u,3], y_gaps[u,1]), \
+                                    (y_gaps[u,5], y_gaps[u,1])])
+            y_gap_LineStrings.append(this_line)
+            all_gap_LineStrings.append(this_line)
         
-        return allgap_LineStrings, all_gapsegments, x_gap_LineStrings, \
+        return all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
             y_gap_LineStrings        
         
     #Load in building centroids
-    buildingCentroidsGdf = load_points(inFile)
-    pointCoords = get_coordinates(buildingCentroidsGdf)
+    building_centroids_gdf = load_points(in_file)
+    point_coords = get_coordinates(building_centroids_gdf)
     
     # Add columns to point coordinates of which Lon and Lat bins it goes in
-    stacked, x_bins, y_bins = into_the_bins(pointCoords,
-                                          x_bin_size,
-                                          y_bin_size)
+    stacked, x_bins, y_bins = into_the_bins(point_coords,
+                                            x_bin_size,
+                                            y_bin_size)
     
-    x_gaps = find_lat_gaps(stacked, x_bins, x_gapLenThreshold)
-    y_gaps = findLonGaps(stacked, y_bins, y_gapLenThreshold)
+    x_gaps = find_lat_gaps(stacked, x_bins, x_gap_len_threshold)
+    y_gaps = find_lon_gaps(stacked, y_bins, y_gap_len_threshold)
     
     # Plot gaps before filter for test purposes:
-    # allgap_LineStrings, all_gapsegments, x_gap_LineStrings, y_gap_LineStrings = \
-    #     gengap_LineStrings(x_gaps, y_gaps)
-    # lc = mc.LineCollection(all_gapsegments, linewidths=0.5)
+    # all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, y_gap_LineStrings = \
+    #     gen_gap_LineStrings(x_gaps, y_gaps)
+    # lc = mc.LineCollection(all_gap_segments, linewidths=0.5)
     # fig, ax = pl.subplots()
     # ax.add_collection(lc)
     # ax.autoscale()
@@ -1403,59 +1406,59 @@ def mindTheGap(inFile,
     
     # ---------Filter out gap strips without intersections--------
     x_gaps, y_gaps = intersection_filter(x_gaps,
-                                      y_gaps,
-                                      x_minIntersections,
-                                      y_minIntersections)
+                                         y_gaps,
+                                         x_min_intersections,
+                                         y_min_intersections)
     
     # ------------------Generate gap LineStrings------------------   
-    allgap_LineStrings, all_gapsegments, x_gap_LineStrings, y_gap_LineStrings \
-        = gengap_LineStrings(x_gaps, y_gaps)
+    all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
+    y_gap_LineStrings = gen_gap_LineStrings(x_gaps, y_gaps)
     
-    lc = mc.LineCollection(all_gapsegments, linewidths=0.5)
+    lc = mc.LineCollection(all_gap_segments, linewidths=0.5)
     fig, ax = pl.subplots()
     ax.add_collection(lc)
     ax.autoscale()
     ax.margins(0.1) 
     # ---------------Find intersections with shapely--------------
-    intersections = find_intersections(allgap_LineStrings)
+    intersections = find_intersections(all_gap_LineStrings)
     
     # Make and return geodataframe of points if that is desired
-    if writePoints:
-        pointsGdf = gpd.GeoDataFrame(intersections, 
-                                     columns=['geometry'],
-                                     crs="EPSG:4326")
-        pointsGdf.set_geometry(col='geometry', inplace=True)
+    if write_points:
+        points_gdf = gpd.GeoDataFrame(intersections, 
+                                      columns=['geometry'],
+                                      crs="EPSG:4326")
+        points_gdf.set_geometry(col='geometry', inplace=True)
         
-        return pointsGdf
+        return points_gdf
 
     # ------------------Sort points into clusters-----------------
-    all_gaps, IDs, gapClusters, splitInd = findClusters(x_gaps,y_gaps)
+    all_gaps, IDs, gap_clusters, split_ind = find_clusters(x_gaps,y_gaps)
 
     # Need to separate x_gaps and y_gaps for each cluster
-    clusterX = []
-    clusterY = []
-    for cluster in gapClusters:
-        thisClusterx_gaps = []
-        thisClustery_gaps = []
+    cluster_x = []
+    cluster_y = []
+    for cluster in gap_clusters:
+        this_cluster_x_gaps = []
+        this_cluster_y_gaps = []
         for gap in cluster:
-            if gap < splitInd:
-                thisClusterx_gaps.append(gap)
+            if gap < split_ind:
+                this_cluster_x_gaps.append(gap)
             else:
-                thisClustery_gaps.append(gap)
-        clusterX.append(thisClusterx_gaps)
-        clusterY.append(thisClustery_gaps)
+                this_cluster_y_gaps.append(gap)
+        cluster_x.append(this_cluster_x_gaps)
+        cluster_y.append(this_cluster_y_gaps)
         
     # ------------------------Make polygons-----------------------
-    if (polygonType == 'alpha'):
-        polygons = generateAlphaPolygons(clusterX, 
-                                         clusterY, 
-                                         all_gapsegments, 
-                                         alpha)
+    if (polygon_type == 'alpha'):
+        polygons = generate_alpha_polygons(cluster_x, 
+                                           cluster_y, 
+                                           all_gap_segments, 
+                                           alpha)
         return polygons
    
-    if polygonType == 'rim':
-        polygons = generateRimPolygons(clusterX, 
-                                       clusterY, 
-                                       all_gapsegments, 
-                                       all_gaps)
+    if polygon_type == 'rim':
+        polygons = generate_rim_polygons(cluster_x, 
+                                         cluster_y, 
+                                         all_gap_segments, 
+                                         all_gaps)
         return polygons
