@@ -1257,7 +1257,11 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
     return df
 
 # -------------Generate polygons with outer poitns------------ 
-def generate_rim_polygons(x_clusters,y_clusters, gap_segments, gaps):
+def generate_rim_polygons(x_clusters,
+                          y_clusters,
+                          gap_segments,
+                          gaps, 
+                          corners = True):
     """Generates polygons by finding the corners of the gap region.
 
     Generates polygons by finding the outer rim of intersections between x
@@ -1281,11 +1285,6 @@ def generate_rim_polygons(x_clusters,y_clusters, gap_segments, gaps):
         Polygons of data gaps
     """
 
-    def clean_points(points):
-        """Cleans an array of points of unnecessary points"""
-
-        return find_corners(points)
-    
     shapes = []
     
     for i in range(len(x_clusters)):
@@ -1293,8 +1292,11 @@ def generate_rim_polygons(x_clusters,y_clusters, gap_segments, gaps):
         y_inds = y_clusters[i]
         
         outer_points = get_outer_points(x_inds, y_inds, gaps)
-        # outer_points = find_corners(outer_points)
-        
+
+        # Find corners if desired else just make polygons from all outer points
+        if corners:
+            outer_points = find_corners(outer_points)
+
         # Make shapely polygon from points
         shape = shapely.geometry.Polygon(outer_points)
         shapes.append(shape)
