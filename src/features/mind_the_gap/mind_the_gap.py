@@ -34,13 +34,6 @@ from shapely.geometry import Point
 from shapely.geometry import MultiPoint
 from shapely.geometry import MultiPolygon
 
-# ------------------Load points from geojson------------------
-def load_points(file_path):
-    """Load in points from geojson and return as GeoDataframe"""
-    gdf = gpd.read_file(file_path)
-    
-    return gdf
-
 # -----------------Put coordinates in np array----------------
 def get_coordinates(points):
     """Get point coordinates in numpy array out of geodataframe.
@@ -1283,7 +1276,7 @@ def generate_rim_polygons(x_clusters,
     -------
     GeoDataFrame
         Polygons of data gaps
-        
+
     """
 
     shapes = []
@@ -1306,7 +1299,7 @@ def generate_rim_polygons(x_clusters,
     df.set_geometry(col='geometry', inplace=True)
     return df
 
-def mind_the_gap(in_file,
+def mind_the_gap(in_points,
                  x_bin_size, 
                  y_bin_size,
                  x_gap_len_threshold,
@@ -1327,8 +1320,8 @@ def mind_the_gap(in_file,
     gaps or points filling in the gap area.
 
     Parameters : 
-    in_file : string
-        Point data (e.g. buildings centroids) input file path
+    in_points : GeoDataFrame
+        Input GeoDataFrame of points (e.g., building footprints)
     x_bin_size : float
         Width of vertical strips to identify gaps in whatever units the data 
         is projected in
@@ -1398,8 +1391,7 @@ def mind_the_gap(in_file,
             y_gap_LineStrings        
         
     #Load in building centroids
-    building_centroids_gdf = load_points(in_file)
-    point_coords = get_coordinates(building_centroids_gdf)
+    point_coords = get_coordinates(in_points)
     
     # Add columns to point coordinates of which Lon and Lat bins it goes in
     stacked, x_bins, y_bins = into_the_bins(point_coords,
