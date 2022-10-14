@@ -20,6 +20,7 @@ __author__ = "Jack Gonzales"
 import os
 import sys
 from operator import itemgetter
+from xml.etree.ElementInclude import XINCLUDE_FALLBACK
 
 import numpy as np
 import pandas as pd
@@ -326,12 +327,12 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
         try:    
             dist_std = np.std(successive_dists)
             dist_max = max(successive_dists)
-        
+
             # If large gaps are present, where are they?
             if dist_max >= (gap_length_threshold):
                 big_dist_inds = np.where(successive_dists >= 
                                          (gap_length_threshold))[0]
-            
+                #print(big_dist_inds)
                 # Append each gap's info to list of all gaps
                 for gap_ind in big_dist_inds:
                     this_gap = [i,
@@ -346,7 +347,6 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
             pass
         finally:
             i += 1
-            
     return gaps
 
 # ---------------------Find Adjacent gaps---------------------
@@ -528,7 +528,7 @@ def intersection_filter(x_gaps,
     # Convert gaps to np arrys
     x_gaps = np.asarray(x_gaps)
     y_gaps = np.asarray(y_gaps)
-    
+
     # Filter repeatedly until things stop changing
     prev_x_gaps_num = 0
     prev_y_gaps_num = 0
@@ -1342,7 +1342,7 @@ def mind_the_gap(in_points,
         If True, this function will return a GeoDataFrame of points that fill 
         in the data gap instead of polygons.
     corners : boolean
-        If True, will make polygons using only corner points, if false will use
+        If True, will make polygons using only corner points, if False will use
         all outer points. Only matters if 'rim' polygons are used
 
     Returns
