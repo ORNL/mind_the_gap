@@ -927,10 +927,10 @@ def find_corners(points):
             
     # ---------------Tease out true concave corners---------------
     for corner in corners:
-        if is_true_corner(outer_points, corner):
+        if is_true_corner(points, corner):
             true_corners.append(corner)
         else:
-            t_corner = find_true_corner(outer_points, corner)
+            t_corner = find_true_corner(points, corner)
             true_corners.append(t_corner)
             
     # for point in points:
