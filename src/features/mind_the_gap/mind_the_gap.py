@@ -1261,7 +1261,7 @@ def generate_rim_polygons(x_clusters,
                           y_clusters,
                           gap_segments,
                           gaps, 
-                          corners = True):
+                          corners):
     """Generates polygons by finding the corners of the gap region.
 
     Generates polygons by finding the outer rim of intersections between x
@@ -1283,6 +1283,7 @@ def generate_rim_polygons(x_clusters,
     -------
     GeoDataFrame
         Polygons of data gaps
+        
     """
 
     shapes = []
@@ -1314,7 +1315,8 @@ def mind_the_gap(in_file,
                  y_min_intersections,
                  polygon_type='alpha',
                  alpha=22,
-                 write_points = False):
+                 write_points = False,
+                 corners=True):
     """Finds gaps in geographic point data.
     
     Given a set of points in 2D space, this function will find gaps in
@@ -1346,6 +1348,9 @@ def mind_the_gap(in_file,
     write_points : boolean
         If True, this function will return a GeoDataFrame of points that fill 
         in the data gap instead of polygons.
+    corners : boolean
+        If True, will make polygons using only corner points, if false will use
+        all outer points. Only matters if 'rim' polygons are used
 
     Returns
     -------
@@ -1469,5 +1474,6 @@ def mind_the_gap(in_file,
         polygons = generate_rim_polygons(cluster_x, 
                                          cluster_y, 
                                          all_gap_segments, 
-                                         all_gaps)
+                                         all_gaps,
+                                         corners)
         return polygons
