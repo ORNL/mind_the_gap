@@ -1,5 +1,9 @@
 """Generate boundary chainage for mind_the_gap"""
 
+import geopandas as gpd
+from shapely.ops import unary_union
+from shapely.geometry import MultiPoint
+
 def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
     """Generates a set of points at equal intervals along a line
     
