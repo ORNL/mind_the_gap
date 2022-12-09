@@ -1,6 +1,7 @@
 """Generate boundary chainage for mind_the_gap"""
 
 import geopandas as gpd
+import numpy as np
 from shapely.ops import unary_union
 from shapely.geometry import MultiPoint
 
@@ -33,4 +34,4 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
     chainage_ds = gpd.GeoSeries(chain_points, crs=coord_sys)
     chainage_ds = chainage_ds.explode(ignore_index=True)
 
-    return chainage_ds
+    return chainage
