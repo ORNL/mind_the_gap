@@ -7,3 +7,5 @@ matplotlib>=3.5.1
 libpysal>=4.6.2
 numba>=0.55.1
 Rtree>=1.0.0
+sqlalchemy>=1.4.44
+psycopg2-binary>=2.9.5
