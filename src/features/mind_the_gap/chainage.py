@@ -24,7 +24,7 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
     """
 
     chain_points = MultiPoint()
-    for line in boundary_line:
+    for line in boundary_line.geoms:
         distances = np.arange(0, line.length, interval)
         points = [line.interpolate(distance) for distance in distances] + \
                 [line.boundary]
@@ -34,4 +34,4 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
     chainage_ds = gpd.GeoSeries(chain_points, crs=coord_sys)
     chainage_ds = chainage_ds.explode(ignore_index=True)
 
-    return chainage
+    return chainage_ds
