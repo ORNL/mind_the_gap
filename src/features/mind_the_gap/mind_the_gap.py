@@ -54,11 +54,11 @@ def get_coordinates(points):
 
     i = 0
     for point in point_geom:
-        if type(point) == MultiPoint:
+        if isinstance(point, MultiPoint):
             for p in point.geoms:
                 points_coords[i,0] = p.x
                 points_coords[i,1] = p.y
-        elif type(point) == Point:
+        elif isinstance(point, Point):
             points_coords[i,0] = point.x
             points_coords[i,1] = point.y
         i += 1
@@ -173,7 +173,7 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
         i = 0
         for a_bin in bin_assignment:
             diffs = np.abs(points[i,1] - bins[:])
-            bin_index = np.where(min(diffs) == 
+            bin_index = np.where(min(diffs) ==
                                  np.abs(points[i,1] - bins[:]))[0]
 
             bin_assignment[i] = bin_index
@@ -380,7 +380,7 @@ def is_adjacent(gap_1, gap_2, gap_size):
 
     gap_1_bin = gap_1[1]
     gap_2_bin = gap_2[1]
-    if (np.abs(gap_1_bin - gap_2_bin) > gap_size):
+    if np.abs(gap_1_bin - gap_2_bin) > gap_size:
         return 0
 
     else:
@@ -441,10 +441,10 @@ def does_cross(x_gap, y_gap):
     yGx1 = y_gap[3]
     yGx2 = y_gap[5]
 
-    if((yGx1<=xGx<=yGx2) and (xGy1<=yGy<=xGy2)):
+    if (yGx1<=xGx<=yGx2) and (xGy1<=yGy<=xGy2):
         return True
-    else:
-        return False
+    
+    return False
 
 # ---------------------Find intersections---------------------
 def find_intersections(gap_LineStrings):
@@ -651,7 +651,7 @@ def find_clusters(x_gaps, y_gaps):
         for i in range(np.shape(gaps[:,1])[0]):
             # If the gap crosses our test gap and isn't already in cross_inds,
             # then we append it. We also make recursive call of take_a_walk
-            if does_cross(test_gap,gaps[i,:]) and (not(i in cross_inds)):
+            if does_cross(test_gap,gaps[i,:]) and not(i in cross_inds):
                 cross_inds.append(i)
                 cross_inds.append(take_a_walk(gaps,
                                               i,
