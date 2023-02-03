@@ -3,10 +3,10 @@
 Finds gaps in geographic point data.
 
 Intended for buildings footprints (really centroids) by dividing the space into
-vertical and horizontal strips. Large gaps of points in these strips along 
+vertical and horizontal strips. Large gaps of points in these strips along
 their long axis are used to map out areas without any buildings present.
 
-Intended for use with MS buildings, where missing image tiles result in data  
+Intended for use with MS buildings, where missing image tiles result in data 
 gaps with a square shaped pattern, so this script tries to filter out
 irregularly shaped gaps with jagged edges, but can be tuned to be more or less
 sensitive to irregular shapes.
@@ -68,39 +68,39 @@ def get_coordinates(points):
 # ----------Put points into bins based on lat and lon---------
 def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
     """Sorts points into latidude and longitude bins.
-    
+
     Points go into two sets of bins based on their latitude (y) and
-    longitude (x). Calls into_the_x_bins and into_the_y_bins to handle the x 
+    longitude (x). Calls into_the_x_bins and into_the_y_bins to handle the x
     and y bins respectively.
-    
+
     Parameters
     ----------
     points : ndarray
         Array of n number of point coordinates (x,y) of shape (n,2)
     x_bin_size : float, optional
-        Size of x bins, i.e. strip width, in the same units as the projection 
+        Size of x bins, i.e. strip width, in the same units as the projection
         used for buildings centroids
     y_bin_size : float, optional
-        Size of y bins, i.e. strip width, in the same units as the projection 
-        used for building centroids 
-    
+        Size of y bins, i.e. strip width, in the same units as the projection
+        used for building centroids
+
     Returns
     -------
     points_in_bins : ndarray
-        Array of shape (n, 4)  containing all the coordinates of n points with 
-        indices of the bins each point falls in in `x_bins` and `y_bins`. 
+        Array of shape (n, 4)  containing all the coordinates of n points with
+        indices of the bins each point falls in in `x_bins` and `y_bins`.
         Format: [latitude(y), longitude(x), `yBin` index, `xBin` index
                     ...          ...            ...           ...    ]
     y_bins : ndarray
         Array of shape (n, 1) containing latitude values for each bin
     x_bins : ndarray
         Array of shape (n, 1) containing longitude values for each bin
-    
+
     """
 
     # -------------------Sort points into X bins------------------
     def into_the_x_bins(points, bin_size=0.005):
-        """Sorts points into bins based on their longitude (x) value. 
+        """Sorts points into bins based on their longitude (x) value.
 
         Bins are evenly spaced on intervals defined by `bin_size.
 
@@ -117,7 +117,7 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
             Bin index for each point
         bins : ndarray
             Coordinates of the center of each bin
-        
+
         """
 
         x_max = max(points[:,0])
@@ -158,7 +158,7 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
             Bin index for each point
         bins : ndarray
             Coordinates of the center of each bin
-        
+
         """
 
         y_max = max(points[:,1])
@@ -181,7 +181,7 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
             i+=1
 
         return bin_assignment, bins
-    
+
     bin_x_indices, x_bins = into_the_x_bins(points, x_bin_size)
     bin_y_indices, y_bins = into_the_y_bins(points, y_bin_size)
 
@@ -195,18 +195,18 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
 # ----------------Go through x_bins to find gaps---------------
 def find_lat_gaps(points, bins, gap_length_threshold=0.05):
     """Finds gaps in longitude bins.
-    
-    For each longitude bin, this function takes all points that fall within 
+
+    For each longitude bin, this function takes all points that fall within
     that bin, and compresses them to one dimension by only considering their
     latitude coordinate, so that the fall on a number line along the bin's
     long axis. Gaps are found by finding the distance between each
     successive point, and filtering out all gaps that do not meet a minimum
     length threshold.
-       
+
     Parameters
     ----------
     points :  array_like
-        Array of points including coordinates, y Bin indices, and x bin 
+        Array of points including coordinates, y Bin indices, and x bin
         indices
     bins : array_like
         Array of bin longitude (x) coordinates.
@@ -217,8 +217,8 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
     -------
     gaps : list
         List of gaps, where each individual gap is a list containing the bin
-        index, bin longitude coordinate, endpoint 1 index, endpoint 1 latiude 
-        coordinate, endpoint 2 index, endpoint 2 latitude coordinate, and 
+        index, bin longitude coordinate, endpoint 1 index, endpoint 1 latiude
+        coordinate, endpoint 2 index, endpoint 2 latitude coordinate, and
         length.
 
     """
@@ -229,31 +229,31 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
     for bin in bins:
         # Find indices of points in that bin
         indices_in_bin = np.where(points[:,3] == i)[0]
-        
+
         # If there aren't any gaps in this bin, skip to the next one
         if np.shape(indices_in_bin)[0] == 0:
             i += 1
             continue        
-        
+
         # Sort latitudes into numerical order
         lats_in_bin = points[indices_in_bin,1]
         lats_sorted = lats_in_bin[np.argsort(lats_in_bin)]
-        
+
         # Calcuate distances between each successive point
         successive_dists = np.zeros((np.shape(lats_sorted)[0]-1,1))
         for j in range(np.shape(successive_dists)[0]):
             successive_dists[j] = np.abs(lats_sorted[j + 1] - lats_sorted[j])
-        
+
         # Do some basic stats
         try:    
             dist_std = np.std(successive_dists)
             dist_max = max(successive_dists)
-        
+
             # If large gaps are present, where are they?
             if dist_max >= (gap_length_threshold):
                 big_dist_inds = np.where(successive_dists >= 
                                          (gap_length_threshold))[0]
-            
+
                 # Append each gap's info to list of all gaps
                 for gap_ind in big_dist_inds:
                     this_gap = [i,
@@ -268,20 +268,20 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
             pass
         finally:
             i += 1
-            
+
     return gaps
 
 # ----------------Go through y_bins to find gaps---------------
 def find_lon_gaps(points, bins, gap_length_threshold=0.05):
     """Finds data gaps in latitude bins.
-    
-    For each latitude bin, this function takes all points that fall within 
+
+    For each latitude bin, this function takes all points that fall within
     that bin, and compresses them to one dimension by only considering their
     longitude coordinate, so that the fall on a number line along the bin's
     long axis. Gaps are found by finding the distance between each
     successive point, and filtering out all gaps that do not meet a minimum
     length threshold.
-       
+
     Parameters
     ----------
     points :  array_like
@@ -295,41 +295,41 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
     -------
     gaps : list
         List of gaps, where each individual gap is a list containing the bin
-        index, bin latitude coordinate, endpoint 1 index, endpoint 1 longitude 
-        coordinate, endpoint 2 index, endpoint 2 longitude coordinate, and 
+        index, bin latitude coordinate, endpoint 1 index, endpoint 1 longitude
+        coordinate, endpoint 2 index, endpoint 2 longitude coordinate, and
         length.
 
     """
 
     gaps = []
-    
+
     i = 0
     for bin in bins:
         # Find indices of points in that bin
         indices_in_bin = np.where(points[:,2] == i)[0]
-        
+
         # If there aren't any gaps in this bin, skip to the next one
         if np.shape(indices_in_bin)[0] == 0:
             i += 1
             continue
-        
+
         # Sort latitudes into numerical order
         lons_in_bin = points[indices_in_bin,0]
         lons_sorted = lons_in_bin[np.argsort(lons_in_bin)]
-        
+
         # Calcuate distances between each successive point
         successive_dists = np.zeros((np.shape(lons_sorted)[0]-1,1))
         for j in range(np.shape(successive_dists)[0]):
             successive_dists[j] = np.abs(lons_sorted[j + 1] - lons_sorted[j])
-        
+
         # Do some basic stats
-        try:    
+        try:
             dist_std = np.std(successive_dists)
             dist_max = max(successive_dists)
 
             # If large gaps are present, where are they?
             if dist_max >= (gap_length_threshold):
-                big_dist_inds = np.where(successive_dists >= 
+                big_dist_inds = np.where(successive_dists >=
                                          (gap_length_threshold))[0]
                 #print(big_dist_inds)
                 # Append each gap's info to list of all gaps
@@ -350,13 +350,13 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
 
 # ---------------------Find Adjacent gaps---------------------
 def is_adjacent(gap_1, gap_2, gap_size):
-    """Tests to see if two gaps are adjacent. 
-    
+    """Tests to see if two gaps are adjacent.
+
     Parameters
     ----------
     gap_1 : array_like
-        The first gap to test, containing the bin index, bin lat or lon 
-        coordinate, endpoint 1 index, endpoint 1 lat or lon coordinate, 
+        The first gap to test, containing the bin index, bin lat or lon
+        coordinate, endpoint 1 index, endpoint 1 lat or lon coordinate,
         endpoint 2 index, endpoint 2 lat or lon coordinate, and length.
     gap_2 : array_like
         The first gap to test, containing the bin index, bin lat or lon
@@ -377,39 +377,39 @@ def is_adjacent(gap_1, gap_2, gap_size):
     This function is not used and I'm not 100% sure it works properly.
 
     """
-    
+
     gap_1_bin = gap_1[1]
     gap_2_bin = gap_2[1]
     if (np.abs(gap_1_bin - gap_2_bin) > gap_size):
         return 0
-    
+
     else:
         # Find if only one or two endpoints are close (within some threshold)
         gap_1_end_1 = np.asarray([gap_1[1], gap_1[3]])
         gap_1_end_2 = np.asarray([gap_1[1], gap_1[5]])
         gap_2_end_1 = np.asarray([gap_2[1], gap_2[3]])
         gap_2_end_2 = np.asarray([gap_2[1], gap_2[5]])
-        
+
         gap_end_dists = [np.linalg.norm(gap_1_end_1 - gap_2_end_1),
                          np.linalg.norm(gap_1_end_1 - gap_2_end_2),
                          np.linalg.norm(gap_1_end_2 - gap_2_end_1),
                          np.linalg.norm(gap_1_end_2 - gap_2_end_2)]
-        
+
         num_close_ends = 0
         for dist in gap_end_dists:
             if dist < .05: # If distance is within some threshold distance
                 num_close_ends += 1
-                
+
                 if num_close_ends == 2:
                     return num_close_ends
                     break
-                
+
             return num_close_ends
 
 # --------------Find if a pair of segments cross--------------
 def does_cross(x_gap, y_gap):
     """Finds if a y gap and x gap cross.
-    
+
     Paramters
     ---------
     x_gap : array_like
@@ -420,19 +420,19 @@ def does_cross(x_gap, y_gap):
         a single `y_gap`, containing the bin index, bin lat coordinate,
         endpoint 1 index, endpoint 1 lon coordinate, endpoint 2 index, endpoint
         2 coordinate, and length
-           
+
     Returns
     -------
     boolean
         True if `x_gap` and `y_gap` do cross, False if they don't
-        
+
     Notes
     -----
     x_gap and y_gap can actually be interchanged. Can also correctly handle
     parallel gaps/line segments, returning False
 
     """
-    
+
     # Put all coordinates into easier to deal with variables
     xGx = x_gap[1]
     xGy1 = x_gap[3]
@@ -440,7 +440,7 @@ def does_cross(x_gap, y_gap):
     yGy = y_gap[1]
     yGx1 = y_gap[3]
     yGx2 = y_gap[5]
-    
+
     if((yGx1<=xGx<=yGx2) and (xGy1<=yGy<=xGy2)):
         return True
     else:
@@ -449,24 +449,24 @@ def does_cross(x_gap, y_gap):
 # ---------------------Find intersections---------------------
 def find_intersections(gap_LineStrings):
     """Finds intersections amongst a set of LineStrings.
-    
-    Finds intersections between LineStrings using the 
+
+    Finds intersections between LineStrings using the
     shapely.LineString.intersection method.
-       
+
     Parameters
     ----------
     gap_LineStrings : list
         List containing LineString objects
-    
+
     Returns
     -------
     intersections : list
-        List containing shapely points of each intersection between lines in 
+        List containing shapely points of each intersection between lines in
         `gap_LineStrings`
 
     Notes
     -----
-    `gap_LineStrings` should be a list of Linestrings defining line segments, 
+    `gap_LineStrings` should be a list of Linestrings defining line segments,
     not multilines, so the maximum number of intersections between a pair of
     items in `gap_LineStrings` should be 1, and `intersections` should only
     contain points, not multipoints.
@@ -486,44 +486,44 @@ def find_intersections(gap_LineStrings):
 
     return intersections
 
-# -----------Filter out gaps with few intersections-----------    
+# -----------Filter out gaps with few intersections-----------
 def intersection_filter(x_gaps,
                         y_gaps,
                         x_min_intersections=3,
                         y_min_intersections=3):
     """Removes lines that don't meet a minimum number of intersections.
-    
+
     Filters out gaps that don't intersect with a minimum number of other
     gaps, until no more  gaps can be filtered out.
-       
+
     Parameters
     ----------
     x_gaps : array_like
-        Array of gaps on the x bins containing containing the bin indices, bin 
-        lon coordinates, endpoint 1 indices, endpoint 1 lat coordinates, 
+        Array of gaps on the x bins containing containing the bin indices, bin
+        lon coordinates, endpoint 1 indices, endpoint 1 lat coordinates,
         endpoint 2 indices, endpoint 2 coordinates, and length
     y_gaps : array_like
         Array of gaps on the y bins containing containing the bin indices, bin
-        lat coordinates, endpoint 1 indices, endpoint 1 lon coordinates, 
+        lat coordinates, endpoint 1 indices, endpoint 1 lon coordinates,
         endpoint 2 indices, endpoint 2 coordinates, and length
     x_min_intersections : int, optional
-        Minumum number of intersections a gap in `x_gaps` must have with other 
+        Minumum number of intersections a gap in `x_gaps` must have with other
         gaps in order to be retained.
     y_min_intersections : int, optional
-        Minumum number of intersections a gap in `y_gaps` must have with other 
+        Minumum number of intersections a gap in `y_gaps` must have with other
         gaps in order to be retained.
 
     Returns
     -------
     x_gaps : array_like
-        Array of x_gaps that have at least the minimum number of intersections 
+        Array of x_gaps that have at least the minimum number of intersections
         with other gaps
     y_gaps : array_like
-        Array of y_gaps that have at least the minimum number of intersections 
+        Array of y_gaps that have at least the minimum number of intersections
         with other gaps
 
     """
-    
+
     # Convert gaps to np arrys
     x_gaps = np.asarray(x_gaps)
     y_gaps = np.asarray(y_gaps)
@@ -541,54 +541,54 @@ def intersection_filter(x_gaps,
             thisx_gap = x_gaps[i,:]
             for o in range(np.shape(y_gaps[:,1])[0]):
                 thisy_gap = y_gaps[o,:]
-                
+
                 if does_cross(thisx_gap, thisy_gap):
                     y_gap_does_cross[o] += 1
                     x_gap_does_cross[i] += 1
 
         # Remove gaps that don't have any connections
-        connecting_x_gaps = np.where(x_gap_does_cross >= 
-                                     x_min_intersections)[0] 
+        connecting_x_gaps = np.where(x_gap_does_cross >=
+                                     x_min_intersections)[0]
         x_gaps = x_gaps[connecting_x_gaps]
-        connecting_y_gaps = np.where(y_gap_does_cross >= 
-                                     y_min_intersections)[0]         
+        connecting_y_gaps = np.where(y_gap_does_cross >=
+                                     y_min_intersections)[0]
         y_gaps = y_gaps[connecting_y_gaps]
-        
+
         # Compare number of gaps to previous iteration
         x_gaps_num_diff = np.shape(x_gaps[:,1])[0] - prev_x_gaps_num
         y_gaps_num_diff = np.shape(y_gaps[:,1])[0] - prev_y_gaps_num
-        
+
         if (x_gaps_num_diff == 0) and (y_gaps_num_diff == 0):
             break
-        
+
         # Save number of gaps for this iteration
         prev_x_gaps_num = np.shape(x_gaps[:,1])[0]
         prev_y_gaps_num = np.shape(y_gaps[:,1])[0]
-        
+
         iterations += 1
-    
+
     # print("Filter iterations: " + str(iterations))
-    
+
     return x_gaps, y_gaps
 
-# -------------Find clusters of connecting lines--------------         
+# -------------Find clusters of connecting lines--------------
 def find_clusters(x_gaps, y_gaps):
     """Finds discrete clusters of interconnecting lines.
-    
+
     Gaps are often isolated from one another, resulting in discrete newtorks
     or clusters of intersecting lines. This function gathers all lines in
     each cluster and returns all lines sorted into separate lists for each
     cluster.
-       
+
     Parameters
     ----------
     x_gaps : array_like
-        Array of gaps on the x bins containing containing the bin indices, bin 
-        lon coordinates, endpoint 1 indices, endpoint 1 lat coordinates, 
+        Array of gaps on the x bins containing containing the bin indices, bin
+        lon coordinates, endpoint 1 indices, endpoint 1 lat coordinates,
         endpoint 2 indices, endpoint 2 coordinates, and length
     y_gaps : array_like
         Array of gaps on the y bins containing containing the bin indices,
-        bin lat coordinates, endpoint 1 indices, endpoint 1 lon coordinates, 
+        bin lat coordinates, endpoint 1 indices, endpoint 1 lon coordinates,
         endpoint 2 indices, endpoint 2 coordinates, and length
 
     Returns
@@ -598,26 +598,26 @@ def find_clusters(x_gaps, y_gaps):
     gap_cluster_IDs : ndarray
         Array of unique ID numbers for each cluster, indexing from one.
     clusters : list
-        List containing a list of indices refering to `all_gaps` for each 
+        List containing a list of indices refering to `all_gaps` for each
         cluster
     split_index : int
         Index of where `all_gaps` shifts from being x_gaps to y_gaps
 
     """
-    
+
     def take_a_walk(gaps,start_ind,done_inds=[],cross_inds=[]):
         """Finds all lines in a network of interconnecting lines.
 
         Starting from one gap/line segment, this function gets all other
-        line segments that intersect with the start line segment, and adds 
+        line segments that intersect with the start line segment, and adds
         the indices of those intersecting lines in `gaps` to a list. Then,
         for each intersecting line segment not already in the list of
-        intersecting indices, the function recursively calls itself to find 
-        all line segments that intersect with each of those line segments, 
+        intersecting indices, the function recursively calls itself to find
+        all line segments that intersect with each of those line segments,
         and then calls itself again, etc. This finally ends when all line
         segments of a cluster are added to `cross_inds` and no more recursive
         calls are made.
-           
+
         Parameters
         ----------
         gaps : array_like
@@ -637,16 +637,16 @@ def find_clusters(x_gaps, y_gaps):
             that are in the cluster
 
         """
-        
+
         # Make sure we haven't already ran this index
         if start_ind in done_inds:
-            return 
+            return
         else:
             done_inds.append(start_ind)
-        
+
         # Define test gap
         test_gap = gaps[start_ind,:]
-        
+
         # Find which other gaps intersect with our test gap
         for i in range(np.shape(gaps[:,1])[0]):
             # If the gap crosses our test gap and isn't already in cross_inds,
@@ -657,16 +657,16 @@ def find_clusters(x_gaps, y_gaps):
                                               i,
                                               done_inds,
                                               cross_inds=cross_inds))
-        
+
         return cross_inds
-    
+
     # Stack all gaps into one big array
     all_gaps = np.vstack([x_gaps,y_gaps])
     # Get the index that splits x_gaps and y_gaps
     split_index = np.shape(x_gaps[:,1])[0]
     # Create array of cluster IDs
     gap_cluster_IDs = np.zeros(np.shape(all_gaps[:,1])[0])
-    
+
     # Make lists of clusters and all indices in clusters
     clusters = []
     in_clusters = []
@@ -675,8 +675,8 @@ def find_clusters(x_gaps, y_gaps):
     all_gap_inds = list(range(0,len(all_gaps[:,0])))
 
     # start cluster ID
-    cluster_id = 0 
-    
+    cluster_id = 0
+
     # Sort into clusters
     while in_clusters.sort() != all_gap_inds:
         # Find the gap we want to walk from: the first gap that hasn't yet been
@@ -686,12 +686,12 @@ def find_clusters(x_gaps, y_gaps):
             walk_ind = np.where(gap_cluster_IDs == 0)[0][0]
         except IndexError:
             break
-        
-        in_cluster = take_a_walk(all_gaps, 
-                                 walk_ind, 
-                                 done_inds=[], 
+
+        in_cluster = take_a_walk(all_gaps,
+                                 walk_ind,
+                                 done_inds=[],
                                  cross_inds=[])
-        
+
         # take_a_walk returns a very messy list, including other lists.
         # We only want the integers from it.
         in_cluster = list([elm for elm in in_cluster if isinstance(elm, int)])
@@ -703,35 +703,35 @@ def find_clusters(x_gaps, y_gaps):
         gap_cluster_IDs[in_cluster] = cluster_id
         # Move to next cluster ID
         cluster_id += 1
-                
+
     return all_gaps, gap_cluster_IDs, clusters, split_index
 
-# ---------------------Find corner points---------------------         
+# ---------------------Find corner points---------------------
 def find_corners(points):
     """Finds the corners in a set of perimeter points.
 
     Parameters
     ----------
     points : array_like
-        All the points that make up the shape outline. List of 2-element np 
+        All the points that make up the shape outline. List of 2-element np
         arrays
-    
+
     Returns
     -------
     true_corners : array_like
         All corner points. List of 2-element np arrays
 
     """
-    
+
     def is_corner(points, index):
-        """Determines whether or not a point is a corner or on an edge. 
-        
-        It does this by taking a set of perimeter points, with the index of a 
+        """Determines whether or not a point is a corner or on an edge.
+
+        It does this by taking a set of perimeter points, with the index of a
         point of interest. The point of interest and its two adjacent neighbors
-        are then projected into a 3D space, with all having a z value of zero. 
-        Then the cross product of vectors connecting the point of interest to 
-        the neighbors is taken. A cross product of zero indicates the points 
-        are aligned, and that the point of interest is on an edge. A nonzero 
+        are then projected into a 3D space, with all having a z value of zero.
+        Then the cross product of vectors connecting the point of interest to
+        the neighbors is taken. A cross product of zero indicates the points
+        are aligned, and that the point of interest is on an edge. A nonzero
         cross product indicates that the point is a corner.
 
         Parameters
@@ -750,7 +750,7 @@ def find_corners(points):
         -----
         Considering point p, with neighbors p and q, the following will be true
         for a point lying on an edge:
-        
+
         .. math::  overrightarrow{pq}  times overrightarrow{pr}  =  0
 
         Any other result indicates a corner.
@@ -762,26 +762,26 @@ def find_corners(points):
         #     # pointOfInterest: The corner point in question
         #     # Define points
         #     pointOfInterest = np.asarray([pointOfInterest])
-            
+
         #     # Define vectors
         #     v1 = pointOfInterest - neighbor_1
         #     v2 = pointOfInterest - neighbor_2
-            
+
         #     # Calculate cross product
         #     crossProduct = np.cross(v1,v2)
-            
+
         #     if crossProduct == np.asarray([0,0,0]):
         #         return False
         #     else:
         #         return True
-            
+
         # Compute cross product to test if point is on an edge or corner
         p = np.hstack([points[i], 0])
         q = np.hstack([points[(i - 1) % len(points)], 0])
         r = np.hstack([points[(i + 1) % len(points)], 0])
         pq = p - q
         pr = p - r
-        
+
         if np.linalg.norm(np.cross(pq,pr)) != 0:
             return True
         else:
@@ -789,7 +789,7 @@ def find_corners(points):
 
     def is_true_corner(points, corner):
         """Determines if a corner point is a true 90 degree corner.
-           
+
         Parameters
         ----------
         points : array_like
@@ -804,7 +804,7 @@ def find_corners(points):
 
         Notes
         -----
-        To determine the angle of a corner, find the angle theta between 
+        To determine the angle of a corner, find the angle theta between
         vectors connecting point p to neighbors q and r:
 
          .. mat:: \theta = arccos\big(\frac{\overrightarrow{pq}\bullet
@@ -817,30 +817,30 @@ def find_corners(points):
         index = int(corner[2])
         neighbor_1 = points[(index - 1) % len(points)]
         neighbor_2 = points[(index + 1) % len(points)]
-        
+
         # define vectors
         v1 = corner[0:2] - neighbor_1
         v1_Mag = np.linalg.norm(v1)
         v2 = corner[0:2] - neighbor_2
         v2_Mag = np.linalg.norm(v2)
-        
+
         # get angle betwixt vectors
         theta = np.arccos(np.dot(v1,v2) / (v1_Mag * v2_Mag))
         if (theta % (np.pi / 2)) == 0:
             return True
         else:
             return False
-        
+
     def find_true_corner(points, false_corner):
         """This function returns the true concave corner from a false corner.
-        
+
         Paramters
         ---------
         points : array_like
             Clockwise ordered list of points
         false_corner : array_like
             The corner point we are testing, plus its index in `points`
-        
+
         Returns
         -------
         true_corner : array_like
@@ -852,49 +852,49 @@ def find_corners(points):
         index = int(corner[2])
         neighbor_1 = points[(index - 1) % len(points)]
         neighbor_2 = points[(index + 1) % len(points)]
-        
+
         # find matching coordinate in neighbors
         if false_corner[0] == neighbor_1[0]:
             true_x = false_corner[0]
             o = 1
             old_neighbor = neighbor_2
-            
+
             while True:
                 new_neighbor = points[(index + 1 + o) % len(points)]
                 if new_neighbor[1] == old_neighbor[1]:
                     true_y = new_neighbor[1]
                     break
                 o += 1
-                
+
         elif false_corner[1] == neighbor_1[1]:
             true_y = false_corner[1]
             o = 1
             old_neighbor = neighbor_2
-            
+
             while True:
                 new_neighbor = points[(index + 1 + o) % len(points)]
                 if new_neighbor[0] == old_neighbor[0]:
                     true_x = new_neighbor[0]
                     break
                 o += 1
-        
+
         elif false_corner[0] == neighbor_2[0]:
             true_x = false_corner[0]
             o = 1
             old_neighbor = neighbor_1
-            
+
             while True:
                 new_neighbor = points[(index + 1 + o) % len(points)]
                 if new_neighbor[1] == old_neighbor[1]:
                     true_y = new_neighbor[1]
                     break
                 o += 1
-        
+
         elif false_corner[1] == neighbor_2[1]:
             true_y = false_corner[1]
             o = 1
             old_neighbor = neighbor_1
-            
+
             while True:
                 new_neighbor = points[(index + 1 + o) % len(points)]
                 if new_neighbor[0] == old_neighbor[0]:
@@ -903,20 +903,20 @@ def find_corners(points):
                 o += 1
         else:
             return
-            
+
         true_corner = np.asarray([true_x, true_y, 0])
-        
+
         return true_corner
-        
+
     # Define corners list
     corners = []
-    
+
     for i in range(len(points)):
         if is_corner(points, i):
             corners.append(np.hstack([points[i], i]))
 
     true_corners = []
-            
+
     # ---------------Tease out true concave corners---------------
     for corner in corners:
         if is_true_corner(points, corner):
@@ -924,7 +924,7 @@ def find_corners(points):
         else:
             t_corner = find_true_corner(points, corner)
             true_corners.append(t_corner)
-            
+
     # for point in points:
     #     p = np.hstack([point,0])
     #     # find neighboring points
@@ -950,13 +950,13 @@ def find_corners(points):
     #     neighbors = np.vstack([neighbor_1,neighbor_2])
     #     # plt.scatter(neighbors[:,0],neighbors[:,1],c='#bcbd22')
     #     # break
-    
+
     return true_corners
-            
+
 # ---------------Find outer intersection points---------------
 def get_outer_points(x_inds, y_inds, gaps):
     """Gets points on the perimeter of the data gap in clockwise order.
-    
+
     Parameters
     ----------
     x_inds : array_like
@@ -976,10 +976,10 @@ def get_outer_points(x_inds, y_inds, gaps):
 
     # outer_points = np.zeros([np.shape(gaps[:,1])[0]*2,2])
     outer_points = []
-    
+
     def get_cross_inds(test_gap, cross_gaps):
         """Finds the indices of all the lines that cross `test_gap`.
-           
+
         Parameters
         ----------
         test_gap : array_like
@@ -995,15 +995,15 @@ def get_outer_points(x_inds, y_inds, gaps):
         """
 
         cross_inds = []
-        
+
         for i in range(np.shape(cross_gaps[:,1])[0]):
             if does_cross(test_gap,cross_gaps[i,:]):
                 cross_inds.append(i)
         return cross_inds
-    
+
     def step_by_step(point, all_points, clock_w_points):
         """Function that finds the next point in clockwise order.
-        
+
         Parameters
         ----------
         point : array_like
@@ -1022,7 +1022,7 @@ def get_outer_points(x_inds, y_inds, gaps):
 
         def take_step(points_df, clock_w_points):
             """Finds the next point coordinates in the step.
-            
+
             Parameters
             ----------
             points_df : Pandas DataFrame 
@@ -1046,13 +1046,13 @@ def get_outer_points(x_inds, y_inds, gaps):
                     if test_point[0] == cw_point[0] and \
                        test_point[1] == cw_point[1]:
                            test = False
-                          
-                           
+
+
                 if (not test) and (i + 1) < points_df.shape[0]:
                     i += 1
                 else:
                     break
-                
+
             return test_point
 
         # Find closest points
@@ -1060,12 +1060,12 @@ def get_outer_points(x_inds, y_inds, gaps):
         points_dists = np.column_stack((all_points,dists))
         df = pd.DataFrame(points_dists)
         df = df.sort_values(2)
-        
+
         next_point = take_step(df, clock_w_points)
-        
+
         return next_point
-    
-    
+
+
     for ind in x_inds:
         this_gap = gaps[ind,:]
         crossing_inds = get_cross_inds(this_gap,gaps[y_inds,:])
@@ -1078,7 +1078,7 @@ def get_outer_points(x_inds, y_inds, gaps):
         these_points = np.asarray([np.asarray([x,min_y]),
                                   np.asarray([x,max_y])])
         outer_points.append(these_points)
-    
+
     for ind in y_inds:
         this_gap = gaps[ind,:]
         crossing_inds = get_cross_inds(this_gap,gaps[x_inds,:])
@@ -1091,7 +1091,7 @@ def get_outer_points(x_inds, y_inds, gaps):
         these_points = np.asarray([np.asarray([min_x,y]),
                                   np.asarray([max_x,y])])
         outer_points.append(these_points)
-    
+
     # Convert to list of 2-element arrays
     outer_points = np.vstack(outer_points)
     outer_points = list(outer_points)
@@ -1099,13 +1099,13 @@ def get_outer_points(x_inds, y_inds, gaps):
     outer_unique = pd.DataFrame(outer_points)
     outer_unique = list(outer_unique.drop_duplicates().values)
     outer_points = np.asarray(outer_unique)
-    
-    
+
+
     # Walk around the perimter and put all the points in clockwise order
     # Get starting point
     top_row_inds = np.where(outer_points[:,1] == max(outer_points[:,1]))[0]
     top_row_points = outer_points[top_row_inds,:]
-    right_corner_ind = (np.where(top_row_points[:,0] == 
+    right_corner_ind = (np.where(top_row_points[:,0] ==
                         max(top_row_points[:,0]))[0])
     top_right_point = top_row_points[right_corner_ind,:][0]
     x_matches = np.where(top_right_point[0] == outer_points[:,0])[0]
@@ -1113,33 +1113,33 @@ def get_outer_points(x_inds, y_inds, gaps):
     start_row_ind = np.intersect1d(x_matches, y_matches)
     anti_cw_neighbor_point = top_row_points[np.argsort(top_row_points[:,0], \
                                                        axis=0)[-2],:]
-    
+
     cw_sorted_points = [anti_cw_neighbor_point, top_right_point]
-    
-    next_point = step_by_step(outer_points[start_row_ind], 
-                              outer_points, 
+
+    next_point = step_by_step(outer_points[start_row_ind],
+                              outer_points,
                               cw_sorted_points)
-    
+
     while True: 
         if (min(np.linalg.norm(next_point[0:2] - cw_sorted_points, axis=-1)) ==
             0):
             break
         else:
             cw_sorted_points.append(next_point[0:2])
-            next_point = step_by_step(next_point[0:2], 
-                                      outer_points, 
+            next_point = step_by_step(next_point[0:2],
+                                      outer_points,
                                       cw_sorted_points)
-    
+
     # return outer_points
     return cw_sorted_points
 
 # ---------------Find intersections in clusters---------------
 def cluster_intersections(x_inds, y_inds, gaps):
     """Finds intersections of lines in a cluster of connected lines.
-    
+
     Finds all the intersection points between x_gaps and y_gaps, and returns a
     list of shapely points
-    
+
     Parameters
     ----------
     x_inds : array_like
@@ -1157,27 +1157,27 @@ def cluster_intersections(x_inds, y_inds, gaps):
     """
 
     intersections = []
-    
+
     x_gaps = list(itemgetter(*x_inds)(gaps))
     y_gaps = list(itemgetter(*y_inds)(gaps))
-    
-    
+
+
     # Make linestrings
     gap_LineStrings = []
-    
+
     for gap in x_gaps:
         this_gap_LS = LineString(gap)
         gap_LineStrings.append(this_gap_LS)
-            
+
     for gap in y_gaps:
         this_gap_LS = LineString(gap)
         gap_LineStrings.append(this_gap_LS)
-        
+
     intersections = find_intersections(gap_LineStrings)
-    
+
     return intersections
 
-# -------------Generate polygons with alpha_shapes------------- 
+# -------------Generate polygons with alpha_shapes-------------
 def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
     """Generates polygons for data gaps using alpha_shape.
 
@@ -1199,12 +1199,12 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
     -------
     df : Geodataframe
         Contains alpha shape polygons
-    
+
     """
 
     def make_alpha_shape(points, alpha):
         """Generate alpha_shapes with the libpysal alpha_shape module.
-        
+
         Parameters
         ----------
         points : array_like
@@ -1218,18 +1218,18 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
             shapely polygon or multipolygon of alpha shapes
 
         """
-       
+
         xs = np.asarray([point.x for point in points])
         ys = np.asarray([point.y for point in points])
 
         xy = np.vstack([xs,ys]).T
-        
+
         shape = alpha_shape(xy, alpha)
 
         return shape
 
     shapes = []
-    
+
     for i in range(len(x_clusters)):
         x_inds = x_clusters[i]
         y_inds = y_clusters[i]
@@ -1242,24 +1242,24 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
                 shapes.append(sh)
         else:
             shapes.append(a_shape)
-    
+
     df = gpd.GeoDataFrame(shapes,columns=['geometry'],crs="EPSG:4326")
     df.set_geometry(col='geometry', inplace=True)
-    
+
     return df
 
-# -------------Generate polygons with outer poitns------------ 
+# -------------Generate polygons with outer poitns------------
 def generate_rim_polygons(x_clusters,
                           y_clusters,
                           gap_segments,
-                          gaps, 
+                          gaps,
                           corners):
     """Generates polygons by finding the corners of the gap region.
 
     Generates polygons by finding the outer rim of intersections between x
     and y gaps. Returns shapely polygons in GeoDataFrame
     Requires parameters to be well tuned or you will get wacky polygons.
-    
+
     Parameters
     ---------
     x_clusters : array_like
@@ -1270,7 +1270,7 @@ def generate_rim_polygons(x_clusters,
         All gap line segment endpoints
     gaps : array_like
         Array of all data gaps
-    
+
     Returns
     -------
     GeoDataFrame
@@ -1279,7 +1279,7 @@ def generate_rim_polygons(x_clusters,
     """
 
     shapes = []
-    
+
     for i in range(len(x_clusters)):
         x_inds = x_clusters[i]
         y_inds = y_clusters[i]
@@ -1293,24 +1293,24 @@ def generate_rim_polygons(x_clusters,
         # Make shapely polygon from points
         shape = shapely.geometry.Polygon(outer_points)
         shapes.append(shape)
-    
+
     df = gpd.GeoDataFrame(shapes,columns=['geometry'],crs='EPSG:4326')
     df.set_geometry(col='geometry', inplace=True)
     return df
 
 def mind_the_gap(in_points,
-                 x_bin_size, 
+                 x_bin_size,
                  y_bin_size,
                  x_gap_len_threshold,
                  y_gap_len_threshold,
-                 x_min_intersections, 
+                 x_min_intersections,
                  y_min_intersections,
                  polygon_type='alpha',
                  alpha=22,
                  write_points = False,
                  corners=True):
     """Finds gaps in geographic point data.
-    
+
     Given a set of points in 2D space, this function will find gaps in
     points, with adjustable sensitivity. This is best suited to identify
     rectilinear systematic gaps, such as those resulting from missing
@@ -1318,14 +1318,14 @@ def mind_the_gap(in_points,
     features- such as lakes or forests. Produces either polygons representing 
     gaps or points filling in the gap area.
 
-    Parameters : 
+    Parameters :
     in_points : GeoDataFrame
         Input GeoDataFrame of points (e.g., building footprints)
     x_bin_size : float
-        Width of vertical strips to identify gaps in whatever units the data 
+        Width of vertical strips to identify gaps in whatever units the data
         is projected in
     y_bin_size : float
-        Width of horizontal strips to identify gaps in whatever units the data 
+        Width of horizontal strips to identify gaps in whatever units the data
         is projected in
     x_gap_len_threshold : float
         Minimum length data projection units for an x_gap to be retained
@@ -1338,7 +1338,7 @@ def mind_the_gap(in_points,
     polygon_type : string
         Either 'alpha' or 'rim'. The type of polygon generation to be used
     write_points : boolean
-        If True, this function will return a GeoDataFrame of points that fill 
+        If True, this function will return a GeoDataFrame of points that fill
         in the data gap instead of polygons.
     corners : boolean
         If True, will make polygons using only corner points, if False will use
@@ -1362,12 +1362,12 @@ def mind_the_gap(in_points,
             this_gapSegment = [(x_gaps[o,1], x_gaps[o,3]),\
                               (x_gaps[o,1], x_gaps[o,5])]
             x_gap_segments.append(this_gapSegment)
-            
+
             # Make LineStrings for Shapely
             this_line = LineString([(x_gaps[o,1], x_gaps[o,3]),\
                                    (x_gaps[o,1], x_gaps[o,5])])
             x_gap_LineStrings.append(this_line)
-            
+
         all_gap_segments = x_gap_segments
         all_gap_LineStrings = x_gap_LineStrings
         y_gaps = np.asarray(y_gaps)
@@ -1379,27 +1379,27 @@ def mind_the_gap(in_points,
                                (y_gaps[u,5], y_gaps[u,1])]
             y_gap_segments.append(this_gapSegment)
             all_gap_segments.append(this_gapSegment)
-            
+
             # Make LineStrings for Shapely
             this_line = LineString([(y_gaps[u,3], y_gaps[u,1]), \
                                     (y_gaps[u,5], y_gaps[u,1])])
             y_gap_LineStrings.append(this_line)
             all_gap_LineStrings.append(this_line)
-        
+
         return all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
             y_gap_LineStrings        
-        
+
     #Load in building centroids
     point_coords = get_coordinates(in_points)
-    
+
     # Add columns to point coordinates of which Lon and Lat bins it goes in
     stacked, x_bins, y_bins = into_the_bins(point_coords,
                                             x_bin_size,
                                             y_bin_size)
-    
+
     x_gaps = find_lat_gaps(stacked, x_bins, x_gap_len_threshold)
     y_gaps = find_lon_gaps(stacked, y_bins, y_gap_len_threshold)
-    
+
     # Plot gaps before filter for test purposes:
     # all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, y_gap_LineStrings = \
     #     gen_gap_LineStrings(x_gaps, y_gaps)
@@ -1407,33 +1407,33 @@ def mind_the_gap(in_points,
     # fig, ax = pl.subplots()
     # ax.add_collection(lc)
     # ax.autoscale()
-    # ax.margins(0.1) 
-    
+    # ax.margins(0.1)
+
     # ---------Filter out gap strips without intersections--------
     x_gaps, y_gaps = intersection_filter(x_gaps,
                                          y_gaps,
                                          x_min_intersections,
                                          y_min_intersections)
-    
-    # ------------------Generate gap LineStrings------------------   
+
+    # ------------------Generate gap LineStrings------------------
     all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
     y_gap_LineStrings = gen_gap_LineStrings(x_gaps, y_gaps)
-    
+
     lc = mc.LineCollection(all_gap_segments, linewidths=0.5)
     fig, ax = pl.subplots()
     ax.add_collection(lc)
     ax.autoscale()
-    ax.margins(0.1) 
+    ax.margins(0.1)
     # ---------------Find intersections with shapely--------------
     intersections = find_intersections(all_gap_LineStrings)
-    
+
     # Make and return geodataframe of points if that is desired
     if write_points:
-        points_gdf = gpd.GeoDataFrame(intersections, 
+        points_gdf = gpd.GeoDataFrame(intersections,
                                       columns=['geometry'],
                                       crs="EPSG:4326")
         points_gdf.set_geometry(col='geometry', inplace=True)
-        
+
         return points_gdf
 
     # ------------------Sort points into clusters-----------------
@@ -1452,19 +1452,19 @@ def mind_the_gap(in_points,
                 this_cluster_y_gaps.append(gap)
         cluster_x.append(this_cluster_x_gaps)
         cluster_y.append(this_cluster_y_gaps)
-        
+
     # ------------------------Make polygons-----------------------
     if (polygon_type == 'alpha'):
-        polygons = generate_alpha_polygons(cluster_x, 
-                                           cluster_y, 
-                                           all_gap_segments, 
+        polygons = generate_alpha_polygons(cluster_x,
+                                           cluster_y,
+                                           all_gap_segments,
                                            alpha)
         return polygons
-   
+
     if polygon_type == 'rim':
-        polygons = generate_rim_polygons(cluster_x, 
-                                         cluster_y, 
-                                         all_gap_segments, 
+        polygons = generate_rim_polygons(cluster_x,
+                                         cluster_y,
+                                         all_gap_segments,
                                          all_gaps,
                                          corners)
         return polygons
