@@ -6,7 +6,7 @@ Intended for buildings footprints (really centroids) by dividing the space into
 vertical and horizontal strips. Large gaps of points in these strips along
 their long axis are used to map out areas without any buildings present.
 
-Intended for use with MS buildings, where missing image tiles result in data 
+Intended for use with MS buildings, where missing image tiles result in data
 gaps with a square shaped pattern, so this script tries to filter out
 irregularly shaped gaps with jagged edges, but can be tuned to be more or less
 sensitive to irregular shapes.
@@ -37,7 +37,7 @@ from shapely.geometry import MultiPolygon
 # -----------------Put coordinates in np array----------------
 def get_coordinates(points):
     """Get point coordinates in numpy array out of geodataframe.
-    
+
     Parameters
     ----------
     points : GeoDataFrame
@@ -49,7 +49,7 @@ def get_coordinates(points):
         Array of point coordinates (x,y)
     """
     point_geom = points['geometry']
-    
+
     points_coords = np.zeros([np.size(point_geom),2])
 
     i = 0
@@ -62,7 +62,7 @@ def get_coordinates(points):
             points_coords[i,0] = point.x
             points_coords[i,1] = point.y
         i += 1
-    
+
     return points_coords
 
 # ----------Put points into bins based on lat and lon---------
@@ -141,7 +141,7 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
 
     # -------------------Sort points into y bins------------------
     def into_the_y_bins(points, bin_size=0.005):
-        """Sorts points into bins based on their latitude (y) value. 
+        """Sorts points into bins based on their latitude (y) value.
 
         Bins are evenly spaced on intervals defined by `bin_size.`
 
@@ -233,7 +233,7 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
         # If there aren't any gaps in this bin, skip to the next one
         if np.shape(indices_in_bin)[0] == 0:
             i += 1
-            continue        
+            continue
 
         # Sort latitudes into numerical order
         lats_in_bin = points[indices_in_bin,1]
@@ -245,13 +245,13 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
             successive_dists[j] = np.abs(lats_sorted[j + 1] - lats_sorted[j])
 
         # Do some basic stats
-        try:    
+        try:
             dist_std = np.std(successive_dists)
             dist_max = max(successive_dists)
 
             # If large gaps are present, where are they?
             if dist_max >= (gap_length_threshold):
-                big_dist_inds = np.where(successive_dists >= 
+                big_dist_inds = np.where(successive_dists >=
                                          (gap_length_threshold))[0]
 
                 # Append each gap's info to list of all gaps
@@ -368,7 +368,7 @@ def is_adjacent(gap_1, gap_2, gap_size):
     Returns
     -------
     int
-        0 if not adjacent, 1 if partially adjacent (one pair of endpoints 
+        0 if not adjacent, 1 if partially adjacent (one pair of endpoints
         match), and 2 if fully adjacent (both pairs of endpoints match)
 
     Notes
@@ -445,7 +445,7 @@ def does_cross(x_gap, y_gap):
         return True
     else:
         return False
-    
+
 # ---------------------Find intersections---------------------
 def find_intersections(gap_LineStrings):
     """Finds intersections amongst a set of LineStrings.
@@ -1039,7 +1039,7 @@ def get_outer_points(x_inds, y_inds, gaps):
 
             i = 0
             while True:
-                test_point = points_df.iloc[i].to_numpy()                
+                test_point = points_df.iloc[i].to_numpy()
                 # Test to see if the test point has been sorted already
                 test = True
                 for cw_point in clock_w_points:
@@ -1120,7 +1120,7 @@ def get_outer_points(x_inds, y_inds, gaps):
                               outer_points,
                               cw_sorted_points)
 
-    while True: 
+    while True:
         if (min(np.linalg.norm(next_point[0:2] - cw_sorted_points, axis=-1)) ==
             0):
             break
