@@ -434,16 +434,16 @@ def does_cross(x_gap, y_gap):
     """
 
     # Put all coordinates into easier to deal with variables
-    xGx = x_gap[1]
-    xGy1 = x_gap[3]
-    xGy2 = x_gap[5]
-    yGy = y_gap[1]
-    yGx1 = y_gap[3]
-    yGx2 = y_gap[5]
+    x_G_x = x_gap[1]
+    x_G_y1 = x_gap[3]
+    x_G_y2 = x_gap[5]
+    y_G_y = y_gap[1]
+    y_G_x1 = y_gap[3]
+    y_G_x2 = y_gap[5]
 
-    if (yGx1<=xGx<=yGx2) and (xGy1<=yGy<=xGy2):
+    if (y_G_x1<=x_G_x<=y_G_x2) and (x_G_y1<=y_G_y<=x_G_y2):
         return True
-    
+
     return False
 
 # ---------------------Find intersections---------------------
@@ -784,8 +784,8 @@ def find_corners(points):
 
         if np.linalg.norm(np.cross(pq,pr)) != 0:
             return True
-        else:
-            return False
+
+        return False
 
     def is_true_corner(points, corner):
         """Determines if a corner point is a true 90 degree corner.
@@ -820,16 +820,16 @@ def find_corners(points):
 
         # define vectors
         v1 = corner[0:2] - neighbor_1
-        v1_Mag = np.linalg.norm(v1)
+        v1_mag = np.linalg.norm(v1)
         v2 = corner[0:2] - neighbor_2
-        v2_Mag = np.linalg.norm(v2)
+        v2_mag = np.linalg.norm(v2)
 
         # get angle betwixt vectors
-        theta = np.arccos(np.dot(v1,v2) / (v1_Mag * v2_Mag))
+        theta = np.arccos(np.dot(v1,v2) / (v1_mag * v2_mag))
         if (theta % (np.pi / 2)) == 0:
             return True
-        else:
-            return False
+
+        return False
 
     def find_true_corner(points, false_corner):
         """This function returns the true concave corner from a false corner.
