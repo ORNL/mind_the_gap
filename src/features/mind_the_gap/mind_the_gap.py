@@ -226,7 +226,7 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
     gaps = []
 
     i = 0
-    for bin in bins:
+    for binn in bins:
         # Find indices of points in that bin
         indices_in_bin = np.where(points[:,3] == i)[0]
 
@@ -257,7 +257,7 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
                 # Append each gap's info to list of all gaps
                 for gap_ind in big_dist_inds:
                     this_gap = [i,
-                                bin,
+                                binn,
                                 gap_ind,
                                 lats_sorted[gap_ind],
                                 gap_ind + 1,
@@ -304,7 +304,7 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
     gaps = []
 
     i = 0
-    for bin in bins:
+    for binn in bins:
         # Find indices of points in that bin
         indices_in_bin = np.where(points[:,2] == i)[0]
 
@@ -335,7 +335,7 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
                 # Append each gap's info to list of all gaps
                 for gap_ind in big_dist_inds:
                     this_gap = [i,
-                                bin,
+                                binn,
                                 gap_ind,
                                 lons_sorted[gap_ind],
                                 gap_ind + 1,
