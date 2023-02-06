@@ -50,8 +50,7 @@ def get_coordinates(points):
 
     points_coords = np.zeros([np.size(point_geom),2])
 
-    i = 0
-    for point in point_geom:
+    for i, point in enumerate(point_geom):
         if isinstance(point, MultiPoint):
             for p in point.geoms:
                 points_coords[i,0] = p.x
@@ -59,7 +58,6 @@ def get_coordinates(points):
         elif isinstance(point, Point):
             points_coords[i,0] = point.x
             points_coords[i,1] = point.y
-        i += 1
 
     return points_coords
 
@@ -126,14 +124,11 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
         bin_assignment = np.zeros(np.shape(points[:,0]))
 
         # put points into whichever bin they are closest to
-        i = 0
-        for a_bin in bin_assignment:
+        for i, a_bin in enumerate(bin_assignment):
             diffs = np.abs(points[i,0] - bins[:])
             bin_index = np.where(min(diffs) == np.abs(points[i,0] - bins[:]))[0]
 
             bin_assignment[i] = bin_index
-
-            i+=1
 
         return bin_assignment, bins
 
@@ -168,15 +163,12 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
         bin_assignment = np.zeros(np.shape(points[:,1]))
 
         # put points into whichever bin they are closest to
-        i = 0
-        for a_bin in bin_assignment:
+        for i, a_bin in enumerate(bin_assignment):
             diffs = np.abs(points[i,1] - bins[:])
             bin_index = np.where(min(diffs) ==
                                  np.abs(points[i,1] - bins[:]))[0]
 
             bin_assignment[i] = bin_index
-
-            i+=1
 
         return bin_assignment, bins
 
@@ -223,14 +215,12 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
 
     gaps = []
 
-    i = 0
-    for binn in bins:
+    for i, binn in enumerate(bins):
         # Find indices of points in that bin
         indices_in_bin = np.where(points[:,3] == i)[0]
 
         # If there aren't any gaps in this bin, skip to the next one
         if np.shape(indices_in_bin)[0] == 0:
-            i += 1
             continue
 
         # Sort latitudes into numerical order
@@ -265,7 +255,7 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
         except Exception:
             pass
         finally:
-            i += 1
+            continue
 
     return gaps
 
@@ -301,8 +291,7 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
 
     gaps = []
 
-    i = 0
-    for binn in bins:
+    for i, binn in enumerate(bins):
         # Find indices of points in that bin
         indices_in_bin = np.where(points[:,2] == i)[0]
 
