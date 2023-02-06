@@ -1045,7 +1045,7 @@ def get_outer_points(x_inds, y_inds, gaps):
                 for cw_point in clock_w_points:
                     if test_point[0] == cw_point[0] and \
                        test_point[1] == cw_point[1]:
-                           test = False
+                        test = False
 
 
                 if (not test) and (i + 1) < points_df.shape[0]:
