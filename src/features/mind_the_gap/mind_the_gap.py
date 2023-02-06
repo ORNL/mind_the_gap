@@ -229,12 +229,11 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
 
         # Calcuate distances between each successive point
         successive_dists = np.zeros((np.shape(lats_sorted)[0]-1,1))
-        for j, dis in enumerate(successive_dists):
+        for j, _ in enumerate(successive_dists):
             successive_dists[j] = np.abs(lats_sorted[j + 1] - lats_sorted[j])
 
         # Do some basic stats
         try:
-            dist_std = np.std(successive_dists)
             dist_max = max(successive_dists)
 
             # If large gaps are present, where are they?
@@ -306,12 +305,11 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
 
         # Calcuate distances between each successive point
         successive_dists = np.zeros((np.shape(lons_sorted)[0]-1,1))
-        for j, dis in enumerate(successive_dists):
+        for j, _ in enumerate(successive_dists):
             successive_dists[j] = np.abs(lons_sorted[j + 1] - lons_sorted[j])
 
         # Do some basic stats
         try:
-            dist_std = np.std(successive_dists)
             dist_max = max(successive_dists)
 
             # If large gaps are present, where are they?
@@ -389,7 +387,6 @@ def is_adjacent(gap_1, gap_2, gap_size):
 
                 if num_close_ends == 2:
                     return num_close_ends
-                    break
 
             return num_close_ends
 
@@ -466,7 +463,7 @@ def find_intersections(gap_LineStrings):
         for h, __ in enumerate(gap_LineStrings):
             ln2 = gap_LineStrings[h]
             cross = ln1.intersection(ln2)
-            if cross.is_empty or y == h or type(cross) == LineString:
+            if cross.is_empty or y == h or isinstance(cross, LineString):
                 continue
             else:
                 intersections.append(cross)
@@ -545,7 +542,7 @@ def intersection_filter(x_gaps,
         x_gaps_num_diff = np.shape(x_gaps[:,1])[0] - prev_x_gaps_num
         y_gaps_num_diff = np.shape(y_gaps[:,1])[0] - prev_y_gaps_num
 
-        if (x_gaps_num_diff == 0) and (y_gaps_num_diff == 0):
+        if x_gaps_num_diff == 0 and y_gaps_num_diff == 0:
             break
 
         # Save number of gaps for this iteration
@@ -638,7 +635,7 @@ def find_clusters(x_gaps, y_gaps):
         for i, _ in range(gaps[:,1]):
             # If the gap crosses our test gap and isn't already in cross_inds,
             # then we append it. We also make recursive call of take_a_walk
-            if does_cross(test_gap,gaps[i,:]) and not(i in cross_inds):
+            if does_cross(test_gap,gaps[i,:]) and not i in cross_inds:
                 cross_inds.append(i)
                 cross_inds.append(take_a_walk(gaps,
                                               i,
@@ -1224,8 +1221,8 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         inters = cluster_intersections(x_inds, y_inds, gaps)
         a_shape = make_alpha_shape(inters, alpha)[0]
         
-        if type(a_shape) == MultiPolygon: # Only put polygons into list
-            for sh in a_shape: 
+        if isinstance(a_shape, MultiPolygon): # Only put polygons into list
+            for sh in a_shape:
                 shapes.append(sh)
         else:
             shapes.append(a_shape)
@@ -1270,7 +1267,7 @@ def generate_rim_polygons(x_clusters,
     for i, _ in enumerate(x_clusters):
         x_inds = x_clusters[i]
         y_inds = y_clusters[i]
-        
+
         outer_points = get_outer_points(x_inds, y_inds, gaps)
 
         # Find corners if desired else just make polygons from all outer points
@@ -1374,7 +1371,7 @@ def mind_the_gap(in_points,
             all_gap_LineStrings.append(this_line)
 
         return all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
-            y_gap_LineStrings        
+            y_gap_LineStrings
 
     #Load in building centroids
     point_coords = get_coordinates(in_points)
