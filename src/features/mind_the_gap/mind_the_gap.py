@@ -124,7 +124,7 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
         bin_assignment = np.zeros(np.shape(points[:,0]))
 
         # put points into whichever bin they are closest to
-        for i, a_bin in enumerate(bin_assignment):
+        for i, _ in enumerate(bin_assignment):
             diffs = np.abs(points[i,0] - bins[:])
             bin_index = np.where(min(diffs) == np.abs(points[i,0] - bins[:]))[0]
 
@@ -163,7 +163,7 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
         bin_assignment = np.zeros(np.shape(points[:,1]))
 
         # put points into whichever bin they are closest to
-        for i, a_bin in enumerate(bin_assignment):
+        for i, _ in enumerate(bin_assignment):
             diffs = np.abs(points[i,1] - bins[:])
             bin_index = np.where(min(diffs) ==
                                  np.abs(points[i,1] - bins[:]))[0]
@@ -461,9 +461,9 @@ def find_intersections(gap_LineStrings):
     """
 
     intersections = []
-    for y, gap in enumerate(gap_LineStrings)):
+    for y, _ in enumerate(gap_LineStrings):
         ln1 = gap_LineStrings[y]
-        for h, gapp in enumerate(gap_LineStrings):
+        for h, __ in enumerate(gap_LineStrings):
             ln2 = gap_LineStrings[h]
             cross = ln1.intersection(ln2)
             if cross.is_empty or y == h or type(cross) == LineString:
@@ -524,9 +524,9 @@ def intersection_filter(x_gaps,
         x_gap_does_cross = np.zeros(np.shape(x_gaps[:,1])[0])
         y_gap_does_cross = np.zeros(np.shape(y_gaps[:,1])[0])
 
-        for i, g in enumerate(x_gaps[:,1]):
+        for i, _ in enumerate(x_gaps[:,1]):
             thisx_gap = x_gaps[i,:]
-            for o, p in enumerate(y_gaps[:,1]):
+            for o, __ in enumerate(y_gaps[:,1]):
                 thisy_gap = y_gaps[o,:]
 
                 if does_cross(thisx_gap, thisy_gap):
@@ -635,7 +635,7 @@ def find_clusters(x_gaps, y_gaps):
         test_gap = gaps[start_ind,:]
 
         # Find which other gaps intersect with our test gap
-        for i, p in range(gaps[:,1]):
+        for i, _ in range(gaps[:,1]):
             # If the gap crosses our test gap and isn't already in cross_inds,
             # then we append it. We also make recursive call of take_a_walk
             if does_cross(test_gap,gaps[i,:]) and not(i in cross_inds):
@@ -898,7 +898,7 @@ def find_corners(points):
     # Define corners list
     corners = []
 
-    for i, p in enumerate(points):
+    for i, _ in enumerate(points):
         if is_corner(points, i):
             corners.append(np.hstack([points[i], i]))
 
@@ -983,7 +983,7 @@ def get_outer_points(x_inds, y_inds, gaps):
 
         cross_inds = []
 
-        for i, p in enumerate(cross_gaps[:,1]):
+        for i, _ in enumerate(cross_gaps[:,1]):
             if does_cross(test_gap,cross_gaps[i,:]):
                 cross_inds.append(i)
         return cross_inds
