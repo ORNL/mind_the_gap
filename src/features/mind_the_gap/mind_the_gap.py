@@ -229,7 +229,7 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
 
         # Calcuate distances between each successive point
         successive_dists = np.zeros((np.shape(lats_sorted)[0]-1,1))
-        for j in range(np.shape(successive_dists)[0]):
+        for j, dis in enumerate(successive_dists):
             successive_dists[j] = np.abs(lats_sorted[j + 1] - lats_sorted[j])
 
         # Do some basic stats
@@ -306,7 +306,7 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
 
         # Calcuate distances between each successive point
         successive_dists = np.zeros((np.shape(lons_sorted)[0]-1,1))
-        for j in range(np.shape(successive_dists)[0]):
+        for j, dis in enumerate(successive_dists):
             successive_dists[j] = np.abs(lons_sorted[j + 1] - lons_sorted[j])
 
         # Do some basic stats
@@ -461,9 +461,9 @@ def find_intersections(gap_LineStrings):
     """
 
     intersections = []
-    for y in range(len(gap_LineStrings)):
+    for y, gap in enumerate(gap_LineStrings)):
         ln1 = gap_LineStrings[y]
-        for h in range(len(gap_LineStrings)):
+        for h, gapp in enumerate(gap_LineStrings):
             ln2 = gap_LineStrings[h]
             cross = ln1.intersection(ln2)
             if cross.is_empty or y == h or type(cross) == LineString:
@@ -524,9 +524,9 @@ def intersection_filter(x_gaps,
         x_gap_does_cross = np.zeros(np.shape(x_gaps[:,1])[0])
         y_gap_does_cross = np.zeros(np.shape(y_gaps[:,1])[0])
 
-        for i in range(np.shape(x_gaps[:,1])[0]):
+        for i, g in enumerate(x_gaps[:,1]):
             thisx_gap = x_gaps[i,:]
-            for o in range(np.shape(y_gaps[:,1])[0]):
+            for o, p in enumerate(y_gaps[:,1]):
                 thisy_gap = y_gaps[o,:]
 
                 if does_cross(thisx_gap, thisy_gap):
@@ -635,7 +635,7 @@ def find_clusters(x_gaps, y_gaps):
         test_gap = gaps[start_ind,:]
 
         # Find which other gaps intersect with our test gap
-        for i in range(np.shape(gaps[:,1])[0]):
+        for i, p in range(gaps[:,1]):
             # If the gap crosses our test gap and isn't already in cross_inds,
             # then we append it. We also make recursive call of take_a_walk
             if does_cross(test_gap,gaps[i,:]) and not(i in cross_inds):
@@ -898,7 +898,7 @@ def find_corners(points):
     # Define corners list
     corners = []
 
-    for i in range(len(points)):
+    for i, p in enumerate(points):
         if is_corner(points, i):
             corners.append(np.hstack([points[i], i]))
 
@@ -983,7 +983,7 @@ def get_outer_points(x_inds, y_inds, gaps):
 
         cross_inds = []
 
-        for i in range(np.shape(cross_gaps[:,1])[0]):
+        for i, p in enumerate(cross_gaps[:,1]):
             if does_cross(test_gap,cross_gaps[i,:]):
                 cross_inds.append(i)
         return cross_inds
@@ -1217,7 +1217,7 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
 
     shapes = []
 
-    for i in range(len(x_clusters)):
+    for i, _ in enumerate(x_clusters):
         x_inds = x_clusters[i]
         y_inds = y_clusters[i]
         
@@ -1267,7 +1267,7 @@ def generate_rim_polygons(x_clusters,
 
     shapes = []
 
-    for i in range(len(x_clusters)):
+    for i, _ in enumerate(x_clusters):
         x_inds = x_clusters[i]
         y_inds = y_clusters[i]
         
@@ -1344,7 +1344,7 @@ def mind_the_gap(in_points,
         x_gaps = np.asarray(x_gaps)
         x_gap_segments = []
         x_gap_LineStrings = []
-        for o in range(np.shape(x_gaps[:,0])[0]):
+        for o, _ in enumerate(x_gaps[:,0]):
             # Get segments ready to plot
             this_gapSegment = [(x_gaps[o,1], x_gaps[o,3]),\
                               (x_gaps[o,1], x_gaps[o,5])]
@@ -1360,7 +1360,7 @@ def mind_the_gap(in_points,
         y_gaps = np.asarray(y_gaps)
         y_gap_segments = []
         y_gap_LineStrings = []
-        for u in range(np.shape(y_gaps[:,0])[0]):
+        for u, __ in enumerate(y_gaps[:,0]):
             # Get segments ready to plot
             this_gapSegment = [(y_gaps[u,3], y_gaps[u,1]),\
                                (y_gaps[u,5], y_gaps[u,1])]
