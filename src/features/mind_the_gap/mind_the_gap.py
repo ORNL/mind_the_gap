@@ -649,7 +649,7 @@ def find_clusters(x_gaps, y_gaps):
     # Get the index that splits x_gaps and y_gaps
     split_index = np.shape(x_gaps[:,1])[0]
     # Create array of cluster IDs
-    gap_cluster_IDs = np.zeros(np.shape(all_gaps[:,1])[0])
+    gap_cluster_ids = np.zeros(np.shape(all_gaps[:,1])[0])
 
     # Make lists of clusters and all indices in clusters
     clusters = []
@@ -684,11 +684,11 @@ def find_clusters(x_gaps, y_gaps):
         # Add gaps to list of all clustered indices
         in_clusters += in_cluster
         # Assign all gaps in that cluster with their cluster ID
-        gap_cluster_IDs[in_cluster] = cluster_id
+        gap_cluster_ids[in_cluster] = cluster_id
         # Move to next cluster ID
         cluster_id += 1
 
-    return all_gaps, gap_cluster_IDs, clusters, split_index
+    return all_gaps, gap_cluster_ids, clusters, split_index
 
 # ---------------------Find corner points---------------------
 def find_corners(points):
@@ -1009,7 +1009,7 @@ def get_outer_points(x_inds, y_inds, gaps):
 
             Parameters
             ----------
-            points_df : Pandas DataFrame 
+            points_df : Pandas DataFrame
                 Point coordinates with distances from the point of interest
             clock_w_points : array_like
                 List of points already sorted into clockwise order
@@ -1150,12 +1150,12 @@ def cluster_intersections(x_inds, y_inds, gaps):
     gap_LineStrings = []
 
     for gap in x_gaps:
-        this_gap_LS = LineString(gap)
-        gap_LineStrings.append(this_gap_LS)
+        this_gap_ls = LineString(gap)
+        gap_LineStrings.append(this_gap_ls)
 
     for gap in y_gaps:
-        this_gap_LS = LineString(gap)
-        gap_LineStrings.append(this_gap_LS)
+        this_gap_ls = LineString(gap)
+        gap_LineStrings.append(this_gap_ls)
 
     intersections = find_intersections(gap_LineStrings)
 
@@ -1217,10 +1217,10 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
     for i, _ in enumerate(x_clusters):
         x_inds = x_clusters[i]
         y_inds = y_clusters[i]
-        
+
         inters = cluster_intersections(x_inds, y_inds, gaps)
         a_shape = make_alpha_shape(inters, alpha)[0]
-        
+
         if isinstance(a_shape, MultiPolygon): # Only put polygons into list
             for sh in a_shape:
                 shapes.append(sh)
@@ -1421,7 +1421,7 @@ def mind_the_gap(in_points,
         return points_gdf
 
     # ------------------Sort points into clusters-----------------
-    all_gaps, IDs, gap_clusters, split_ind = find_clusters(x_gaps,y_gaps)
+    all_gaps, ids, gap_clusters, split_ind = find_clusters(x_gaps,y_gaps)
 
     # Need to separate x_gaps and y_gaps for each cluster
     cluster_x = []
