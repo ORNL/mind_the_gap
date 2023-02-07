@@ -667,7 +667,7 @@ def find_clusters(x_gaps, y_gaps):
         # assigned to a cluster. If an IndexError is thrown, then all gaps have
         # been sorted into clusters and we break out of the loop
         try:
-            walk_ind = np.where(gap_cluster_IDs == 0)[0][0]
+            walk_ind = np.where(gap_cluster_ids == 0)[0][0]
         except IndexError:
             break
 
