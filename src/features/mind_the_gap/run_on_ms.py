@@ -32,15 +32,14 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
     """
 
     chain_points = MultiPoint()
-    for line in boundary_line.geoms:
+    for line in boundary_line:
         distances = np.arange(0, line.length, interval)
         points = [line.interpolate(distance) for distance in distances] + \
-                 [line.boundary]
+                [line.boundary]
         points = unary_union(points)
         chain_points = unary_union([chain_points, points])
 
     chainage_ds = gpd.GeoSeries(chain_points, crs=coord_sys)
-    chainage_ds = chainage_ds.explode(ignore_index=True)
 
     return chainage_ds
 
@@ -56,7 +55,7 @@ print('Loading boundaries')
 #                    FROM ethiopia.boundary"""
 #boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,con,geom_col='geom')
 boundaries = gpd.read_file('./turkey_box.geojson')
-boundaries = boundaries.boundary[0]
+boundaries = [boundaries.boundary[0]]
 
 # Generate chainage
 print('Generating chainage')
