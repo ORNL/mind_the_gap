@@ -97,7 +97,7 @@ try:
                                          corners=False)
 
     print('Saving gaps')
-    gaps_gdf.to_file('./turkiye_w05_l11_i2_a20.geojson',
+    gaps_gdf.to_file('./turkiye_w05_l11_i2_rim.geojson',
                  driver='GeoJSON')
     print(gaps_gdf)
 except:
@@ -114,7 +114,7 @@ try:
                                            polygon_type='rim',
                                            corners=False)
     print('Saving gaps 2')
-    gaps_gdf_2.to_file('./turkiye_w04_l13_i3_a_20.geojson',driver='GeoJSON')
+    gaps_gdf_2.to_file('./turkiye_w04_l13_i3_rim.geojson',driver='GeoJSON')
 except:
     print('That dont work neither')
 #gaps_gdf.to_postgis('microsoft.mask', open_con, if_exists='replace')
