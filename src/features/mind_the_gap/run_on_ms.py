@@ -93,11 +93,10 @@ try:
                                          0.11,
                                          2,
                                          2,
-                                         polygon_type='rim',
-                                         corners=False)
+                                         alpha=10)
 
     print('Saving gaps')
-    gaps_gdf.to_file('./turkiye_w05_l11_i2_rim.geojson',
+    gaps_gdf.to_file('./turkiye_w05_l11_i2_a10.geojson',
                  driver='GeoJSON')
     print(gaps_gdf)
 except:
@@ -111,10 +110,9 @@ try:
                                            0.13,
                                            3,
                                            3,
-                                           polygon_type='rim',
-                                           corners=False)
+                                           alpha=10)
     print('Saving gaps 2')
-    gaps_gdf_2.to_file('./turkiye_w04_l13_i3_rim.geojson',driver='GeoJSON')
+    gaps_gdf_2.to_file('./turkiye_w04_l13_i3_a10.geojson',driver='GeoJSON')
 except:
     print('That dont work neither')
 #gaps_gdf.to_postgis('microsoft.mask', open_con, if_exists='replace')
