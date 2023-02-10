@@ -93,7 +93,8 @@ try:
                                          0.11,
                                          2,
                                          2,
-                                         alpha=20)
+                                         polygon_type='rim',
+                                         corners=False)
 
     print('Saving gaps')
     gaps_gdf.to_file('./turkiye_w05_l11_i2_a20.geojson',
@@ -110,7 +111,8 @@ try:
                                            0.13,
                                            3,
                                            3,
-                                           alpha=18)
+                                           polygon_type='rim',
+                                           corners=False)
     print('Saving gaps 2')
     gaps_gdf_2.to_file('./turkiye_w04_l13_i3_a_20.geojson',driver='GeoJSON')
 except:
