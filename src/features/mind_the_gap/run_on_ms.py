@@ -1,4 +1,4 @@
-"""Run mind_the_gap on Microsoft Turkey buildings"""
+"""Run mind_the_gap on Microsoft Belarus buildings"""
 
 import os
 import sys
@@ -51,10 +51,10 @@ open_con = create_engine('postgresql://openadmin:openadmin@manhattan:3022/opendb
 
 # Get boundaries
 print('Loading boundaries')
-#boundaries_qry = """SELECT ogc_fid, st_multi(st_buffer(geom, 0.1)) as geom 
-#                    FROM ethiopia.boundary"""
-#boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,con,geom_col='geom')
-boundaries = gpd.read_file('./turkey_box.geojson')
+boundaries_qry = """SELECT st_multi(st_buffer(geom, 0.1)) as geom
+                    FROM boundary.admin0
+                    WHERE country='belarus'"""
+boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,open_con,geom_col='geom')
 boundaries = [boundaries.boundary[0]]
 
 # Generate chainage
@@ -68,7 +68,7 @@ print('Chainage done')
 # Get buildings
 print('Loading buildings')
 buildings_qry = """SELECT ogc_fid, pt_geom as geometry 
-                   FROM microsoft2.turkey"""
+                   FROM microsoft2.belarus"""
 buildings = gpd.GeoDataFrame.from_postgis(buildings_qry, 
                                           open_con,
                                           geom_col='geometry')
@@ -91,12 +91,12 @@ try:
                                          0.04,
                                          0.10,
                                          0.10,
-                                         2,
-                                         2,
+                                         3,
+                                         3,
                                          write_points=True)
 
     print('Saving gaps')
-    gaps_gdf.to_file('./turkiye_w04_l10_i2_points.geojson',
+    gaps_gdf.to_file('./belarus_w04_l10_i3_points.geojson',
                  driver='GeoJSON')
     print(gaps_gdf)
 except:
@@ -108,10 +108,10 @@ try:
                                            0.04,
                                            0.10,
                                            0.10,
-                                           2,
-                                           2,
+                                           3,
+                                           3,
                                            alpha=20)
     print('Saving gaps 2')
-    gaps_gdf_2.to_file('./turkiye_w04_l10_i2_a20.geojson',driver='GeoJSON')
+    gaps_gdf_2.to_file('./belarus_w04_l10_i3_a20.geojson',driver='GeoJSON')
 except:
     print('That dont work neither')
