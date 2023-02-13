@@ -100,9 +100,9 @@ try:
     gaps_gdf.to_file('./belarus_w04_l09_i2_points.geojson',
                  driver='GeoJSON')
     print(gaps_gdf)
-except Exception:
+except Exception as e:
     print('yo that shit dont work cuh')
-    print(Exception)
+    print(e)
 print('minding gaps 2')
 try:
     gaps_gdf_2 = mind_the_gap.mind_the_gap(all_points_gdf,
@@ -115,6 +115,6 @@ try:
                                            alpha=18)
     print('Saving gaps 2')
     gaps_gdf_2.to_file('./belarus_w04_l09_i2_a18.geojson',driver='GeoJSON')
-except Exception:
+except Exception as e:
     print('That dont work neither')
-    print(Exception)
+    print(e)
