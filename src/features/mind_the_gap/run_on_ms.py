@@ -40,6 +40,7 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
         chain_points = unary_union([chain_points, points])
 
     chainage_ds = gpd.GeoSeries(chain_points, crs=coord_sys)
+    chainage_ds = chainage_ds.explode(ignore_index=True)
 
     return chainage_ds
 
