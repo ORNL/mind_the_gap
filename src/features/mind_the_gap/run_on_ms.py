@@ -87,16 +87,16 @@ print(all_points_gdf)
 print('Minding the gaps 1')
 try:
     gaps_gdf = mind_the_gap.mind_the_gap(all_points_gdf,
-                                         0.05,
-                                         0.05,
-                                         0.11,
-                                         0.11,
+                                         0.04,
+                                         0.04,
+                                         0.10,
+                                         0.10,
                                          2,
                                          2,
                                          write_points=True)
 
     print('Saving gaps')
-    gaps_gdf.to_file('./turkiye_w05_l11_i2_points.geojson',
+    gaps_gdf.to_file('./turkiye_w04_l10_i2_points.geojson',
                  driver='GeoJSON')
     print(gaps_gdf)
 except:
@@ -104,15 +104,14 @@ except:
 print('minding gaps 2')
 try:
     gaps_gdf_2 = mind_the_gap.mind_the_gap(all_points_gdf,
-                                           0.05,
-                                           0.05,
-                                           0.11,
-                                           0.11,
+                                           0.04,
+                                           0.04,
+                                           0.10,
+                                           0.10,
                                            2,
                                            2,
-                                           polygon_type='rim',
-                                           corners=True)
+                                           alpha=20)
     print('Saving gaps 2')
-    gaps_gdf_2.to_file('./turkiye_w05_l11_i2_rimcorners.geojson',driver='GeoJSON')
+    gaps_gdf_2.to_file('./turkiye_w04_l10_i2_a20.geojson',driver='GeoJSON')
 except:
     print('That dont work neither')
