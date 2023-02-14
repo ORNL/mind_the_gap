@@ -632,7 +632,7 @@ def find_clusters(x_gaps, y_gaps):
         test_gap = gaps[start_ind,:]
 
         # Find which other gaps intersect with our test gap
-        for i, _ in range(gaps[:,1]):
+        for i, _ in enumerate(gaps[:,1]):
             # If the gap crosses our test gap and isn't already in cross_inds,
             # then we append it. We also make recursive call of take_a_walk
             if does_cross(test_gap,gaps[i,:]) and not i in cross_inds:
@@ -1209,7 +1209,6 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         xy = np.vstack([xs,ys]).T
 
         shape = alpha_shape(xy, alpha)
-
         return shape
 
     shapes = []
