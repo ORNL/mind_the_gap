@@ -1289,7 +1289,7 @@ def mind_the_gap(in_points,
                  x_min_intersections,
                  y_min_intersections,
                  polygon_type='alpha',
-                 alpha=22,
+                 alpha=15,
                  write_points = False,
                  corners=True):
     """Finds gaps in geographic point data.
