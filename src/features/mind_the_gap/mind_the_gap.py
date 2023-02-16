@@ -1387,6 +1387,10 @@ def mind_the_gap(in_points,
         return all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
             y_gap_LineStrings
 
+    # Check for bad value
+    if polygon_type != 'rim' and polygon_type != 'alpha':
+        raise ValueError("plolygon_type must be 'rim' or 'alpha'.")
+
     #Load in building centroids
     point_coords = get_coordinates(in_points)
 
