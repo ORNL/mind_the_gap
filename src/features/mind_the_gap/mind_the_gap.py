@@ -1181,8 +1181,10 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
 
     Returns
     -------
-    df : Geodataframe
+    gaps_df : GeoDataFrame
         Contains alpha shape polygons
+    points_gdf : GeoDataFrame
+        Contains a MultiPoint for each gap
 
     """
 
@@ -1212,6 +1214,7 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         return shape
 
     shapes = []
+    all_inters = []
 
     for i, _ in enumerate(x_clusters):
         x_inds = x_clusters[i]
@@ -1219,6 +1222,9 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
 
         inters = cluster_intersections(x_inds, y_inds, gaps)
         a_shape = make_alpha_shape(inters, alpha)[0]
+        
+        inters = MultiPoint(inters)
+        all_inters.append([inters])
 
         if isinstance(a_shape, MultiPolygon): # Only put polygons into list
             for sh in a_shape:
@@ -1226,10 +1232,15 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         else:
             shapes.append(a_shape)
 
-    df = gpd.GeoDataFrame(shapes,columns=['geometry'],crs="EPSG:4326")
-    df.set_geometry(col='geometry', inplace=True)
+    gaps_df = gpd.GeoDataFrame(shapes,columns=['geometry'],crs="EPSG:4326")
+    gaps_df.set_geometry(col='geometry', inplace=True)
 
-    return df
+    points_gdf = gpd.GeoDataFrame(all_inters,
+                                  columns=['geometry'],
+                                  crs="EPSG:4326")
+    points_gdf.set_geometry(col='geometry', inplace=True)
+
+    return gaps_df, points_gdf
 
 # -------------Generate polygons with outer poitns------------
 def generate_rim_polygons(x_clusters,
@@ -1290,6 +1301,7 @@ def mind_the_gap(in_points,
                  y_min_intersections,
                  polygon_type='alpha',
                  alpha=15,
+                 cluster_points=False,
                  write_points = False,
                  corners=True):
     """Finds gaps in geographic point data.
@@ -1320,6 +1332,9 @@ def mind_the_gap(in_points,
         Minimum number of intersections to filter gap lines
     polygon_type : string
         Either 'alpha' or 'rim'. The type of polygon generation to be used
+    cluster_points : boolean
+        True with 'alpha' `polygon_type` returns a geodataframe of MultiPoints
+        for each gap as well as polygons
     write_points : boolean
         If True, this function will return a GeoDataFrame of points that fill
         in the data gap instead of polygons.
@@ -1330,7 +1345,7 @@ def mind_the_gap(in_points,
     Returns
     -------
     GeoDataFrame
-        Either polygons or points representing the data gap
+        Polygons and/or points representing the data gap
 
     """
 
@@ -1438,10 +1453,12 @@ def mind_the_gap(in_points,
 
     # ------------------------Make polygons-----------------------
     if (polygon_type == 'alpha'):
-        polygons = generate_alpha_polygons(cluster_x,
-                                           cluster_y,
-                                           all_gap_segments,
-                                           alpha)
+        polygons, points = generate_alpha_polygons(cluster_x,
+                                                   cluster_y,
+                                                   all_gap_segments,
+                                                   alpha)
+        if cluster_points:
+            return polygons, points
         return polygons
 
     if polygon_type == 'rim':
