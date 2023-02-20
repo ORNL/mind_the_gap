@@ -1427,7 +1427,9 @@ def mind_the_gap(in_points,
     ax.autoscale()
     ax.margins(0.1)
     # ---------------Find intersections with shapely--------------
+    print('here')
     intersections = find_intersections(all_gap_LineStrings)
+    print('here')
 
     # Make and return geodataframe of points if that is desired
     if write_points:
