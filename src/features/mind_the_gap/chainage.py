@@ -24,6 +24,7 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
     chain_points_ds : GeoSeries
 
     """
+
     if isinstance(boundary_line, MultiLineString):
         chain_points = MultiPoint()
         for line in boundary_line.geoms:
