@@ -12,7 +12,7 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
     
     Parameters
     ----------
-    boundary_line : MultiLineString
+    boundary_line : MultiLineString or LineString
         Line to generate the chainage on
     interval : float
         Space between points
