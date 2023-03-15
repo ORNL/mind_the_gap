@@ -52,4 +52,4 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
 
         return chainage_ds
     else:
-        raise TypeError("boundary_line mus be LineString or MultiLineString")
+        raise TypeError("boundary_line must be LineString or MultiLineString")
