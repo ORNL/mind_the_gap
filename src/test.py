@@ -59,23 +59,23 @@ all_points_gdf = gpd.GeoDataFrame(pd.concat([buildings,chainage_gdf],
 
 # Run mind_the_gap
 print('Mind the gaps')
-try:
-    gaps_gdf = mind_the_gap.mind_the_gap(all_points_gdf,
-                                         0.04,
-                                         0.04,
-                                         0.08,
-                                         0.08,
-                                         5,
-                                         5,
-                                         alpha=18)
+
+gaps_gdf = mind_the_gap.mind_the_gap(all_points_gdf,
+                                     0.04,
+                                     0.04,
+                                     0.08,
+                                     0.08,
+                                     5,
+                                     5,
+                                     alpha=18)
 #print(type(gaps_gdf))
-    print('Saving gaps')
+print('Saving gaps')
 #    print(gaps_gdf)
-    gaps_gdf.to_file('./moldova_w04_l08_i5_a18.geojson', driver='GeoJSON')
+gaps_gdf.to_file('./moldova_w04_l08_i5_a18.geojson', driver='GeoJSON')
 #gaps_gdf.to_postgis('mask', open_con, if_exists='replace',schema='bfe')
-except Exception as e:
-    print("run 1 didn't work")
-    print(e)
+#except Exception as e:
+#    print("run 1 didn't work")
+#    print(e)
 
 #try:
 #    gaps_gdf2 = mind_the_gap.mind_the_gap(all_points_gdf,
