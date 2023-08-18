@@ -59,10 +59,14 @@ class country(self, name, db_con):
         a : int
             Alpha value for alphashapes
         
+        Returns
+        -------
+        gaps : GeoDataFrame
+            Gaps produced by mind the gap
         """
         
         # Combine buildings and border chainage
-        all_points_gdf = gpd.GeoDataFrame(pd.concat([buildings,chainage_gdf],
+        all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,self.chainage_gdf],
                                                     ignore_index=True))
 
         # Execute mind the gap
@@ -78,15 +82,38 @@ class country(self, name, db_con):
         
         return gaps
 
-    def self.fit_check(gaps, points):
+    def self.fit_check(gaps):
         """Checks how well the gaps fit the data
         
         Parameters
         ----------
         gaps : GeoDataFrame
             Gaps to check
-        points : GeoDataFrame
-            Building centroids
         
         """
+
+        # Check proportion of buildings in the gaps
+
+        # Check open space filled by gaps
+
+        # Decision
+
+    def self.prog():
+        """Iterates through parameters until a good set is settled on"""
+
+        # Starting params
+        w = 1
+        ln_ration = 2
+        i = 3
+        a =20
+
+        # Begin running
+        while True:
+            try:
+                gaps = self.mind(w, ln_ratio, i, a)
+            except:
+                # Skip to update parameters
+            
+            # Evaluate
+            if self.fit_check(gaps)
 
