@@ -78,16 +78,15 @@ class country(self, name, db_con):
         
         return gaps
 
-        def self.fit_check(gaps, points):
-            """Checks how well the gaps fit the data
-            
-            Parameters
-            ----------
-            gaps : GeoDataFrame
-                Gaps to check
-            points : GeoDataFrame
-                Building centroids
-            
-            """
-
+    def self.fit_check(gaps, points):
+        """Checks how well the gaps fit the data
         
+        Parameters
+        ----------
+        gaps : GeoDataFrame
+            Gaps to check
+        points : GeoDataFrame
+            Building centroids
+        
+        """
+
