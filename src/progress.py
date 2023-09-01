@@ -59,10 +59,6 @@ class country(self, name, db_con):
         a : int
             Alpha value for alphashapes
         
-        Returns
-        -------
-        gaps : GeoDataFrame
-            Gaps produced by mind the gap
         """
         
         # Combine buildings and border chainage
@@ -71,29 +67,28 @@ class country(self, name, db_con):
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
-        gaps = mind_the_gap.mind_the_gap(all_points_gdf, 
-                                         w,
-                                         w,
-                                         l,
-                                         l,
-                                         i,
-                                         i,
-                                         alpha=a)
-        
-        return gaps
+        self.gaps = mind_the_gap.mind_the_gap(all_points_gdf, 
+                                              w,
+                                              w,
+                                              l,
+                                              l,
+                                              i,
+                                              i,
+                                              alpha=a)
 
-    def self.fit_check(gaps):
+    def self.fit_check(in_gaps_thresh, space_thresh):
         """Checks how well the gaps fit the data
         
         Parameters
         ----------
-        gaps : GeoDataFrame
-            Gaps to check
-        
+        in_gaps_thresh : float
+            Threshold for the proportion of buildigns allwoed in gaps
+        space_thresh : float
+            Threshold for the amoutn of open space to take up 
         """
 
         # Check proportion of buildings in the gaps
-
+        in_gaps = self.gaps.intersection(self.buildings)
         # Check open space filled by gaps
 
         # Decision
