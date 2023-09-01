@@ -98,17 +98,29 @@ class country(self, name, db_con):
 
         # Starting params
         w = 1
-        ln_ration = 2
+        ln_ratio = 2
         i = 3
         a =20
+
+        past_gaps = []
+        these_params = [w, ln_ratio, i, a]
+        past_params = []
 
         # Begin running
         while True:
             try:
-                gaps = self.mind(w, ln_ratio, i, a)
+                self.mind(w, ln_ratio, i, a)
             except:
                 # Skip to update parameters
             
             # Evaluate
-            if self.fit_check(gaps)
+            if self.fit_check(gaps):
+                break
+            
+            # Hold onto parameters and gaps
+            past_gaps.append(self.gaps)
+            past_params.append(self.gaps)
+            # Update parameters
+            w = w - 0.02
+            # How to decide when/how to update which parameter?
 
