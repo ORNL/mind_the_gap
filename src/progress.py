@@ -45,7 +45,7 @@ class country(self, name, db_con):
                                               open_con,
                                               geom_col='geometry')
 
-    def self.mind(w, ln_ratio, i, a):
+    def mind(w, ln_ratio, i, a):
         """Execute mind the gap
         
         Parameters
@@ -76,7 +76,7 @@ class country(self, name, db_con):
                                               i,
                                               alpha=a)
 
-    def self.fit_check(in_gaps_thresh, space_thresh):
+    def fit_check(in_gaps_thresh, space_thresh):
         """Checks how well the gaps fit the data
         
         Parameters
@@ -93,7 +93,7 @@ class country(self, name, db_con):
 
         # Decision
 
-    def self.prog():
+    def prog():
         """Iterates through parameters until a good set is settled on"""
 
         # Starting params
@@ -111,6 +111,9 @@ class country(self, name, db_con):
             try:
                 self.mind(w, ln_ratio, i, a)
             except:
+                # Update paramters
+                w = w - 0.02
+                continue
                 # Skip to update parameters
             
             # Evaluate
