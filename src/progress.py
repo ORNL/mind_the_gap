@@ -31,23 +31,23 @@ class country:
         boundaries_qry = f"""SELECT st_multi(st_buffer(geom,0.2)) as geom 
                             FROM boundary.admin0
                             WHERE country = '{self.name}'"""
-        boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
-                                                   db_con,
-                                                   geom_col='geom')
-        boundaries = ([boundaries.boundary][0])[0]
+        self.boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
+                                                        db_con,
+                                                        geom_col='geom')
+        self.boundaries = ([self.boundaries.boundary][0])[0]
 
         # Generate chainage
-        bnd_chain = chainage(boundaries, 0.01)
-        chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
+        bnd_chain = chainage(self.boundaries, 0.01)
+        self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
 
         # Load buildings 
         buildings_qry = f"""SELECT ST_Centroid(geom) as geometry
                             FROM microsoft.{self.name}"""
-        buildings = gpd.GeoDataFrame.from_postgis(buildings_qry,
-                                                  db_con,
-                                                  geom_col='geometry')
+        self.buildings = gpd.GeoDataFrame.from_postgis(buildings_qry,
+                                                       db_con,
+                                                       geom_col='geometry')
 
-    def mind(w, ln_ratio, i, a):
+    def mind(self,w, ln_ratio, i, a):
         """Execute mind the gap
     
         Parameters
