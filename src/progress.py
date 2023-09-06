@@ -4,7 +4,7 @@ import geopandas as gpd
 from sqlalchemy import create_engine
 
 import mind_the_gap
-import chainage
+from chainage import chainage
 
 # Country object
 class country:
@@ -31,7 +31,7 @@ class country:
                             FROM boundary.admin0
                             WHERE country = '{self.name}'"""
         boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
-                                                   open_con,
+                                                   db_con,
                                                    geom_col='geom')
         boundaries = ([boundaries.boundary][0])[0]
 
@@ -41,7 +41,7 @@ class country:
 
         # Load buildings 
         buildings_qry = f"""SELECT ST_Centroid(geom) as geometry
-                            FROM microsoft.{self.country}"""
+                            FROM microsoft.{self.name}"""
         buildings = gpd.GeoDataFrame.from_postgis(buildings_qry,
                                                   db_con,
                                                   geom_col='geometry')
