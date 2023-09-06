@@ -1,6 +1,7 @@
 """Execute Mind the Gap with automated parameter selection"""
 
 import geopandas as gpd
+import pandas as pd
 from sqlalchemy import create_engine
 
 import mind_the_gap
@@ -46,85 +47,84 @@ class country:
                                                   db_con,
                                                   geom_col='geometry')
 
-        def mind(w, ln_ratio, i, a):
-            """Execute mind the gap
+    def mind(w, ln_ratio, i, a):
+        """Execute mind the gap
+    
+        Parameters
+        ----------
+        w : float
+            Width of the strips
+        ln_ratio : float
+            Ratio of strip length to width
+        i : int
+            Minimum number of intersections
+        a : int
+            Alpha value for alphashapes
         
-            Parameters
-            ----------
-            w : float
-                Width of the strips
-            ln_ratio : float
-                Ratio of strip length to width
-            i : int
-                Minimum number of intersections
-            a : int
-                Alpha value for alphashapes
+        """
         
-            """
+        # Combine buildings and border chainage
+        all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,self.chainage_gdf],
+                                                    ignore_index=True))
+
+        # Execute mind the gap
+        l = w * ln_ratio + (w / 4)
+        self.gaps = mind_the_gap.mind_the_gap(all_points_gdf, 
+                                              w,
+                                              w,
+                                              l,
+                                              l,
+                                              i,
+                                              i,
+                                              alpha=a)
+
+    def fit_check(in_gaps_thresh, space_thresh):
+        """Checks how well the gaps fit the data
         
-            # Combine buildings and border chainage
-            all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,self.chainage_gdf],
-                                                        ignore_index=True))
+        Parameters
+        ----------
+        in_gaps_thresh : float
+            Threshold for the proportion of buildigns allwoed in gaps
+        space_thresh : float
+            Threshold for the amoutn of open space to take up 
+        """
 
-            # Execute mind the gap
-            l = w * ln_ratio + (w / 4)
-            self.gaps = mind_the_gap.mind_the_gap(all_points_gdf, 
-                                                  w,
-                                                  w,
-                                                  l,
-                                                  l,
-                                                  i,
-                                                  i,
-                                                  alpha=a)
+        # Check proportion of buildings in the gaps
+        in_gaps = self.gaps.intersection(self.buildings)
+        # Check open space filled by gaps
 
-        def fit_check(in_gaps_thresh, space_thresh):
-            """Checks how well the gaps fit the data
+        # Decision
 
-            Parameters
-            ----------
-            in_gaps_thresh : float
-                Threshold for the proportion of buildigns allwoed in gaps
-            space_thresh : float
-                Threshold for the amoutn of open space to take up 
-            """
+    def prog():
+        """Iterates through parameters until a good set is settled on"""
 
-            # Check proportion of buildings in the gaps
-            in_gaps = self.gaps.intersection(self.buildings)
-            # Check open space filled by gaps
+        # Starting params
+        w = 1
+        ln_ratio = 2
+        i = 3
+        a =20
 
-            # Decision
+        past_gaps = []
+        these_params = [w, ln_ratio, i, a]
+        past_params = []
 
-        def prog():
-            """Iterates through parameters until a good set is settled on"""
-
-            # Starting params
-            w = 1
-            ln_ratio = 2
-            i = 3
-            a =20
-
-            past_gaps = []
-            these_params = [w, ln_ratio, i, a]
-            past_params = []
-
-            # Begin running
-            while True:
-                try:
-                    self.mind(w, ln_ratio, i, a)
-                except:
-                    # Update paramters
-                    w = w - 0.02
-                    continue
-                    # Skip to update parameters
-            
-                # Evaluate
-                if self.fit_check(gaps):
-                    break
-            
-                # Hold onto parameters and gaps
-                past_gaps.append(self.gaps)
-                past_params.append(self.gaps)
-                # Update parameters
+        # Begin running
+        while True:
+            try:
+                self.mind(w, ln_ratio, i, a)
+            except:
+                # Update paramters
                 w = w - 0.02
-                # How to decide when/how to update which parameter?
+                continue
+                # Skip to update parameters
+            
+            # Evaluate
+            if self.fit_check(gaps):
+                break
+                # Hold onto parameters and gaps
+            past_gaps.append(self.gaps)
+            past_params.append(self.gaps)
+            # Update parameters
+            w = w - 0.02
+            # How to decide when/how to update which parameter?
 
