@@ -91,10 +91,10 @@ class country:
 
         # Check proportion of buildings in the gaps
         gaps_series = self.gaps.geometry
-        print(gaps_series)
         buildings_series = self.buildings.geometry
         in_gaps = gaps_series.intersection(buildings_series)
-        print(in_gaps)
+        print(in_gaps.size)
+        print(buildings_series.size)
         # Check open space filled by gaps
 
         # Decision
