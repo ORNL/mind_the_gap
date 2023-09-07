@@ -131,4 +131,5 @@ class country:
             # Update parameters
             w = w - 0.02
             # How to decide when/how to update which parameter?
+            # Perhaps once width drops beneath a certain threshold we increase intersections
 
