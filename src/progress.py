@@ -78,7 +78,7 @@ class country:
                                               i,
                                               alpha=a)
 
-    def fit_check(in_gaps_thresh, space_thresh):
+    def fit_check(self,in_gaps_thresh, space_thresh):
         """Checks how well the gaps fit the data
         
         Parameters
@@ -90,7 +90,11 @@ class country:
         """
 
         # Check proportion of buildings in the gaps
-        in_gaps = self.gaps.intersection(self.buildings)
+        gaps_series = self.gaps.geometry
+        print(gaps_series)
+        buildings_series = self.buildings.geometry
+        in_gaps = gaps_series.intersection(buildings_series)
+        print(in_gaps)
         # Check open space filled by gaps
 
         # Decision
