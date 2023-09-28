@@ -92,7 +92,9 @@ class country:
         # Check proportion of buildings in the gaps
         gaps_series = self.gaps.geometry
         buildings_series = self.buildings.geometry
-        in_gaps = gaps_series.intersection(buildings_series)
+        #in_gaps = gaps_series.intersect(buildings_series)
+        gaps_multi = gaps_series.unary_union
+        in_gaps = self.buildings.sjoin(self.gaps, how='inner')
         print(in_gaps.size)
         print(buildings_series.size)
         # Check open space filled by gaps
@@ -125,7 +127,7 @@ class country:
             # Evaluate
             if self.fit_check(gaps):
                 break
-                # Hold onto parameters and gaps
+                # Hold onto parameters and gaps and metrics
             past_gaps.append(self.gaps)
             past_params.append(self.gaps)
             # Update parameters
