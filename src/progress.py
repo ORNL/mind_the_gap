@@ -101,7 +101,7 @@ class country:
 
         # Decision
 
-    def prog():
+    def prog(self):
         """Iterates through parameters until a good set is settled on"""
 
         # Starting params
@@ -114,6 +114,7 @@ class country:
         these_params = [w, ln_ratio, i, a]
         past_params = []
 
+        """
         # Begin running
         while True:
             try:
@@ -134,4 +135,29 @@ class country:
             w = w - 0.02
             # How to decide when/how to update which parameter?
             # Perhaps once width drops beneath a certain threshold we increase intersections
+        """
+        
+        for i in range(5):
+            try: 
+                self.mind(w, ln_ratio, i, a)
+                print('that worked')
+            except Exception as e:
+                print(e)
+                               # Update paramters
+                w = w - 0.02
+                continue
+                # Skip to update parameters
+            
+            # Evaluate
+            #if self.fit_check(gaps):
+            #   break
+                # Hold onto parameters and gaps and metrics
+            past_gaps.append(self.gaps)
+            past_params.append(w)
+            # Update parameters
+            w = w - 0.02
+            # How to decide when/how to update which parameter?
+            # Perhaps once width drops beneath a certain threshold we increase intersections
 
+        print(past_gaps)
+        print(past_params)
