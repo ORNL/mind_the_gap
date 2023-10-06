@@ -57,17 +57,15 @@ class country:
             print('boundaries loaded')
 
             # Load grid
-            grid_qry = f"""With env as (
-                           SELECT ST_Envelope(st_buffer(geom,0.2))
+            grid_qry = f"""SELECT ST_SquareGrid(0.00083333333333,geom) as geom
                            FROM boundary.admin0
                            WHERE country = '{self.name}'
-                           )
-                           SELECT (ST_SquareGrid(0.00083333333333,env) as geom
                            """
             self.grid = gpd.GeoDataFrame.from_postgis(boundaries_qry,
                                                       db_con,
                                                       geom_col = 'geom')
             print(self.grid)
+            self.grid.to_file('./grid.geojson',driver='GeoJSON')
         print('boundaries and grid loaded')
 
         # Generate chainage
