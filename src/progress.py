@@ -48,26 +48,44 @@ class country:
 
             # Load boundaries
             boundaries_qry = f"""SELECT st_multi(st_buffer(geom,0.2)) as geom 
-                                FROM boundary.admin0
-                                WHERE country = '{self.name}'"""
+                                 FROM boundary.admin0
+                                 WHERE country = '{self.name}'"""
             self.boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
                                                             db_con,
                                                             geom_col='geom')
             self.boundaries = ([self.boundaries.boundary][0])[0]
+            print('boundaries loaded')
+
+            # Load grid
+            grid_qry = f"""With env as (
+                           SELECT ST_Envelope(st_buffer(geom,0.2))
+                           FROM boundary.admin0
+                           WHERE country = '{self.name}'
+                           )
+                           SELECT (ST_SquareGrid(0.00083333333333,env) as geom
+                           """
+            self.grid = gpd.GeoDataFrame.from_postgis(boundaries_qry,
+                                                      db_con,
+                                                      geom_col = 'geom')
+            print(self.grid)
+        print('boundaries and grid loaded')
 
         # Generate chainage
         bnd_chain = chainage(self.boundaries, 0.01)
         self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
+        print('chainage done')
 
         # Load buildings 
         if build_from_file:
             self.buildings = gpd.read_file(build_path)
         else:
             buildings_qry = f"""SELECT ST_Centroid(geom) as geometry
-                             FROM microsoft.{self.name}"""
+                                FROM microsoft.{self.name}"""
             self.buildings = gpd.GeoDataFrame.from_postgis(buildings_qry,
                                                            db_con,
                                                            geom_col='geometry')
+
+        print('buildings loaded')
 
     def mind(self,w, ln_ratio, i, a):
         """Execute mind the gap
@@ -119,13 +137,15 @@ class country:
         in_gaps = self.buildings.sjoin(self.gaps, how='inner')
         print(in_gaps.size)
         print(buildings_series.size)
+        
         # Check open space filled by gaps
-
+        # Total open space
         # Decision
 
     def prog(self):
         """Iterates through parameters until a good set is settled on"""
 
+        print('proging')
         # Starting params
         w = 0.02
         ln_ratio = 2
@@ -160,11 +180,13 @@ class country:
         """
         
         for i in range(5):
-            try: 
+            try:
+                print('trying to mind') 
                 self.mind(w, ln_ratio, i, a)
                 print('that worked')
             except Exception as e:
                 print(e)
+                print('that shit broke updating parameters')
                                # Update paramters
                 w = w - 0.02
                 continue
@@ -175,7 +197,7 @@ class country:
             #   break
                 # Hold onto parameters and gaps and metrics
             past_gaps.append(self.gaps)
-            past_params.append(w)
+            past_params.append(these_params)
             # Update parameters
             w = w - 0.02
             # How to decide when/how to update which parameter?
