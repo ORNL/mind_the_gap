@@ -9,7 +9,13 @@ from chainage import chainage
 
 # Country object
 class country:
-    def __init__(self, name, db_con):
+    def __init__(self, 
+                 name, 
+                 db_con, 
+                 bound_path='', 
+                 build_path='',
+                 bound_from_file=False, 
+                 build_from_file=False):
         """The country we are running Mind the Gap on
     
         Parameters
@@ -18,34 +24,50 @@ class country:
             Name of the country as used in the database
         db_con : String
             String used to establis database connection
-        
+        bound_path : String
+            Optional path to load boundaries from file
+        build_path : String
+            Optional path to load boundaries from file
+        bound_from_file : boolean
+            Use path to load boundaries or not
+        build_from_file : boolean
+            Use path to load buildings or not
+
         """
 
         self.name = name
         self.db_con = db_con
-
-        # Establish database connection
-        con = create_engine(self.db_con)
-
+        
         # Load boundaries
-        boundaries_qry = f"""SELECT st_multi(st_buffer(geom,0.2)) as geom 
-                            FROM boundary.admin0
-                            WHERE country = '{self.name}'"""
-        self.boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
-                                                        db_con,
-                                                        geom_col='geom')
-        self.boundaries = ([self.boundaries.boundary][0])[0]
+        if bound_from_file:
+            self.boundaries = gpd.read_file(bound_path)
+            self.boundaries = self.boundaries['geometry'][0]
+        else:
+            # Establish database connection
+            con = create_engine(self.db_con)
+
+            # Load boundaries
+            boundaries_qry = f"""SELECT st_multi(st_buffer(geom,0.2)) as geom 
+                                FROM boundary.admin0
+                                WHERE country = '{self.name}'"""
+            self.boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
+                                                            db_con,
+                                                            geom_col='geom')
+            self.boundaries = ([self.boundaries.boundary][0])[0]
 
         # Generate chainage
         bnd_chain = chainage(self.boundaries, 0.01)
         self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
 
         # Load buildings 
-        buildings_qry = f"""SELECT ST_Centroid(geom) as geometry
-                            FROM microsoft.{self.name}"""
-        self.buildings = gpd.GeoDataFrame.from_postgis(buildings_qry,
-                                                       db_con,
-                                                       geom_col='geometry')
+        if build_from_file:
+            self.buildings = gpd.read_file(build_path)
+        else:
+            buildings_qry = f"""SELECT ST_Centroid(geom) as geometry
+                             FROM microsoft.{self.name}"""
+            self.buildings = gpd.GeoDataFrame.from_postgis(buildings_qry,
+                                                           db_con,
+                                                           geom_col='geometry')
 
     def mind(self,w, ln_ratio, i, a):
         """Execute mind the gap
@@ -105,9 +127,9 @@ class country:
         """Iterates through parameters until a good set is settled on"""
 
         # Starting params
-        w = 1
+        w = 0.02
         ln_ratio = 2
-        i = 3
+        i = 2
         a =20
 
         past_gaps = []
