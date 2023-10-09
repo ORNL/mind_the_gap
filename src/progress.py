@@ -68,8 +68,8 @@ class country:
             self.grid = gpd.GeoDataFrame.from_postgis(boundaries_qry,
                                                       db_con,
                                                       geom_col = 'geom')
-        print(self.grid)
-        self.grid.to_file('./grid.geojson',driver='GeoJSON')
+        #print(self.grid)
+        #self.grid.to_file('./grid.geojson',driver='GeoJSON')
         print('boundaries and grid loaded')
 
         # Generate chainage
@@ -111,6 +111,7 @@ class country:
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
+        print('calling mtg')
         self.gaps = mind_the_gap.mind_the_gap(all_points_gdf, 
                                               w,
                                               w,
@@ -119,6 +120,7 @@ class country:
                                               i,
                                               i,
                                               alpha=a)
+        print('mtg ran')
 
     def fit_check(self,in_gaps_thresh, space_thresh):
         """Checks how well the gaps fit the data
@@ -149,13 +151,13 @@ class country:
 
         print('proging')
         # Starting params
-        w = 0.02
-        ln_ratio = 2
-        i = 2
-        a =20
+        _w = 0.015
+        _ln_ratio = 2
+        _i = 3
+        _a = 15
 
         past_gaps = []
-        these_params = [w, ln_ratio, i, a]
+        these_params = [_w, _ln_ratio, _i, _a]
         past_params = []
 
         """
@@ -182,8 +184,12 @@ class country:
         """
         
         for i in range(5):
-            try:
-                print('trying to mind') 
+            print('trying to mind')
+            self.mind(_w, _ln_ratio, _i, _a)
+            print(self.gaps)
+            break
+            """try:
+                print('trying to mind')
                 self.mind(w, ln_ratio, i, a)
                 print('that worked')
             except Exception as e:
@@ -193,7 +199,7 @@ class country:
                 w = w - 0.02
                 continue
                 # Skip to update parameters
-            
+            """
             # Evaluate
             #if self.fit_check(gaps):
             #   break
@@ -201,7 +207,7 @@ class country:
             past_gaps.append(self.gaps)
             past_params.append(these_params)
             # Update parameters
-            w = w - 0.02
+            _w = _w - 0.02
             # How to decide when/how to update which parameter?
             # Perhaps once width drops beneath a certain threshold we increase intersections
 
