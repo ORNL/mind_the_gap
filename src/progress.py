@@ -112,15 +112,20 @@ class country:
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
         print('calling mtg')
-        self.gaps = mind_the_gap.mind_the_gap(all_points_gdf, 
-                                              w,
-                                              w,
-                                              l,
-                                              l,
-                                              i,
-                                              i,
-                                              alpha=a)
-        print('mtg ran')
+        try:
+            self.gaps = mind_the_gap.mind_the_gap(all_points_gdf, 
+                                                  w,
+                                                  w,
+                                                  l,
+                                                  l,
+                                                  i,
+                                                  i,
+                                                  alpha=a)
+            print('mtg ran')
+        except Exception as e:
+            print(e)
+            print('somehing broke setting gaps to []')
+            self.gaps = []
 
     def fit_check(self,in_gaps_thresh, space_thresh):
         """Checks how well the gaps fit the data
@@ -151,7 +156,7 @@ class country:
 
         print('proging')
         # Starting params
-        _w = 0.015
+        _w = 0.03
         _ln_ratio = 2
         _i = 3
         _a = 15
@@ -184,10 +189,16 @@ class country:
         """
         
         for i in range(5):
+            
+            print(these_params)
+            # Check if any parameters have become negative
+            if min(these_params) <=0:
+                break
+            
             print('trying to mind')
             self.mind(_w, _ln_ratio, _i, _a)
-            print(self.gaps)
-            break
+            
+            self.fit_check(1,1)
             """try:
                 print('trying to mind')
                 self.mind(w, ln_ratio, i, a)
@@ -207,7 +218,8 @@ class country:
             past_gaps.append(self.gaps)
             past_params.append(these_params)
             # Update parameters
-            _w = _w - 0.02
+            _w = _w - 0.005
+            these_params = [_w, _ln_ratio, _i, _a]
             # How to decide when/how to update which parameter?
             # Perhaps once width drops beneath a certain threshold we increase intersections
 
