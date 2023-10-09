@@ -37,7 +37,8 @@ class country:
 
         self.name = name
         self.db_con = db_con
-        
+        self.gaps = []
+
         # Load boundaries
         if bound_from_file:
             self.boundaries = gpd.read_file(bound_path)
@@ -156,7 +157,7 @@ class country:
 
         print('proging')
         # Starting params
-        _w = 0.03
+        _w = 0.015
         _ln_ratio = 2
         _i = 3
         _a = 15
