@@ -90,7 +90,7 @@ class country:
 
         print('buildings loaded')
 
-    def grid(size):
+    def make_grid(self, size):
         """Make grid to check gap completeness
         
         Parameters
@@ -100,7 +100,7 @@ class country:
             
         """
 
-    def mind(self,w, ln_ratio, i, a):
+    def mind(self, w, ln_ratio, i, a):
         """Execute mind the gap
     
         Parameters
