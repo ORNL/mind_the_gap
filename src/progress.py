@@ -191,15 +191,25 @@ class country:
         
         for i in range(5):
             
-            print(these_params)
+            #print(these_params)
             # Check if any parameters have become negative
             if min(these_params) <=0:
                 break
             
-            print('trying to mind')
-            self.mind(_w, _ln_ratio, _i, _a)
+            _is = [2,3,4]
+
+            for i in _is:
+                self.mind(_w, _ln_ratio, i, _a)
+
+                self.fit_check(1,1)
+                past_gaps.append(self.gaps)
+                these_params = [_w,_ln_ratio,i,_a]
+                past_params.append(these_params)
+
+            #print('trying to mind')
+            #self.mind(_w, _ln_ratio, _i, _a)
             
-            self.fit_check(1,1)
+            #self.fit_check(1,1)
             """try:
                 print('trying to mind')
                 self.mind(w, ln_ratio, i, a)
@@ -216,11 +226,11 @@ class country:
             #if self.fit_check(gaps):
             #   break
                 # Hold onto parameters and gaps and metrics
-            past_gaps.append(self.gaps)
-            past_params.append(these_params)
+            #past_gaps.append(self.gaps)
+            #past_params.append(these_params)
             # Update parameters
             _w = _w - 0.005 # It would be reasonable to set a floor
-            these_params = [_w, _ln_ratio, _i, _a]
+            #these_params = [_w, _ln_ratio, _i, _a]
             # How to decide when/how to update which parameter?
             # Perhaps once width drops beneath a certain threshold we increase intersections
             # Intersections is typically going to be two or three, sometimes higher
