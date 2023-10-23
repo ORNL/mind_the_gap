@@ -219,10 +219,12 @@ class country:
             past_gaps.append(self.gaps)
             past_params.append(these_params)
             # Update parameters
-            _w = _w - 0.005
+            _w = _w - 0.005 # It would be reasonable to set a floor
             these_params = [_w, _ln_ratio, _i, _a]
             # How to decide when/how to update which parameter?
             # Perhaps once width drops beneath a certain threshold we increase intersections
+            # Intersections is typically going to be two or three, sometimes higher
+            # So fo each w step we could just do runs for i = [2:4]
 
         print(past_gaps)
         print(past_params)
