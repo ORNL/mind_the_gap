@@ -45,7 +45,10 @@ class country:
         if bound_from_file:
             self.boundaries = gpd.read_file(bound_path)
             self.boundaries_shape = self.boundaries
-            self.boundaries = self.boundaries['geometry'][0]
+            #self.boundaries = self.boundaries['geometry'][0]
+            self.boundaries = ([self.boundaries.boundary][0])[0]
+            print(self.boundaries_shape)
+
         else:
             # Establish database connection
             con = create_engine(self.db_con)
