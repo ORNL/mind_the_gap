@@ -3,6 +3,8 @@
 import geopandas as gpd
 import pandas as pd
 from sqlalchemy import create_engine
+import numpy as np
+from shapely import geometry
 
 import mind_the_gap
 from chainage import chainage
@@ -54,6 +56,7 @@ class country:
             self.boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
                                                             db_con,
                                                             geom_col='geom')
+            self.boundaries_shape = self.boundaries
             self.boundaries = ([self.boundaries.boundary][0])[0]
             print('boundaries loaded')
 
@@ -90,7 +93,7 @@ class country:
 
         print('buildings loaded')
 
-    def make_grid(self, size):
+    def make_grid(self, size=0.05):
         """Make grid to check gap completeness
         
         Parameters
@@ -99,6 +102,32 @@ class country:
             Size of each grid cell
             
         """
+
+        bounds = self.boundaries.bounds
+
+        min_x = bounds[0]
+        min_y = bounds[1]
+        max_x = bounds[2]
+        max_y = bounds[3]
+
+        cols = list(np.arange(min_x, max_x + size, size))
+        rows = list(np.arange(min_y, max_y + size, size))
+
+        polygons = []
+        for x in cols[:-1]:
+            for y in rows[:-1]:
+                polygons.append(geometry.Polygon([(x,y), 
+                                                  (x + size, y),
+                                                  (x + size, y + size),
+                                                  (x, y + size)]))
+        grid = gpd.GeoDataFrame({'geometry':polygons},crs='EPSG:4326')
+        
+        # Clip grid to country extent
+        grid = gpd.clip(grid, self.boundaries_shape)
+        
+        self.grid = grid
+
+
 
     def mind(self, w, ln_ratio, i, a):
         """Execute mind the gap
