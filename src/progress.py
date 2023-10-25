@@ -45,7 +45,6 @@ class country:
         if bound_from_file:
             self.boundaries = gpd.read_file(bound_path)
             self.boundaries_shape = self.boundaries
-            #self.boundaries = self.boundaries['geometry'][0]
             self.boundaries = ([self.boundaries.boundary][0])[0]
             print(self.boundaries_shape)
 
@@ -198,28 +197,6 @@ class country:
         these_params = [_w, _ln_ratio, _i, _a]
         past_params = []
 
-        """
-        # Begin running
-        while True:
-            try:
-                self.mind(w, ln_ratio, i, a)
-            except:
-                # Update paramters
-                w = w - 0.02
-                continue
-                # Skip to update parameters
-            
-            # Evaluate
-            if self.fit_check(gaps):
-                break
-                # Hold onto parameters and gaps and metrics
-            past_gaps.append(self.gaps)
-            past_params.append(self.gaps)
-            # Update parameters
-            w = w - 0.02
-            # How to decide when/how to update which parameter?
-            # Perhaps once width drops beneath a certain threshold we increase intersections
-        """
         
         for i in range(5):
             
