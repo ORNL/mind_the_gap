@@ -44,6 +44,7 @@ class country:
         # Load boundaries
         if bound_from_file:
             self.boundaries = gpd.read_file(bound_path)
+            self.boundaries_shape = self.boundaries
             self.boundaries = self.boundaries['geometry'][0]
         else:
             # Establish database connection
@@ -132,14 +133,15 @@ class country:
         """
         
         # Combine buildings and border chainage
-        all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,self.chainage_gdf],
-                                                    ignore_index=True))
+        self.all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,
+                                                          self.chainage_gdf],
+                                                         ignore_index=True))
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
         print('calling mtg')
         try:
-            self.gaps = mind_the_gap.mind_the_gap(all_points_gdf, 
+            self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf, 
                                                   w,
                                                   w,
                                                   l,
@@ -173,6 +175,8 @@ class country:
         print(in_gaps.size)
         print(buildings_series.size)
         
+        # Get open space or grid cells
+        self.open_grid = self.grid.overlay(self.all_points_gdf, how='difference')
         # Check open space filled by gaps
         # Total open space
         # Decision
