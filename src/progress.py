@@ -178,11 +178,13 @@ class country:
         print(buildings_series.size)
         
         # Get open space or grid cells
-        joined_grid = gpd.sjoin(self.grid, 
-                                self.all_points_gdf, 
-                                how='left', 
+        joined_grid = gpd.sjoin(self.grid,
+                                self.all_points_gdf,
+                                how='left',
                                 predicate='contains')
-        # Need to then select all the grid cells in this join that have NULL index_right to get the empty grid cells
+        print(joined_grid)
+        self.empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
+        
         # Check open space filled by gaps
         # Total open space
         # Decision
