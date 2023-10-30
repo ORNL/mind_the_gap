@@ -40,6 +40,8 @@ class country:
         self.name = name
         self.db_con = db_con
         self.gaps = []
+        self.grid = []
+
 
         # Load boundaries
         if bound_from_file:
@@ -81,6 +83,10 @@ class country:
                                                            geom_col='geometry')
 
         print('buildings loaded')
+        
+        # Make grid
+        print('making grid')
+        self.make_grid()
 
     def make_grid(self, size=0.05):
         """Make grid to check gap completeness
@@ -191,9 +197,9 @@ class country:
         
 
         area_ratio = (gaps_in_empty_grid_area / empty_grid_area)
-        # Check open space filled by gaps
-        # Total open space
+        print(area_ratio)
         # Decision
+        # Should decision be boolean or say something about suggested parameter updates?
 
     def prog(self):
         """Iterates through parameters until a good set is settled on"""
