@@ -200,6 +200,7 @@ class country:
         print(area_ratio)
         # Decision
         # Should decision be boolean or say something about suggested parameter updates?
+        # Optimally fills, say 50-90% of open space and includes ver little amount of buildings
 
     def prog(self):
         """Iterates through parameters until a good set is settled on"""
