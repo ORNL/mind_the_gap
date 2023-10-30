@@ -182,9 +182,21 @@ class country:
                                 self.all_points_gdf,
                                 how='left',
                                 predicate='contains')
-        print(joined_grid)
-        self.empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
+        empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
+        empty_grid_area = sum(empty_grid['geometry'].area)
+        gaps_in_empty_grid = gpd.overlay(empty_grid, 
+                                         self.gaps, 
+                                         how='intersection')
+        gaps_in_empty_grid_area = sum(gaps_in_empty_grid['geometry'].area)
         
+        # Test just the pure gaps area
+        #gaps_area = sum(self.gaps['geometry'].area) I don't think we should use this because we care abut the right area
+
+        print(empty_grid_area)
+        print(gaps_in_empty_grid_area)
+        print((gaps_in_empty_grid_area / empty_grid_area))
+        print(gaps_area)
+        #print(gaps_area / empty_grid_area)
         # Check open space filled by gaps
         # Total open space
         # Decision
