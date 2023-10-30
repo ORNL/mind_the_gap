@@ -189,14 +189,8 @@ class country:
                                          how='intersection')
         gaps_in_empty_grid_area = sum(gaps_in_empty_grid['geometry'].area)
         
-        # Test just the pure gaps area
-        #gaps_area = sum(self.gaps['geometry'].area) I don't think we should use this because we care abut the right area
 
-        print(empty_grid_area)
-        print(gaps_in_empty_grid_area)
-        print((gaps_in_empty_grid_area / empty_grid_area))
-        print(gaps_area)
-        #print(gaps_area / empty_grid_area)
+        area_ratio = (gaps_in_empty_grid_area / empty_grid_area)
         # Check open space filled by gaps
         # Total open space
         # Decision
@@ -233,22 +227,7 @@ class country:
                 these_params = [_w,_ln_ratio,i,_a]
                 past_params.append(these_params)
 
-            #print('trying to mind')
-            #self.mind(_w, _ln_ratio, _i, _a)
             
-            #self.fit_check(1,1)
-            """try:
-                print('trying to mind')
-                self.mind(w, ln_ratio, i, a)
-                print('that worked')
-            except Exception as e:
-                print(e)
-                print('that shit broke updating parameters')
-                               # Update paramters
-                w = w - 0.02
-                continue
-                # Skip to update parameters
-            """
             # Evaluate
             #if self.fit_check(gaps):
             #   break
