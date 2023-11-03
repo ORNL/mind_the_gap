@@ -161,7 +161,7 @@ class country:
         except Exception as e:
             print(e)
             print('somehing broke setting gaps to []')
-            self.gaps = []
+            self.gaps = [] #This breaks fit_check
 
     def fit_check(self,in_gaps_thresh, space_thresh):
         """Checks how well the gaps fit the data
@@ -173,7 +173,7 @@ class country:
         space_thresh : float
             Threshold for the amoutn of open space to take up 
         """
-
+        print(self.gaps)
         # Check proportion of buildings in the gaps
         gaps_series = self.gaps.geometry
         buildings_series = self.buildings.geometry
@@ -228,7 +228,6 @@ class country:
 
             for i in _is:
                 self.mind(_w, _ln_ratio, i, _a)
-
                 self.fit_check(1,1)
                 past_gaps.append(self.gaps)
                 these_params = [_w,_ln_ratio,i,_a]
