@@ -48,7 +48,6 @@ class country:
             self.boundaries = gpd.read_file(bound_path)
             self.boundaries_shape = self.boundaries
             self.boundaries = ([self.boundaries.boundary][0])[0]
-            print(self.boundaries_shape)
 
         else:
             # Establish database connection
@@ -161,7 +160,7 @@ class country:
         except Exception as e:
             print(e)
             print('somehing broke setting gaps to []')
-            self.gaps = [] #This breaks fit_check
+            self.gaps = None #This breaks fit_check
 
     def fit_check(self,in_gaps_thresh, space_thresh):
         """Checks how well the gaps fit the data
@@ -173,34 +172,40 @@ class country:
         space_thresh : float
             Threshold for the amoutn of open space to take up 
         """
-        print(self.gaps)
-        # Check proportion of buildings in the gaps
-        gaps_series = self.gaps.geometry
-        buildings_series = self.buildings.geometry
-        #in_gaps = gaps_series.intersect(buildings_series)
-        gaps_multi = gaps_series.unary_union
-        in_gaps = self.buildings.sjoin(self.gaps, how='inner')
-        print(in_gaps.size)
-        print(buildings_series.size)
-        
-        # Get open space or grid cells
-        joined_grid = gpd.sjoin(self.grid,
-                                self.all_points_gdf,
-                                how='left',
-                                predicate='contains')
-        empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
-        empty_grid_area = sum(empty_grid['geometry'].area)
-        gaps_in_empty_grid = gpd.overlay(empty_grid, 
-                                         self.gaps, 
-                                         how='intersection')
-        gaps_in_empty_grid_area = sum(gaps_in_empty_grid['geometry'].area)
-        
 
-        area_ratio = (gaps_in_empty_grid_area / empty_grid_area)
-        print(area_ratio)
-        # Decision
-        # Should decision be boolean or say something about suggested parameter updates?
-        # Optimally fills, say 50-90% of open space and includes ver little amount of buildings
+        # First things first, check to make sure gaps aren't empty
+        print(type(self.gaps))
+        if self.gaps is None:
+            return False
+        else:
+            print(self.gaps)
+            # Check proportion of buildings in the gaps
+            gaps_series = self.gaps.geometry
+            buildings_series = self.buildings.geometry
+            #in_gaps = gaps_series.intersect(buildings_series)
+            gaps_multi = gaps_series.unary_union
+            in_gaps = self.buildings.sjoin(self.gaps, how='inner')
+            print(in_gaps.size)
+            print(buildings_series.size)
+        
+            # Get open space or grid cells
+            joined_grid = gpd.sjoin(self.grid,
+                                    self.all_points_gdf,
+                                    how='left',
+                                    predicate='contains')
+            empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
+            empty_grid_area = sum(empty_grid['geometry'].area)
+            gaps_in_empty_grid = gpd.overlay(empty_grid, 
+                                             self.gaps, 
+                                             how='intersection')
+            gaps_in_empty_grid_area = sum(gaps_in_empty_grid['geometry'].area)
+
+
+            area_ratio = (gaps_in_empty_grid_area / empty_grid_area) # I don't ge thow this is sometimes higher than 1
+            print(area_ratio)
+            # Decision
+            # Should decision be boolean or say something about suggested parameter updates?
+            # Optimally fills, say 50-90% of open space and includes ver little amount of buildings
 
     def prog(self):
         """Iterates through parameters until a good set is settled on"""
