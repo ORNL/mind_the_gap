@@ -11,12 +11,12 @@ from chainage import chainage
 
 # Country object
 class country:
-    def __init__(self, 
-                 name, 
-                 db_con, 
-                 bound_path='', 
+    def __init__(self,
+                 name,
+                 db_con,
+                 bound_path='',
                  build_path='',
-                 bound_from_file=False, 
+                 bound_from_file=False,
                  build_from_file=False):
         """The country we are running Mind the Gap on
     
@@ -148,7 +148,7 @@ class country:
         l = w * ln_ratio + (w / 4)
         print('calling mtg')
         try:
-            self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf, 
+            self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf,
                                                   w,
                                                   w,
                                                   l,
@@ -195,14 +195,21 @@ class country:
                                     predicate='contains')
             empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
             empty_grid_area = sum(empty_grid['geometry'].area)
-            gaps_in_empty_grid = gpd.overlay(empty_grid, 
-                                             self.gaps, 
+            gaps_in_empty_grid = gpd.overlay(empty_grid, # sjoin might be better
+                                             self.gaps,
                                              how='intersection')
-            gaps_in_empty_grid_area = sum(gaps_in_empty_grid['geometry'].area)
-
+            gaps_in_empty_grid = gaps_in_empty_grid.unary_union # This dissolves the doubled geometries from overlay
+            # gaps_in_empty_grid_area = sum(gaps_in_empty_grid['geometry'].area)
+            gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
             area_ratio = (gaps_in_empty_grid_area / empty_grid_area) # I don't ge thow this is sometimes higher than 1
             print(area_ratio)
+            '''
+            if area_ratio < 1:
+                empty_grid.to_file('./empty_grid.geojson', driver = 'GeoJSON')
+                gaps_in_empty_grid.to_file('./gaps_in_empty_grid.geojson', driver = 'GeoJSON')
+                return True
+            '''
             # Decision
             # Should decision be boolean or say something about suggested parameter updates?
             # Optimally fills, say 50-90% of open space and includes ver little amount of buildings
@@ -233,7 +240,9 @@ class country:
 
             for i in _is:
                 self.mind(_w, _ln_ratio, i, _a)
-                self.fit_check(1,1)
+                if self.fit_check(1,1):
+                    self.gaps.to_file('./gaps.geojson', driver = 'GeoJSON')
+                
                 past_gaps.append(self.gaps)
                 these_params = [_w,_ln_ratio,i,_a]
                 past_params.append(these_params)
