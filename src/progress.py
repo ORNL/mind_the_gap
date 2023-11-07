@@ -87,7 +87,7 @@ class country:
         print('making grid')
         self.make_grid()
 
-    def make_grid(self, size=0.05):
+    def make_grid(self, size=0.02):
         """Make grid to check gap completeness
         
         Parameters
