@@ -229,18 +229,18 @@ class country:
             _is = [2,3,4]
 
             for i in _is:
-                self.mind(_w, _ln_ratio, i, a)
+                self.mind(_w, _ln_ratio, i, _a)
                 
                 fit = self.fit_check()
 
                 if fit:
                     print('gaps found')
-                    these_params = [_w, _ln_ratio, i, a, self.in_gaps_ratio, self.area_ratio]
+                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
                     print(these_params)
                     break # Self.gaps will be our final gaps
                 else: #We will save the gaps and parameters and update
                     past_gaps.append(self.gaps)
-                    these_params = [_w, _ln_ratio, i, a, self.in_gaps_ratio, self.area_ratio]
+                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
                     past_params.append(these_params)
             
             if fit:
