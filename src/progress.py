@@ -176,13 +176,13 @@ class country:
         # First things first, check to make sure gaps aren't empty
         print(type(self.gaps))
         if self.gaps is None:
-            return 0, 0 
+            return False
         else:
             print(self.gaps)
             # Check proportion of buildings in the gaps
             buildings_series = self.buildings.geometry
             in_gaps = self.buildings.sjoin(self.gaps, how='inner')
-            in_gaps_ratio = in_gaps.size / buildings_series.size
+            self.in_gaps_ratio = in_gaps.size / buildings_series.size
         
             # Get open space or grid cells
             joined_grid = gpd.sjoin(self.grid,
@@ -197,9 +197,12 @@ class country:
             gaps_in_empty_grid = gaps_in_empty_grid.unary_union # This dissolves the doubled geometries from overlay
             gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
-            area_ratio = (gaps_in_empty_grid_area / empty_grid_area) 
+            self.area_ratio = (gaps_in_empty_grid_area / empty_grid_area) 
 
-            return in_gaps_ratio, area_ratio
+            if (self.in_gaps_ratio > 0.1) and (self.area_ratio > 0.6):
+                return True
+            else:
+                return False
 
             # Decision
             # Should decision be boolean or say something about suggested parameter updates?
@@ -218,6 +221,32 @@ class country:
         past_gaps = []
         these_params = [_w, _ln_ratio, _i, _a]
         past_params = []
+
+        while True:
+            if min these_params < 0:
+                break
+
+            _is = [2,3,4]
+
+            for i in _is:
+                self.mind(_w, _ln_ratio, i, a)
+                
+                fit = self.fit_check()
+
+                if fit:
+                    print('gaps found')
+                    these_params = [_w, _ln_ratio, i, a, self.in_gaps_ratio, self.area_ratio]
+                    print(these_params)
+                    break # Self.gaps will be our final gaps
+                else: #We will save the gaps and parameters and update
+                    past_gaps.append(self.gaps)
+                    these_params = [_w, _ln_ratio, i, a, self.in_gaps_ratio, self.area_ratio]
+                    past_params.append(these_params)
+            
+            if fit:
+                break
+            # Update paramaters
+            _w = _w - 0.005 # Should this be hardcoded?
 
         
         for i in range(5):
