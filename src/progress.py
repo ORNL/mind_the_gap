@@ -176,7 +176,7 @@ class country:
         # First things first, check to make sure gaps aren't empty
         print(type(self.gaps))
         if self.gaps is None:
-            return False
+            return 0, 0 
         else:
             print(self.gaps)
             # Check proportion of buildings in the gaps
@@ -185,8 +185,7 @@ class country:
             #in_gaps = gaps_series.intersect(buildings_series)
             gaps_multi = gaps_series.unary_union
             in_gaps = self.buildings.sjoin(self.gaps, how='inner')
-            print(in_gaps.size)
-            print(buildings_series.size)
+            in_gaps_ratio = in_gaps.size / buildings_series.size
         
             # Get open space or grid cells
             joined_grid = gpd.sjoin(self.grid,
@@ -202,14 +201,10 @@ class country:
             # gaps_in_empty_grid_area = sum(gaps_in_empty_grid['geometry'].area)
             gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
-            area_ratio = (gaps_in_empty_grid_area / empty_grid_area) # I don't ge thow this is sometimes higher than 1
-            print(area_ratio)
-            '''
-            if area_ratio < 1:
-                empty_grid.to_file('./empty_grid.geojson', driver = 'GeoJSON')
-                gaps_in_empty_grid.to_file('./gaps_in_empty_grid.geojson', driver = 'GeoJSON')
-                return True
-            '''
+            area_ratio = (gaps_in_empty_grid_area / empty_grid_area) 
+
+            return in_gaps_ratio, area_ratio
+
             # Decision
             # Should decision be boolean or say something about suggested parameter updates?
             # Optimally fills, say 50-90% of open space and includes ver little amount of buildings
@@ -233,18 +228,17 @@ class country:
             
             #print(these_params)
             # Check if any parameters have become negative
-            if min(these_params) <=0:
+            if min(these_params) <0:
                 break
             
             _is = [2,3,4]
 
             for i in _is:
                 self.mind(_w, _ln_ratio, i, _a)
-                if self.fit_check(1,1):
-                    self.gaps.to_file('./gaps.geojson', driver = 'GeoJSON')
+                in_gaps_ratio, area_ratio =  self.fit_check(1,1)
                 
                 past_gaps.append(self.gaps)
-                these_params = [_w,_ln_ratio,i,_a]
+                these_params = [_w,_ln_ratio,i,_a, in_gaps_ratio, area_ratio]
                 past_params.append(these_params)
 
             
