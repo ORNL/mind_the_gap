@@ -223,7 +223,7 @@ class country:
         past_params = []
 
         while True:
-            if min(these_params < 0):
+            if min(these_params) < 0:
                 break
 
             _is = [2,3,4]
