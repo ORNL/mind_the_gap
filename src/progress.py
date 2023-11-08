@@ -208,7 +208,7 @@ class country:
             # Should decision be boolean or say something about suggested parameter updates?
             # Optimally fills, say 50-90% of open space and includes ver little amount of buildings
 
-    def prog(self, build_thresh=0.1, area_floor=0.4, area_ceiling=0.6):
+    def prog(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
         """Iterates through parameters until a good set is settled on"""
 
         print('proging')
