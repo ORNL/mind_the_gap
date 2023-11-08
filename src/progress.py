@@ -162,7 +162,7 @@ class country:
             print('somehing broke setting gaps to []')
             self.gaps = None #This breaks fit_check
 
-    def fit_check(self,in_gaps_thresh, space_thresh):
+    def fit_check(self):
         """Checks how well the gaps fit the data
         
         Parameters
@@ -180,10 +180,7 @@ class country:
         else:
             print(self.gaps)
             # Check proportion of buildings in the gaps
-            gaps_series = self.gaps.geometry
             buildings_series = self.buildings.geometry
-            #in_gaps = gaps_series.intersect(buildings_series)
-            gaps_multi = gaps_series.unary_union
             in_gaps = self.buildings.sjoin(self.gaps, how='inner')
             in_gaps_ratio = in_gaps.size / buildings_series.size
         
@@ -198,7 +195,6 @@ class country:
                                              self.gaps,
                                              how='intersection')
             gaps_in_empty_grid = gaps_in_empty_grid.unary_union # This dissolves the doubled geometries from overlay
-            # gaps_in_empty_grid_area = sum(gaps_in_empty_grid['geometry'].area)
             gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
             area_ratio = (gaps_in_empty_grid_area / empty_grid_area) 
@@ -235,7 +231,7 @@ class country:
 
             for i in _is:
                 self.mind(_w, _ln_ratio, i, _a)
-                in_gaps_ratio, area_ratio =  self.fit_check(1,1)
+                in_gaps_ratio, area_ratio =  self.fit_check()
                 
                 past_gaps.append(self.gaps)
                 these_params = [_w,_ln_ratio,i,_a, in_gaps_ratio, area_ratio]
