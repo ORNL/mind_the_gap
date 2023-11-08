@@ -248,7 +248,7 @@ class country:
             # Update paramaters
             _w = _w - 0.005 # Should this be hardcoded?
 
-        
+        """
         for i in range(5):
             
             #print(these_params)
@@ -283,3 +283,4 @@ class country:
 
         print(past_gaps)
         print(past_params)
+        """
