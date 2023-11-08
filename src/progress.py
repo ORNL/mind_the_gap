@@ -162,7 +162,7 @@ class country:
             print('somehing broke setting gaps to []')
             self.gaps = None #This breaks fit_check
 
-    def fit_check(self, build_thresh=0.05, area_floor=0.4, area_ceiling=0.7):
+    def fit_check(self, build_thresh=0.05, area_floor=0.4, area_ceiling=0.2):
         """Checks how well the gaps fit the data
         
         Parameters
@@ -197,7 +197,7 @@ class country:
 
             self.area_ratio = (gaps_in_empty_grid_area / empty_grid_area) 
 
-            if (self.in_gaps_ratio > build_thresh) and \
+            if (self.in_gaps_ratio < build_thresh) and \
                 ((self.area_ratio > area_floor) and \
                  (self.area_ratio < area_ceiling)):
                 return True
@@ -216,7 +216,7 @@ class country:
         _w = 0.015
         _ln_ratio = 2
         _i = 3
-        _a = 15
+        _a = 20
 
         past_gaps = []
         these_params = [_w, _ln_ratio, _i, _a]
