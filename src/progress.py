@@ -162,7 +162,7 @@ class country:
             print('somehing broke setting gaps to []')
             self.gaps = None #This breaks fit_check
 
-    def fit_check(self, build_thresh=0.05, area_floor=0.4, area_ceiling=0.2):
+    def fit_check(self, build_thresh, area_floor, area_ceiling):
         """Checks how well the gaps fit the data
         
         Parameters
@@ -208,7 +208,7 @@ class country:
             # Should decision be boolean or say something about suggested parameter updates?
             # Optimally fills, say 50-90% of open space and includes ver little amount of buildings
 
-    def prog(self):
+    def prog(self, build_thresh=0.1, area_floor=0.4, area_ceiling=0.6):
         """Iterates through parameters until a good set is settled on"""
 
         print('proging')
@@ -231,7 +231,7 @@ class country:
             for i in _is:
                 self.mind(_w, _ln_ratio, i, _a)
                 
-                fit = self.fit_check()
+                fit = self.fit_check(build_thresh, area_floor, area_ceiling)
 
                 if fit:
                     print('gaps found')
