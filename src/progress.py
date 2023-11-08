@@ -174,11 +174,9 @@ class country:
         """
 
         # First things first, check to make sure gaps aren't empty
-        print(type(self.gaps))
         if self.gaps is None:
             return False
         else:
-            print(self.gaps)
             # Check proportion of buildings in the gaps
             buildings_series = self.buildings.geometry
             in_gaps = self.buildings.sjoin(self.gaps, how='inner')
