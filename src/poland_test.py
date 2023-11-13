@@ -12,3 +12,5 @@ poland = progress.country('poland',
 #poland.gaps.to_file('./poland_test_gaps.geojson', driver='GeoJSON')
 
 poland.prog()
+
+poland.gaps.to_file('poland_test_gaps.geojson', driver = 'GeoJSON')
