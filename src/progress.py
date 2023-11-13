@@ -41,6 +41,8 @@ class country:
         self.db_con = db_con
         self.gaps = []
         self.grid = []
+        self.in_gaps_ratio = 0
+        self.area_ratio = 0
 
 
         # Load boundaries
@@ -170,7 +172,7 @@ class country:
         in_gaps_thresh : float
             Threshold for the proportion of buildigns allwoed in gaps
         space_thresh : float
-            Threshold for the amoutn of open space to take up 
+            Threshold for the amount of open space to take up 
         """
 
         # First things first, check to make sure gaps aren't empty
@@ -213,7 +215,7 @@ class country:
 
         print('proging')
         # Starting params
-        _w = 0.015
+        _w = 0.03
         _ln_ratio = 2
         _i = 3
         _a = 20
@@ -241,6 +243,7 @@ class country:
                 else: #We will save the gaps and parameters and update
                     past_gaps.append(self.gaps)
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
+                    print(these_params)
                     past_params.append(these_params)
             
             if fit:
