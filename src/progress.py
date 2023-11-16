@@ -225,6 +225,8 @@ class country:
         past_params = []
 
         while True:
+            print(these_params)
+            print(min(these_params))
             if min(these_params) < 0:
                 break
 
