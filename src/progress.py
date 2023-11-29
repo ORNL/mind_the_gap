@@ -9,8 +9,8 @@ from shapely import geometry
 import mind_the_gap
 from chainage import chainage
 
-# Country object
-class country:
+# Region object
+class region:
     def __init__(self,
                  name,
                  db_con,
@@ -18,12 +18,12 @@ class country:
                  build_path='',
                  bound_from_file=False,
                  build_from_file=False):
-        """The country we are running Mind the Gap on
+        """The region we are running Mind the Gap on
     
         Parameters
         ----------
         name : String
-            Name of the country as used in the database
+            Name of the region as used in the database
         db_con : String
             String used to establis database connection
         bound_path : String
@@ -118,7 +118,7 @@ class country:
                                                   (x, y + size)]))
         grid = gpd.GeoDataFrame({'geometry':polygons},crs='EPSG:4326')
         
-        # Clip grid to country extent
+        # Clip grid to region extent
         grid = gpd.clip(grid, self.boundaries_shape)
         
         self.grid = grid
