@@ -2,7 +2,6 @@
 
 import geopandas as gpd
 import pandas as pd
-from sqlalchemy import create_engine
 import numpy as np
 from shapely import geometry
 
@@ -10,7 +9,14 @@ import mind_the_gap
 from chainage import chainage
 
 # Region object
-class region:
+class Region:
+    """The region to run Mind the Gap on.
+    
+    Loads all necessary information and contains methods for automatically
+    tuning parameters to generate a good no data mask.
+    
+    """
+
     def __init__(self,
                  name,
                  db_con,
@@ -46,6 +52,7 @@ class region:
         self.grid = []
         self.in_gaps_ratio = 0
         self.area_ratio = 0
+        self.all_points_gdf = None
 
 
         # Load boundaries
@@ -55,11 +62,8 @@ class region:
             self.boundaries = ([self.boundaries.boundary][0])[0]
 
         else:
-            # Establish database connection
-            con = create_engine(self.db_con)
-
             # Load boundaries
-            boundaries_qry = f"""SELECT st_multi(st_buffer(geom,0.2)) as geom 
+            boundaries_qry = f"""SELECT st_multi(st_buffer(geom,0.2)) as geom
                                  FROM boundary.admin0
                                  WHERE country = '{self.name}'"""
             self.boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
@@ -76,7 +80,7 @@ class region:
         self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
         print('chainage done')
 
-        # Load buildings 
+        # Load buildings
         if build_from_file:
             self.buildings = gpd.read_file(build_path)
         else:
@@ -115,7 +119,7 @@ class region:
         polygons = []
         for x in cols[:-1]:
             for y in rows[:-1]:
-                polygons.append(geometry.Polygon([(x,y), 
+                polygons.append(geometry.Polygon([(x,y),
                                                   (x + size, y),
                                                   (x + size, y + size),
                                                   (x, y + size)]))
@@ -208,7 +212,7 @@ class region:
             gaps_in_empty_grid = gaps_in_empty_grid.unary_union
             gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
-            self.area_ratio = (gaps_in_empty_grid_area / empty_grid_area)
+            self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
 
             if (self.in_gaps_ratio < build_thresh) and \
                 ((self.area_ratio > area_floor) and \
