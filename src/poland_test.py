@@ -2,7 +2,7 @@
 
 import auto_tune 
 
-poland = auto_tune.region('poland',
+poland = auto_tune.Region('poland',
                           'postgresql://openadmin:openadmin@manhattan:3022/opendb')
 
 #poland.mind(0.02,2,2,20)
