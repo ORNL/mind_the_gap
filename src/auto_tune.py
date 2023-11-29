@@ -18,7 +18,10 @@ class region:
                  build_path='',
                  bound_from_file=False,
                  build_from_file=False):
-        """The region we are running Mind the Gap on
+        """The region we are running Mind the Gap on.
+
+        Loads in building and boundary data, builds chainage, etc. Everything
+        needed to run MTG and builds grid to autotune parameters to.
     
         Parameters
         ----------
@@ -84,13 +87,13 @@ class region:
                                                            geom_col='geometry')
 
         print('buildings loaded')
-        
+
         # Make grid
         print('making grid')
         self.make_grid()
 
     def make_grid(self, size=0.02):
-        """Make grid to check gap completeness
+        """Make grid to check gap completeness.
         
         Parameters
         ----------
@@ -117,10 +120,10 @@ class region:
                                                   (x + size, y + size),
                                                   (x, y + size)]))
         grid = gpd.GeoDataFrame({'geometry':polygons},crs='EPSG:4326')
-        
+
         # Clip grid to region extent
         grid = gpd.clip(grid, self.boundaries_shape)
-        
+
         self.grid = grid
 
 
@@ -140,7 +143,7 @@ class region:
             Alpha value for alphashapes
         
         """
-        
+
         # Combine buildings and border chainage
         self.all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,
                                                           self.chainage_gdf],
@@ -169,10 +172,18 @@ class region:
         
         Parameters
         ----------
-        in_gaps_thresh : float
-            Threshold for the proportion of buildigns allwoed in gaps
-        space_thresh : float
-            Threshold for the amount of open space to take up 
+        build_thresh : float
+            Maximum proportion of buildings allowed in the gap mask
+        area_floor : float
+            Minimum area of open space gaps must fill
+        area_ceiling : float
+            Maximum area of open space gaps are allowed to fill
+        
+        Returns
+        -------
+        boolean
+            True if gaps satisfy requirements, false if not
+
         """
 
         # First things first, check to make sure gaps aren't empty
@@ -183,7 +194,7 @@ class region:
             buildings_series = self.buildings.geometry
             in_gaps = self.buildings.sjoin(self.gaps, how='inner')
             self.in_gaps_ratio = in_gaps.size / buildings_series.size
-        
+
             # Get open space or grid cells
             joined_grid = gpd.sjoin(self.grid,
                                     self.all_points_gdf,
@@ -194,10 +205,10 @@ class region:
             gaps_in_empty_grid = gpd.overlay(empty_grid, # sjoin might be better
                                              self.gaps,
                                              how='intersection')
-            gaps_in_empty_grid = gaps_in_empty_grid.unary_union # This dissolves the doubled geometries from overlay
+            gaps_in_empty_grid = gaps_in_empty_grid.unary_union
             gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
-            self.area_ratio = (gaps_in_empty_grid_area / empty_grid_area) 
+            self.area_ratio = (gaps_in_empty_grid_area / empty_grid_area)
 
             if (self.in_gaps_ratio < build_thresh) and \
                 ((self.area_ratio > area_floor) and \
@@ -206,14 +217,11 @@ class region:
             else:
                 return False
 
-            # Decision
-            # Should decision be boolean or say something about suggested parameter updates?
-            # Optimally fills, say 50-90% of open space and includes ver little amount of buildings
 
-    def prog(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
+    def run(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
         """Iterates through parameters until a good set is settled on"""
 
-        print('proging')
+        print('tuning')
         # Starting params
         _w = 0.03
         _ln_ratio = 2
@@ -234,7 +242,7 @@ class region:
 
             for i in _is:
                 self.mind(_w, _ln_ratio, i, _a)
-                
+
                 fit = self.fit_check(build_thresh, area_floor, area_ceiling)
 
                 if fit:
@@ -247,7 +255,7 @@ class region:
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
                     print(these_params)
                     past_params.append(these_params)
-            
+
             if fit:
                 break
             # Update paramaters
