@@ -1,9 +1,9 @@
 """Test progression on Poland"""
 
-import progress
+import auto_tune 
 
-poland = progress.region('poland',
-                         'postgresql://openadmin:openadmin@manhattan:3022/opendb')
+poland = auto_tune.region('poland',
+                          'postgresql://openadmin:openadmin@manhattan:3022/opendb')
 
 #poland.mind(0.02,2,2,20)
 
