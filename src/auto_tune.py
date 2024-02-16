@@ -23,7 +23,8 @@ class Region:
                  bound_path='',
                  build_path='',
                  bound_from_file=False,
-                 build_from_file=False):
+                 build_from_file=False,
+                 grid_size=0.02):
         """The region we are running Mind the Gap on.
 
         Loads in building and boundary data, builds chainage, etc. Everything
@@ -94,7 +95,7 @@ class Region:
 
         # Make grid
         print('making grid')
-        self.make_grid()
+        self.make_grid(size=grid_size)
 
     def make_grid(self, size=0.02):
         """Make grid to check gap completeness.
