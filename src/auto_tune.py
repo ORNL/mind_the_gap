@@ -193,6 +193,8 @@ class Region:
         # First things first, check to make sure gaps aren't empty
         if self.gaps is None:
             return False
+        elif len(self.gaps) < 1:
+            return False
         else:
             # Check proportion of buildings in the gaps
             buildings_series = self.buildings.geometry
@@ -210,6 +212,8 @@ class Region:
                                              self.gaps,
                                              how='intersection')
             gaps_in_empty_grid = gaps_in_empty_grid.unary_union
+            if gaps_in_empty_grid is None:
+                return False
             gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
             self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
