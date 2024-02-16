@@ -23,7 +23,8 @@ class Region:
                  bound_path='',
                  build_path='',
                  bound_from_file=False,
-                 build_from_file=False):
+                 build_from_file=False,
+                 grid_size=0.02):
         """The region we are running Mind the Gap on.
 
         Loads in building and boundary data, builds chainage, etc. Everything
@@ -94,7 +95,7 @@ class Region:
 
         # Make grid
         print('making grid')
-        self.make_grid()
+        self.make_grid(size=grid_size)
 
     def make_grid(self, size=0.02):
         """Make grid to check gap completeness.
@@ -193,6 +194,8 @@ class Region:
         # First things first, check to make sure gaps aren't empty
         if self.gaps is None:
             return False
+        elif len(self.gaps) < 1:
+            return False
         else:
             # Check proportion of buildings in the gaps
             buildings_series = self.buildings.geometry
@@ -210,6 +213,8 @@ class Region:
                                              self.gaps,
                                              how='intersection')
             gaps_in_empty_grid = gaps_in_empty_grid.unary_union
+            if gaps_in_empty_grid is None:
+                return False
             gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
             self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
