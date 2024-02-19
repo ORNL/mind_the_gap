@@ -1,4 +1,4 @@
-FROM osgeo/gdal:ubuntu-small-latest
+FROM python:3.10-slim-bullseye
 COPY requirements.txt requirements.txt
 
 RUN apt-get update && apt-get install -y\
