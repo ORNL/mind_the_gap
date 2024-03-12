@@ -18,12 +18,9 @@ class Region:
     """
 
     def __init__(self,
-                 name,
                  db_con,
-                 bound_path='',
-                 build_path='',
-                 bound_from_file=False,
-                 build_from_file=False,
+                 bound_qry,
+                 build_qry,
                  grid_size=0.02):
         """The region we are running Mind the Gap on.
 
@@ -32,22 +29,15 @@ class Region:
     
         Parameters
         ----------
-        name : String
-            Name of the region as used in the database
-        db_con : String
-            String used to establis database connection
-        bound_path : String
-            Optional path to load boundaries from file
-        build_path : String
-            Optional path to load boundaries from file
-        bound_from_file : boolean
-            Use path to load boundaries or not
-        build_from_file : boolean
-            Use path to load buildings or not
+        bound_qry : String
+            SQL query to get tile boundaries from database
+        build_qry : String
+            SQL query to get buildings from the database
+        grid_size : float
+            Size of the grid used to find empty space
 
         """
 
-        self.name = name
         self.db_con = db_con
         self.gaps = []
         self.grid = []
@@ -57,22 +47,12 @@ class Region:
 
 
         # Load boundaries
-        if bound_from_file:
-            self.boundaries = gpd.read_file(bound_path)
-            self.boundaries_shape = self.boundaries
-            self.boundaries = ([self.boundaries.boundary][0])[0]
-
-        else:
-            # Load boundaries
-            boundaries_qry = f"""SELECT st_multi(st_buffer(geom,0.2)) as geom
-                                 FROM boundary.admin0
-                                 WHERE country = '{self.name}'"""
-            self.boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
-                                                            db_con,
-                                                            geom_col='geom')
-            self.boundaries_shape = self.boundaries
-            self.boundaries = ([self.boundaries.boundary][0])[0]
-            print('boundaries loaded')
+        self.boundaries = gpd.GeoDataFrame.from_postgis(bound_qry,
+                                                        db_con,
+                                                        geom_col='geom')
+        self.boundaries_shape = self.boundaries
+        self.boundaries = ([self.boundaries.boundary][0])[0]
+        print('boundaries loaded')
 
         print('boundaries loaded')
 
@@ -82,14 +62,9 @@ class Region:
         print('chainage done')
 
         # Load buildings
-        if build_from_file:
-            self.buildings = gpd.read_file(build_path)
-        else:
-            buildings_qry = f"""SELECT ST_Centroid(geom) as geometry
-                                FROM microsoft.{self.name}"""
-            self.buildings = gpd.GeoDataFrame.from_postgis(buildings_qry,
-                                                           db_con,
-                                                           geom_col='geometry')
+        self.buildings = gpd.GeoDataFrame.from_postgis(build_qry,
+                                                       db_con,
+                                                       geom_col='geometry')
 
         print('buildings loaded')
 
