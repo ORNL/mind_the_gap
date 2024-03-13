@@ -4,6 +4,7 @@ import multiprocessing as mp
 from multiprocessing import Pool
 from itertools import product
 from math import isnan
+import functools
 
 import geopandas as gpd
 import pandas as pd
