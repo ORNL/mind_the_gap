@@ -54,8 +54,6 @@ class Region:
         self.boundaries = ([self.boundaries.boundary][0])[0]
         print('boundaries loaded')
 
-        print('boundaries loaded')
-
         # Generate chainage
         bnd_chain = chainage(self.boundaries, 0.01)
         self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
