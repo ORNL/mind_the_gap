@@ -9,6 +9,17 @@ import geopandas as gpd
 import pandas as pd
 from auto_tune import Region 
 
+def run_region(region):
+    """"Execute the `run` method on a region object
+    
+    Parameters
+    ----------
+    region : Region object
+    
+    """
+
+    region.run()
+
 
 #grid_qry = """SELECT *
 #              FROM public.country_tiles_sliversfix
@@ -61,3 +72,6 @@ for j in row_col:
     regions.append(tile_region)
 
 print('regions made')
+
+with pool(63) as p:
+    p.map(run_region, regions)
