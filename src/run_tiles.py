@@ -1,6 +1,7 @@
 """Run Mind the Gap worldwide tile-wise in parallel"""
 
 import multiprocessing as mp
+from multiprocessing import pool
 from itertools import product
 from math import isnan
 
@@ -58,4 +59,5 @@ for j in row_col:
     tile_region = Region(read_con, bound_qry, build_qry)
     
     regions.append(tile_region)
-print('stop')
+
+print('regions made')
