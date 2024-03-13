@@ -2,6 +2,7 @@
 
 import multiprocessing as mp
 from itertools import product
+from math import isnan
 
 import geopandas as gpd
 import pandas as pd
@@ -36,6 +37,10 @@ for j in row_col:
     # For MS set schema and table
     schema = 'microsoft'
     table_name = 'bldgs_01302024'
+    
+    # check if row or col is Nan
+    if isnan(j[0]) or isnan(j[1]):
+        continue
 
     row = int(j[0])
     col = int(j[1])
@@ -51,5 +56,6 @@ for j in row_col:
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
     
     tile_region = Region(read_con, bound_qry, build_qry)
-    print('one_region')
+    
+    regions.append(tile_region)
 print('stop')
