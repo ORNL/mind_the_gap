@@ -1,7 +1,7 @@
 """Run Mind the Gap worldwide tile-wise in parallel"""
 
 import multiprocessing as mp
-from multiprocessing import pool
+from multiprocessing import Pool
 from itertools import product
 from math import isnan
 
@@ -45,7 +45,11 @@ row_col_df = pd.read_sql_query(row_col_qry, read_con)
 row_col = row_col_df.itertuples(index=False, name=None)
 
 regions = []
+i = 0
 for j in row_col:
+
+    if i == 6:
+        break
     # For MS set schema and table
     schema = 'microsoft'
     table_name = 'bldgs_01302024'
@@ -71,7 +75,11 @@ for j in row_col:
     
     regions.append(tile_region)
 
+    i+=1
+
 print('regions made')
 
-with pool(63) as p:
+with Pool(15) as p:
     p.map(run_region, regions)
+
+print('done minding')
