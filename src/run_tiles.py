@@ -4,11 +4,13 @@ import multiprocessing as mp
 from multiprocessing import Pool
 from itertools import product
 from math import isnan
-import functools
+import traceback
+import sys
 
 import geopandas as gpd
 import pandas as pd
-from auto_tune import Region 
+from auto_tune import Region
+from sqlalchemy import create_engine
 
 def run_region(region):
     """"Execute the `run` method on a region object
@@ -18,26 +20,17 @@ def run_region(region):
     region : Region object
     
     """
+    try:
+        region.run(build_thresh=0.7, area_floor=0.3, area_ceiling=0.7)
+    except:
+        # Possibly should also just set gaps to be blank
+        traceback.print_exc()
 
-    region.run()
+sys.setrecursionlimit(5000)
 
-
-#grid_qry = """SELECT *
-#              FROM public.country_tiles_sliversfix
-#              WHERE 'Slovakia' = ANY(countries)"""
 read_con = 'postgresql://landscanuser:iseeyou@gshs-aurelia01:5432/opendb'
 write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
-
-#grid = gpd.GeoDataFrame.from_postgis(grid_qry, db_con, geom_col = 'geom')
-#ms_qry = """SELECT b.pt_Geom
-#            FROM microsoft.bldgs_01302024 b
-#            INNER JOIN analytics.degree
-#            WHERE """
-
-# Get buildings with row and column attributes
-# Queue up tile row and columns
-# build list of auto_tune.Region objects, built using queries in nested for
-# loop for tile degree rows and columns
+write_engine = create_engine(write_con)
 
 row_col_qry = """SELECT DISTINCT degree_row, degree_col
                  FROM analytics.degree_tiles_stats"""
@@ -46,15 +39,13 @@ row_col_df = pd.read_sql_query(row_col_qry, read_con)
 row_col = row_col_df.itertuples(index=False, name=None)
 
 regions = []
-i = 0
+region_dict = {}
 for j in row_col:
 
-    if i == 6:
-        break
     # For MS set schema and table
     schema = 'microsoft'
     table_name = 'bldgs_01302024'
-    
+
     # check if row or col is Nan
     if isnan(j[0]) or isnan(j[1]):
         continue
@@ -67,20 +58,32 @@ for j in row_col:
                     INNER JOIN analytics.degree_tiles_stats t
                     ON st_intersects(b.pt_geom, t.geom)
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
-    
+
     bound_qry = f"""SELECT t.geom
                     FROM analytics.degree_tiles_stats t
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
-    
+
     tile_region = Region(read_con, bound_qry, build_qry)
-    
+
     regions.append(tile_region)
 
-    i+=1
+    region_dict[tile_region] = j
 
 print('regions made')
 
 with Pool(15) as p:
-    p.map(run_region, regions)
+    try:
+        p.map(run_region, regions)
+    except:
+        traceback.print_exc()
 
 print('done minding')
+
+for reg in region_dict:
+    if reg.gaps == []:
+        continue
+    reg.gaps.to_postgis('degree_tile_ms_gaps', 
+                        write_engine,
+                        if_exists='append',
+                        schema='analytics')
+print('done')
