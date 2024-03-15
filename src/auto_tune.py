@@ -125,7 +125,7 @@ class Region:
         # Combine buildings and border chainage
         self.all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,
                                                           self.chainage_gdf],
-                                                         ignore_index=True))
+                                                          ignore_index=True))
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
@@ -215,6 +215,11 @@ class Region:
         past_params = []
 
         while True:
+            if self.buildings.geometry.size == 0:
+                print('Tile empty')
+                self.gaps = self.boundaries_shape
+                break
+
             print(these_params)
             print(min(these_params))
             if min(these_params) < 0:
