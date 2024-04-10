@@ -52,22 +52,22 @@ class Region:
                                                         geom_col='geom')
         self.boundaries_shape = self.boundaries
         self.boundaries = ([self.boundaries.boundary][0])[0]
-        print('boundaries loaded')
+        #print('boundaries loaded')
 
         # Generate chainage
         bnd_chain = chainage(self.boundaries, 0.01)
         self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
-        print('chainage done')
+        #print('chainage done')
 
         # Load buildings
         self.buildings = gpd.GeoDataFrame.from_postgis(build_qry,
                                                        db_con,
                                                        geom_col='geometry')
 
-        print('buildings loaded')
+        #print('buildings loaded')
 
         # Make grid
-        print('making grid')
+        #print('making grid')
         self.make_grid(size=grid_size)
 
     def make_grid(self, size=0.02):
@@ -129,7 +129,7 @@ class Region:
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
-        print('calling mtg')
+        #print('calling mtg')
         try:
             self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf,
                                                   w,
@@ -139,10 +139,10 @@ class Region:
                                                   i,
                                                   i,
                                                   alpha=a)
-            print('mtg ran')
+            #print('mtg ran')
         except Exception as e:
-            print(e)
-            print('somehing broke setting gaps to []')
+            #print(e)
+            #print('somehing broke setting gaps to []')
             self.gaps = None #This breaks fit_check
 
     def fit_check(self, build_thresh, area_floor, area_ceiling):
@@ -203,7 +203,7 @@ class Region:
     def run(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
         """Iterates through parameters until a good set is settled on"""
 
-        print('tuning')
+        #print('tuning')
         # Starting params
         _w = 0.03
         _ln_ratio = 2
@@ -216,12 +216,12 @@ class Region:
 
         while True:
             if self.buildings.geometry.size == 0:
-                print('Tile empty')
+                #print('Tile empty')
                 self.gaps = self.boundaries_shape
                 break
 
-            print(these_params)
-            print(min(these_params))
+            #print(these_params)
+            #print(min(these_params))
             if min(these_params) < 0:
                 break
 
@@ -233,14 +233,14 @@ class Region:
                 fit = self.fit_check(build_thresh, area_floor, area_ceiling)
 
                 if fit:
-                    print('gaps found')
+                    #print('gaps found')
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
-                    print(these_params)
+                    #print(these_params)
                     break # Self.gaps will be our final gaps
                 else: #We will save the gaps and parameters and update
                     past_gaps.append(self.gaps)
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
-                    print(these_params)
+                    #print(these_params)
                     past_params.append(these_params)
 
             if fit:
