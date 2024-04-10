@@ -1233,7 +1233,7 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         endpoints = MultiPoint(gap_ends)
         inters = MultiPoint(inters)
         inters = shapely.ops.unary_union([endpoints,inters])
-        print(type(inters))
+        #print(type(inters))
 
         a_shape = make_alpha_shape(inters, alpha)[0]
  
