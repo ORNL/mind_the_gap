@@ -48,10 +48,10 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
 
     try:
         region.run(build_thresh=0.7, area_floor=0.3, area_ceiling=0.7)
-        region.gaps.to_postgis('degree_tile_ms_gaps',
+        region.gaps.to_postgis('bldgs_01302024_mtg_v1',
                                write_engine,
                                if_exists='append',
-                               schema='analytics')
+                               schema='microsoft')
         print(row_col)
     except:
         # Possibly should also just set gaps to be blank
