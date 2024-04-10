@@ -246,4 +246,4 @@ class Region:
             if fit:
                 break
             # Update paramaters
-            _w = _w - 0.005 # Should this be hardcoded?
+            _w = _w - 0.0025 # Should this be hardcoded?

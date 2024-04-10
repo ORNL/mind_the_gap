@@ -12,16 +12,47 @@ import pandas as pd
 from auto_tune import Region
 from sqlalchemy import create_engine
 
-def run_region(region):
+def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     """"Execute the `run` method on a region object
     
     Parameters
     ----------
-    region : Region object
+    row_col : array_like
+        Listof tuples containing row and column pairs
+    schema : String
+    table_name : String
     
     """
+
+    row = row_col[0]
+    col = row_col[1]
+
+    # check if row or col is Nan
+    if isnan(row) or isnan(col):
+        return
+    
+    row = int(row)
+    col = int(col)
+
+    build_qry = f"""SELECT b.pt_geom as geometry
+                    FROM {schema}.{table_name} b
+                    INNER JOIN analytics.degree_tiles_stats t
+                    on st_intersects(b.pt_geom, t.geom)
+                    WHERE t.degree_row = {row} and t.degree_col = {col}"""
+
+    bound_qry = f"""SELECT t.geom
+                    FROM analytics.degree_tiles_stats t
+                    WHERE t.degree_row = {row} and t.degree_col = {col}"""
+    
+    region = Region(read_con, bound_qry, build_qry)
+
     try:
         region.run(build_thresh=0.7, area_floor=0.3, area_ceiling=0.7)
+        region.gaps.to_postgis('degree_tile_ms_gaps',
+                               write_engine,
+                               if_exists='append',
+                               schema='analytics')
+        print(row_col)
     except:
         # Possibly should also just set gaps to be blank
         traceback.print_exc()
@@ -40,6 +71,8 @@ row_col = row_col_df.itertuples(index=False, name=None)
 
 regions = []
 region_dict = {}
+
+'''
 for j in row_col:
 
     # For MS set schema and table
@@ -70,20 +103,21 @@ for j in row_col:
     region_dict[tile_region] = j
 
 print('regions made')
+'''
 
 with Pool(15) as p:
     try:
-        p.map(run_region, regions)
+        p.map(run_region, row_col)
     except:
         traceback.print_exc()
 
 print('done minding')
 
-for reg in region_dict:
-    if reg.gaps == []:
-        continue
-    reg.gaps.to_postgis('degree_tile_ms_gaps', 
-                        write_engine,
-                        if_exists='append',
-                        schema='analytics')
-print('done')
+#for reg in region_dict:
+#    if reg.gaps == []:
+#        continue
+#    reg.gaps.to_postgis('degree_tile_ms_gaps', 
+#                        write_engine,
+#                        if_exists='append',
+#                        schema='analytics')
+#print('done')
