@@ -11,6 +11,7 @@ import geopandas as gpd
 import pandas as pd
 from auto_tune import Region
 from sqlalchemy import create_engine
+from sqlalchemy import text
 
 def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     """"Execute the `run` method on a region object
@@ -61,7 +62,9 @@ sys.setrecursionlimit(5000)
 
 read_con = 'postgresql://landscanuser:iseeyou@gshs-aurelia01:5432/opendb'
 write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
+admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
 write_engine = create_engine(write_con)
+admin_engine = create_engine(admin_con)
 
 row_col_qry = """SELECT DISTINCT degree_row, degree_col
                  FROM analytics.degree_tiles_stats"""
@@ -104,6 +107,14 @@ for j in row_col:
 
 print('regions made')
 '''
+
+# wipe table
+bldgs_schema = 'microsoft'
+gaps_table = 'bldgs_01302024_mtg_v1'
+clear_qry = f"""DROP TABLE IF EXISTS {schema}.{gaps_table}"""
+connection = admin_engine.connect()
+connection.execute(text(clear_qry))
+connection.commit()
 
 with Pool(15) as p:
     try:
