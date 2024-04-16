@@ -12,6 +12,8 @@ import pandas as pd
 from auto_tune import Region
 from sqlalchemy import create_engine
 from sqlalchemy import text
+from shapely import MultiPolygon
+from shapely import Polygon
 
 def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     """"Execute the `run` method on a region object
@@ -31,7 +33,7 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     # check if row or col is Nan
     if isnan(row) or isnan(col):
         return
-    
+
     row = int(row)
     col = int(col)
 
@@ -44,12 +46,16 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     bound_qry = f"""SELECT t.geom
                     FROM analytics.degree_tiles_stats t
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
-    
+
     region = Region(read_con, bound_qry, build_qry)
 
     try:
         region.run(build_thresh=0.7, area_floor=0.3, area_ceiling=0.7)
-        region.gaps.to_postgis('bldgs_01302024_mtg_v1',
+        if region.gaps.empty:
+            print('gaps are none')
+        elif isinstance(region.gaps['geom'][0], Polygon):
+            region.gaps['geom'][0] = MultiPolygon([region.gaps['geom'][0]])
+        region.gaps.to_postgis('bldgs_01302024_mtg_v5',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')
@@ -111,10 +117,10 @@ print('regions made')
 # wipe table
 bldgs_schema = 'microsoft'
 gaps_table = 'bldgs_01302024_mtg_v1'
-clear_qry = f"""DROP TABLE IF EXISTS {schema}.{gaps_table}"""
-connection = admin_engine.connect()
-connection.execute(text(clear_qry))
-connection.commit()
+clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
+#connection = admin_engine.connect()
+#connection.execute(text(clear_qry))
+#connection.commit()
 
 with Pool(15) as p:
     try:

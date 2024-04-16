@@ -143,7 +143,9 @@ class Region:
         except Exception as e:
             #print(e)
             #print('somehing broke setting gaps to []')
-            self.gaps = None #This breaks fit_check
+            self.gaps =  gpd.GeoDataFrame(columns=['geom'],
+                                          geometry='geom',
+                                          crs='EPSG:4326')
 
     def fit_check(self, build_thresh, area_floor, area_ceiling):
         """Checks how well the gaps fit the data
