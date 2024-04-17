@@ -43,7 +43,7 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
                     on st_intersects(b.pt_geom, t.geom)
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
 
-    bound_qry = f"""SELECT t.geom
+    bound_qry = f"""SELECT t.geom as geometry
                     FROM analytics.degree_tiles_stats t
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
 
@@ -53,9 +53,9 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
         region.run(build_thresh=0.7, area_floor=0.3, area_ceiling=0.7)
         if region.gaps.empty:
             print('gaps are none')
-        elif isinstance(region.gaps['geom'][0], Polygon):
-            region.gaps['geom'][0] = MultiPolygon([region.gaps['geom'][0]])
-        region.gaps.to_postgis('bldgs_01302024_mtg_v5',
+        elif isinstance(region.gaps['geometry'][0], Polygon):
+            region.gaps['geometry'][0] = MultiPolygon([region.gaps['geometry'][0]])
+        region.gaps.to_postgis('bldgs_01302024_mtg_v6',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')

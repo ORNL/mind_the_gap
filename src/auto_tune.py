@@ -49,7 +49,7 @@ class Region:
         # Load boundaries
         self.boundaries = gpd.GeoDataFrame.from_postgis(bound_qry,
                                                         db_con,
-                                                        geom_col='geom')
+                                                        geom_col='geometry')
         self.boundaries_shape = self.boundaries
         self.boundaries = ([self.boundaries.boundary][0])[0]
         #print('boundaries loaded')
