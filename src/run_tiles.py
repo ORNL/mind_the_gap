@@ -54,7 +54,11 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
         if region.gaps.empty:
             print('gaps are none')
         elif isinstance(region.gaps['geometry'][0], Polygon):
-            region.gaps['geometry'][0] = MultiPolygon([region.gaps['geometry'][0]])
+            gaps_geoms = list(region.gaps['geometry'])
+            gaps_geoms = MultiPolygon(gaps_geoms)
+            region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
+                                           crs='EPSG:4326')
+            #region.gaps['geometry'][0] = MultiPolygon([region.gaps['geometry'][0]])
         region.gaps.to_postgis('bldgs_01302024_mtg_v6',
                                write_engine,
                                if_exists='append',
