@@ -50,7 +50,7 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     region = Region(read_con, bound_qry, build_qry)
 
     try:
-        region.run(build_thresh=0.07, area_floor=0.3, area_ceiling=0.7)
+        region.run(build_thresh=0.07, area_floor=0.3, area_ceiling=0.6)
         if region.gaps.empty:
             print('gaps are none')
             return
@@ -60,7 +60,7 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
             region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
                                            crs='EPSG:4326')
             #region.gaps['geometry'][0] = MultiPolygon([region.gaps['geometry'][0]])
-        region.gaps.to_postgis('bldgs_01302024_philippines_mtg_v2',
+        region.gaps.to_postgis('bldgs_01302024_philippines_mtg_v4',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')
