@@ -14,6 +14,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 from shapely import MultiPolygon
 from shapely import Polygon
+import tqdm
 
 def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     """"Execute the `run` method on a region object
@@ -95,7 +96,7 @@ clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
 
 with Pool(processes=47, maxtasksperchild=1) as p:
     try:
-        p.map(run_region, row_col)
+        r = p.map(run_region, row_col)
     except:
         traceback.print_exc()
 
