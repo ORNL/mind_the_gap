@@ -50,22 +50,22 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     region = Region(read_con, bound_qry, build_qry)
 
     try:
-        region.run(build_thresh=0.7, area_floor=0.3, area_ceiling=0.7)
+        region.run(build_thresh=0.07, area_floor=0.3, area_ceiling=0.7)
         if region.gaps.empty:
             print('gaps are none')
+            return
         elif isinstance(region.gaps['geometry'][0], Polygon):
             gaps_geoms = list(region.gaps['geometry'])
             gaps_geoms = MultiPolygon(gaps_geoms)
             region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
                                            crs='EPSG:4326')
-            #region.gaps['geometry'][0] = MultiPolygon([region.gaps['geometry'][0]])
-        region.gaps.to_postgis('bldgs_01302024_mtg_v6',
+        region.gaps.to_postgis('bldgs_01302024_mtg_v9',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')
         print(row_col)
     except:
-        # Possibly should also just set gaps to be blank
+        # Need to have a way to tag tiles that we failed on
         traceback.print_exc()
 
 sys.setrecursionlimit(5000)
@@ -85,39 +85,6 @@ row_col = row_col_df.itertuples(index=False, name=None)
 regions = []
 region_dict = {}
 
-'''
-for j in row_col:
-
-    # For MS set schema and table
-    schema = 'microsoft'
-    table_name = 'bldgs_01302024'
-
-    # check if row or col is Nan
-    if isnan(j[0]) or isnan(j[1]):
-        continue
-
-    row = int(j[0])
-    col = int(j[1])
-
-    build_qry = f"""SELECT b.pt_geom as geometry
-                    FROM {schema}.{table_name} b
-                    INNER JOIN analytics.degree_tiles_stats t
-                    ON st_intersects(b.pt_geom, t.geom)
-                    WHERE t.degree_row = {row} and t.degree_col = {col}"""
-
-    bound_qry = f"""SELECT t.geom
-                    FROM analytics.degree_tiles_stats t
-                    WHERE t.degree_row = {row} and t.degree_col = {col}"""
-
-    tile_region = Region(read_con, bound_qry, build_qry)
-
-    regions.append(tile_region)
-
-    region_dict[tile_region] = j
-
-print('regions made')
-'''
-
 # wipe table
 bldgs_schema = 'microsoft'
 gaps_table = 'bldgs_01302024_mtg_v1'
@@ -126,19 +93,10 @@ clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
 #connection.execute(text(clear_qry))
 #connection.commit()
 
-with Pool(15) as p:
+with Pool(31) as p:
     try:
         p.map(run_region, row_col)
     except:
         traceback.print_exc()
 
 print('done minding')
-
-#for reg in region_dict:
-#    if reg.gaps == []:
-#        continue
-#    reg.gaps.to_postgis('degree_tile_ms_gaps', 
-#                        write_engine,
-#                        if_exists='append',
-#                        schema='analytics')
-#print('done')
