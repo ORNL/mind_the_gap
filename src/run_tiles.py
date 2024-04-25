@@ -59,7 +59,7 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
             gaps_geoms = MultiPolygon(gaps_geoms)
             region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
                                            crs='EPSG:4326')
-        region.gaps.to_postgis('bldgs_01302024_mtg_v9',
+        region.gaps.to_postgis('bldgs_01302024_mtg_v10',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')
@@ -93,7 +93,7 @@ clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
 #connection.execute(text(clear_qry))
 #connection.commit()
 
-with Pool(31) as p:
+with Pool(processes=47, maxtasksperchild=1) as p:
     try:
         p.map(run_region, row_col)
     except:
