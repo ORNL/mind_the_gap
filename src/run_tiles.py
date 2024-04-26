@@ -14,7 +14,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 from shapely import MultiPolygon
 from shapely import Polygon
-import tqdm
+from tqdm import tqdm
 
 def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
     """"Execute the `run` method on a region object
@@ -54,20 +54,21 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
         region.run(build_thresh=0.07, area_floor=0.3, area_ceiling=0.7)
         if region.gaps.empty:
             print('gaps are none')
-            return
+            return (row, col, 0)
         elif isinstance(region.gaps['geometry'][0], Polygon):
             gaps_geoms = list(region.gaps['geometry'])
             gaps_geoms = MultiPolygon(gaps_geoms)
             region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
                                            crs='EPSG:4326')
-        region.gaps.to_postgis('bldgs_01302024_mtg_v11',
+        region.gaps.to_postgis('bldgs_01302024_mtg_v12',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')
-        print(row_col)
+        return(row, col, 1)
     except:
         # Need to have a way to tag tiles that we failed on
         traceback.print_exc()
+        return(row, col, -1)
 
 sys.setrecursionlimit(5000)
 
@@ -94,9 +95,12 @@ clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
 #connection.execute(text(clear_qry))
 #connection.commit()
 
-with Pool(processes=47, maxtasksperchild=1) as p:
+with Pool(processes=47, maxtasksperchild=4) as p:
     try:
-        p.map(run_region, row_col)
+        #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
+        #              total=len(list(row_col))):
+        #    pass
+        p.map(run_region, row_col, chunksize=4)
     except:
         traceback.print_exc()
 
