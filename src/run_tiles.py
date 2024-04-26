@@ -60,7 +60,7 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
             gaps_geoms = MultiPolygon(gaps_geoms)
             region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
                                            crs='EPSG:4326')
-        region.gaps.to_postgis('bldgs_01302024_mtg_v10',
+        region.gaps.to_postgis('bldgs_01302024_mtg_v11',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')
