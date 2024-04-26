@@ -96,7 +96,7 @@ clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
 
 with Pool(processes=47, maxtasksperchild=1) as p:
     try:
-        r = p.map(run_region, row_col)
+        p.map(run_region, row_col)
     except:
         traceback.print_exc()
 
