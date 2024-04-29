@@ -6,6 +6,8 @@ from itertools import product
 from math import isnan
 import traceback
 import sys
+import time
+from datetime import timedelta
 
 import geopandas as gpd
 import pandas as pd
@@ -60,7 +62,7 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
             gaps_geoms = MultiPolygon(gaps_geoms)
             region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
                                            crs='EPSG:4326')
-        region.gaps.to_postgis('bldgs_01302024_mtg_v12',
+        region.gaps.to_postgis('bldgs_01302024_mtg_v13',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')
@@ -69,6 +71,8 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
         # Need to have a way to tag tiles that we failed on
         traceback.print_exc()
         return(row, col, -1)
+
+start_time = time.perf_counter()
 
 sys.setrecursionlimit(5000)
 
@@ -100,8 +104,10 @@ with Pool(processes=47, maxtasksperchild=4) as p:
         #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
         #              total=len(list(row_col))):
         #    pass
-        p.map(run_region, row_col, chunksize=4)
+        p.map(run_region, row_col, chunksize=1)
     except:
         traceback.print_exc()
 
+duration = timedelta(seconds=time.perf_counter()-start_time)
 print('done minding')
+print('Run time: ', duration)
