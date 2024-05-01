@@ -99,7 +99,7 @@ clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
 #connection.execute(text(clear_qry))
 #connection.commit()
 
-with Pool(processes=47, maxtasksperchild=4) as p:
+with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
     try:
         #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
         #              total=len(list(row_col))):
