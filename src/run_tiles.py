@@ -57,6 +57,9 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
         if region.gaps.empty:
             print('gaps are none')
             print(row_col)
+            region.gaps = gpd.GeoDataFrame([MultiPolygon()],
+                                           columns=['geometry'],
+                                           crs='EPSG:4326')
             region.gaps.insert(1,'status', 'no_gaps', False)
         elif isinstance(region.gaps['geometry'][0], MultiPolygon):
             region.gaps.insert(1,'status','gaps_found',False)
