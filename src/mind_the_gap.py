@@ -1436,11 +1436,11 @@ def mind_the_gap(in_points,
     all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
     y_gap_LineStrings = gen_gap_LineStrings(x_gaps, y_gaps)
 
-    lc = mc.LineCollection(all_gap_segments, linewidths=0.5)
-    fig, ax = pl.subplots()
-    ax.add_collection(lc)
-    ax.autoscale()
-    ax.margins(0.1)
+    #lc = mc.LineCollection(all_gap_segments, linewidths=0.5)
+    #fig, ax = pl.subplots()
+    #ax.add_collection(lc)
+    #ax.autoscale()
+    #ax.margins(0.1)
     # ---------------Find intersections with shapely--------------
     intersections = find_intersections(all_gap_LineStrings)
 

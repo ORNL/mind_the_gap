@@ -56,21 +56,42 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
         region.run(build_thresh=0.07, area_floor=0.3, area_ceiling=0.7)
         if region.gaps.empty:
             print('gaps are none')
-            return (row, col, 0)
+            print(row_col)
+            region.gaps.insert(1,'status', 'no_gaps', False)
+        elif isinstance(region.gaps['geometry'][0], MultiPolygon):
+            region.gaps.insert(1,'status','gaps_found',False)
         elif isinstance(region.gaps['geometry'][0], Polygon):
             gaps_geoms = list(region.gaps['geometry'])
             gaps_geoms = MultiPolygon(gaps_geoms)
             region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
                                            crs='EPSG:4326')
-        region.gaps.to_postgis('bldgs_01302024_mtg_v13',
+            region.gaps.insert(1,'status','gaps_found',False)
+        region.gaps.insert(2,'row',row_col[0],False)
+        region.gaps.insert(3,'col',row_col[1],False)
+
+        region.gaps.to_postgis('bldgs_01302024_mtg_v14',
                                write_engine,
                                if_exists='append',
                                schema='microsoft')
-        return(row, col, 1)
+        return
     except:
         # Need to have a way to tag tiles that we failed on
+        print('failed: ', row_col)
+        region.gaps = gpd.GeoDataFrame([MultiPolygon()],
+                                       columns=['geometry'],
+                                       crs='EPSG:4326')
+        region.gaps.insert(1,'status', 'no_gaps', False)
+        region.gaps.insert(2,'row',row_col[0],False)
+        region.gaps.insert(3,'col',row_col[1],False)
+
+        region.gaps.to_postgis('bldgs_01302024_mtg_v14',
+                               write_engine,
+                               if_exists='append',
+                               schema='microsoft')
+
         traceback.print_exc()
-        return(row, col, -1)
+
+        return
 
 start_time = time.perf_counter()
 
@@ -93,11 +114,11 @@ region_dict = {}
 
 # wipe table
 bldgs_schema = 'microsoft'
-gaps_table = 'bldgs_01302024_mtg_v1'
+gaps_table = 'bldgs_01302024_mtg_v14'
 clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-#connection = admin_engine.connect()
-#connection.execute(text(clear_qry))
-#connection.commit()
+connection = admin_engine.connect()
+connection.execute(text(clear_qry))
+connection.commit()
 
 with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
     try:
