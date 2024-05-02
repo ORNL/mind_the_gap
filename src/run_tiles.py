@@ -18,7 +18,7 @@ from shapely import MultiPolygon
 from shapely import Polygon
 from tqdm import tqdm
 
-def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
+def run_region(row_col, schema='google', table_name='bldgs_v3'):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -116,12 +116,12 @@ regions = []
 region_dict = {}
 
 # wipe table
-bldgs_schema = 'microsoft'
-gaps_table = 'bldgs_01302024_mtg_v14'
+bldgs_schema = 'google'
+gaps_table = 'bldgs_v3_mtg_v1'
 clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-connection = admin_engine.connect()
-connection.execute(text(clear_qry))
-connection.commit()
+#connection = admin_engine.connect()
+#connection.execute(text(clear_qry))
+#connection.commit()
 
 with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
     try:
