@@ -1,5 +1,7 @@
 """Execute Mind the Gap with automated parameter selection"""
 
+import warnings
+
 import geopandas as gpd
 import pandas as pd
 import numpy as np
@@ -175,7 +177,9 @@ class Region:
             # Check proportion of buildings in the gaps
             buildings_series = self.buildings.geometry
             in_gaps = self.buildings.sjoin(self.gaps, how='inner')
-            self.in_gaps_ratio = in_gaps.size / buildings_series.size
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                self.in_gaps_ratio = in_gaps.size / buildings_series.size
 
             # Get open space or grid cells
             joined_grid = gpd.sjoin(self.grid,
@@ -183,16 +187,18 @@ class Region:
                                     how='left',
                                     predicate='contains')
             empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
-            empty_grid_area = sum(empty_grid['geometry'].area)
-            gaps_in_empty_grid = gpd.overlay(empty_grid, # sjoin might be better
-                                             self.gaps,
-                                             how='intersection')
-            gaps_in_empty_grid = gaps_in_empty_grid.unary_union
-            if gaps_in_empty_grid is None:
-                return False
-            gaps_in_empty_grid_area = gaps_in_empty_grid.area
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                empty_grid_area = sum(empty_grid['geometry'].area)
+                gaps_in_empty_grid = gpd.overlay(empty_grid, # sjoin might be better
+                                                 self.gaps,
+                                                 how='intersection')
+                gaps_in_empty_grid = gaps_in_empty_grid.unary_union
+                if gaps_in_empty_grid is None:
+                    return False
+                gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
-            self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
+                self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
 
             if (self.in_gaps_ratio < build_thresh) and \
                 ((self.area_ratio > area_floor) and \
