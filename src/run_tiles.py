@@ -80,7 +80,7 @@ def run_region(row_col, schema='microsoft', table_name='bldgs_01302024'):
         region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                        columns=['geometry'],
                                        crs='EPSG:4326')
-        region.gaps.insert(1,'status', 'no_gaps', False)
+        region.gaps.insert(1,'status', 'failed', False)
         region.gaps.insert(2,'row',row_col[0],False)
         region.gaps.insert(3,'col',row_col[1],False)
 
