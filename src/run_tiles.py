@@ -96,42 +96,44 @@ def run_region(row_col, schema='google', table_name='bldgs_v3'):
 
         return
 
-start_time = time.perf_counter()
+if __name__ == "__main__":
 
-sys.setrecursionlimit(5000)
+    start_time = time.perf_counter()
 
-read_con = 'postgresql://landscanuser:iseeyou@gshs-aurelia01:5432/opendb'
-write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
-admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
-write_engine = create_engine(write_con)
-admin_engine = create_engine(admin_con)
+    sys.setrecursionlimit(5000)
 
-row_col_qry = """SELECT DISTINCT degree_row, degree_col
-                 FROM analytics.degree_tiles_stats"""
+    read_con = 'postgresql://landscanuser:iseeyou@gshs-aurelia01:5432/opendb'
+    write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
+    admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
+    write_engine = create_engine(write_con)
+    admin_engine = create_engine(admin_con)
 
-row_col_df = pd.read_sql_query(row_col_qry, read_con)
-row_col = row_col_df.itertuples(index=False, name=None)
+    row_col_qry = """SELECT DISTINCT degree_row, degree_col
+                     FROM analytics.degree_tiles_stats"""
 
-regions = []
-region_dict = {}
+    row_col_df = pd.read_sql_query(row_col_qry, read_con)
+    row_col = row_col_df.itertuples(index=False, name=None)
 
-# wipe table
-bldgs_schema = 'google'
-gaps_table = 'bldgs_v3_mtg_v1'
-clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-#connection = admin_engine.connect()
-#connection.execute(text(clear_qry))
-#connection.commit()
+    regions = []
+    region_dict = {}
 
-with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
-    try:
-        #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
-        #              total=len(list(row_col))):
-        #    pass
-        p.map(run_region, row_col, chunksize=1)
-    except:
-        traceback.print_exc()
+    # wipe table
+    bldgs_schema = 'google'
+    gaps_table = 'bldgs_v3_mtg_v1'
+    clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
+    #connection = admin_engine.connect()
+    #connection.execute(text(clear_qry))
+    #connection.commit()
 
-duration = timedelta(seconds=time.perf_counter()-start_time)
-print('done minding')
-print('Run time: ', duration)
+    with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
+        try:
+            #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
+            #              total=len(list(row_col))):
+            #    pass
+            p.map(run_region, row_col, chunksize=1)
+        except:
+            traceback.print_exc()
+
+    duration = timedelta(seconds=time.perf_counter()-start_time)
+    print('done minding')
+    print('Run time: ', duration)
