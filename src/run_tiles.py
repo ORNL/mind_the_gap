@@ -21,8 +21,8 @@ from shapely import Polygon
 from tqdm import tqdm
 
 def run_region(_row_col,
-               _schema='microsoft',
-               _table_name='bldgs_01302024'):
+               _schema='google',
+               _table_name='bldgs_v3'):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -82,7 +82,7 @@ def run_region(_row_col,
         region.gaps.to_postgis('bldgs_01302024_mtg_v14',
                                _write_engine,
                                if_exists='append',
-                               schema='microsoft')
+                               schema=_schema)
         return
     except:
         # Need to have a way to tag tiles that we failed on
@@ -98,7 +98,7 @@ def run_region(_row_col,
         region.gaps.to_postgis('bldgs_01302024_mtg_v14',
                                write_engine,
                                if_exists='append',
-                               schema='microsoft')
+                               schema=_schema)
 
         # traceback.print_exc()
 
