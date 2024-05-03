@@ -79,7 +79,7 @@ def run_region(_row_col,
         region.gaps.insert(2,'row',row_col[0],False)
         region.gaps.insert(3,'col',row_col[1],False)
 
-        region.gaps.to_postgis('bldgs_01302024_mtg_v14',
+        region.gaps.to_postgis('bldgs_mtg_v1',
                                _write_engine,
                                if_exists='append',
                                schema=_schema)
@@ -95,7 +95,7 @@ def run_region(_row_col,
         region.gaps.insert(2,'row',row_col[0],False)
         region.gaps.insert(3,'col',row_col[1],False)
 
-        region.gaps.to_postgis('bldgs_01302024_mtg_v14',
+        region.gaps.to_postgis('bldgs_mtg_v1',
                                write_engine,
                                if_exists='append',
                                schema=_schema)
