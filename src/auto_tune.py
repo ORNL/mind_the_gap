@@ -9,6 +9,7 @@ from shapely import geometry
 
 import mind_the_gap
 from chainage import chainage
+from sqlalchemy import create_engine
 
 # Region object
 class Region:
@@ -47,10 +48,12 @@ class Region:
         self.area_ratio = 0
         self.all_points_gdf = None
 
+        # Create engine
+        read_engine = create_engine(db_con)
 
         # Load boundaries
         self.boundaries = gpd.GeoDataFrame.from_postgis(bound_qry,
-                                                        db_con,
+                                                        read_engine,
                                                         geom_col='geometry')
         self.boundaries_shape = self.boundaries
         self.boundaries = ([self.boundaries.boundary][0])[0]
@@ -63,8 +66,11 @@ class Region:
 
         # Load buildings
         self.buildings = gpd.GeoDataFrame.from_postgis(build_qry,
-                                                       db_con,
+                                                       read_engine,
                                                        geom_col='geometry')
+        
+        # dispose engine
+        read_engine.dispose()
 
         #print('buildings loaded')
 

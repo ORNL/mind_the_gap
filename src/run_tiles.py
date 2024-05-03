@@ -20,7 +20,9 @@ from shapely import MultiPolygon
 from shapely import Polygon
 from tqdm import tqdm
 
-def run_region(_row_col, _read_con, _write_engine, _schema, _table_name):
+def run_region(_row_col,
+               _schema='microsoft',
+               _table_name='bldgs_01302024'):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -31,6 +33,9 @@ def run_region(_row_col, _read_con, _write_engine, _schema, _table_name):
     table_name : String
     
     """
+
+    _read_con = read_con
+    _write_engine = write_engine
 
     row = _row_col[0]
     col = _row_col[1]
@@ -143,15 +148,16 @@ if __name__ == "__main__":
             #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
             #              total=len(list(row_col))):
             #    pass
-            p.map(partial(run_region,
-                          _read_con=read_con,
-                          _write_engine=write_engine,
-                          _schema='google',
-                          _table_name='bldgs_v3'), row_col, chunksize=1)
+            p.map(run_region, row_col, chunksize=1)
         except:
             traceback.print_exc()
             logging.exception('Failed at Pool')
 
+    # Dispose of engines
+    write_engine.dispose()
+    admin_engine.dispose()
+
+    # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
     print('done minding')
     print('Run time: ', duration)
