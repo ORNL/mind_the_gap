@@ -150,7 +150,7 @@ if __name__ == "__main__":
             #    pass
             p.map(run_region, row_col, chunksize=1)
         except:
-            traceback.print_exc()
+            #traceback.print_exc()
             logging.exception('Failed at Pool')
 
     # Dispose of engines
