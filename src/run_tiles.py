@@ -8,6 +8,8 @@ import traceback
 import sys
 import time
 from datetime import timedelta
+import logging
+from functools import partial
 
 import geopandas as gpd
 import pandas as pd
@@ -18,7 +20,7 @@ from shapely import MultiPolygon
 from shapely import Polygon
 from tqdm import tqdm
 
-def run_region(row_col, schema='google', table_name='bldgs_v3'):
+def run_region(_row_col, _read_con, _write_engine, _schema, _table_name):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -30,8 +32,8 @@ def run_region(row_col, schema='google', table_name='bldgs_v3'):
     
     """
 
-    row = row_col[0]
-    col = row_col[1]
+    row = _row_col[0]
+    col = _row_col[1]
 
     # check if row or col is Nan
     if isnan(row) or isnan(col):
@@ -41,7 +43,7 @@ def run_region(row_col, schema='google', table_name='bldgs_v3'):
     col = int(col)
 
     build_qry = f"""SELECT b.pt_geom as geometry
-                    FROM {schema}.{table_name} b
+                    FROM {_schema}.{_table_name} b
                     INNER JOIN analytics.degree_tiles_stats t
                     on st_intersects(b.pt_geom, t.geom)
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
@@ -50,13 +52,13 @@ def run_region(row_col, schema='google', table_name='bldgs_v3'):
                     FROM analytics.degree_tiles_stats t
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
 
-    region = Region(read_con, bound_qry, build_qry)
+    region = Region(_read_con, bound_qry, build_qry)
 
     try:
         region.run(build_thresh=0.07, area_floor=0.3, area_ceiling=0.7)
         if region.gaps.empty:
-            print('gaps are none')
-            print(row_col)
+            #logging.info('gaps are none')
+            #logging.info(row_col)
             region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                            columns=['geometry'],
                                            crs='EPSG:4326')
@@ -73,13 +75,14 @@ def run_region(row_col, schema='google', table_name='bldgs_v3'):
         region.gaps.insert(3,'col',row_col[1],False)
 
         region.gaps.to_postgis('bldgs_01302024_mtg_v14',
-                               write_engine,
+                               _write_engine,
                                if_exists='append',
                                schema='microsoft')
         return
     except:
         # Need to have a way to tag tiles that we failed on
-        print('failed: ', row_col)
+        error_msg = 'Failed. Row: '+str(row)+' col: '+str(col[1])
+        logging.exception(error_msg)
         region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                        columns=['geometry'],
                                        crs='EPSG:4326')
@@ -92,11 +95,20 @@ def run_region(row_col, schema='google', table_name='bldgs_v3'):
                                if_exists='append',
                                schema='microsoft')
 
-        traceback.print_exc()
+        # traceback.print_exc()
 
         return
 
+def wrap_regions(args):
+    """Wrapper for passing multiple arguments to run_region with map"""
+
+    run_region(args[0],args[1],args[2],args[3],args[4])
+
+    return
+
 if __name__ == "__main__":
+
+    logging.basicConfig(filename='run_tile_google.log')
 
     start_time = time.perf_counter()
 
@@ -114,6 +126,7 @@ if __name__ == "__main__":
     row_col_df = pd.read_sql_query(row_col_qry, read_con)
     row_col = row_col_df.itertuples(index=False, name=None)
 
+
     regions = []
     region_dict = {}
 
@@ -130,9 +143,14 @@ if __name__ == "__main__":
             #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
             #              total=len(list(row_col))):
             #    pass
-            p.map(run_region, row_col, chunksize=1)
+            p.map(partial(run_region,
+                          _read_con=read_con,
+                          _write_engine=write_engine,
+                          _schema='google',
+                          _table_name='bldgs_v3'), row_col, chunksize=1)
         except:
             traceback.print_exc()
+            logging.exception('Failed at Pool')
 
     duration = timedelta(seconds=time.perf_counter()-start_time)
     print('done minding')
