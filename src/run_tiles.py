@@ -37,6 +37,8 @@ def run_region(_row_col,
     _read_con = read_con
     _write_engine = write_engine
 
+    _read_engine = create_engine(_read_con)
+
     row = _row_col[0]
     col = _row_col[1]
 
@@ -57,7 +59,13 @@ def run_region(_row_col,
                     FROM analytics.degree_tiles_stats t
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
 
-    region = Region(_read_con, bound_qry, build_qry)
+    try:
+        region = Region(_read_engine, bound_qry, build_qry)
+        _read_engine.dispose()
+    except:
+        logging.exception('failed to make region')
+        _read_engine.dispose()
+        return
 
     try:
         region.run(build_thresh=0.07, area_floor=0.3, area_ceiling=0.7)
@@ -143,7 +151,8 @@ if __name__ == "__main__":
     #connection.execute(text(clear_qry))
     #connection.commit()
 
-    with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
+    with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
+    #with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
             #              total=len(list(row_col))):
@@ -156,7 +165,7 @@ if __name__ == "__main__":
     # Dispose of engines
     write_engine.dispose()
     admin_engine.dispose()
-
+    # need to close connections if it fails
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
     print('done minding')

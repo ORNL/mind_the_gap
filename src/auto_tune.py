@@ -49,7 +49,7 @@ class Region:
         self.all_points_gdf = None
 
         # Create engine
-        read_engine = create_engine(db_con)
+        read_engine = db_con
 
         # Load boundaries
         self.boundaries = gpd.GeoDataFrame.from_postgis(bound_qry,
@@ -69,9 +69,6 @@ class Region:
                                                        read_engine,
                                                        geom_col='geometry')
         
-        # dispose engine
-        read_engine.dispose()
-
         #print('buildings loaded')
 
         # Make grid
