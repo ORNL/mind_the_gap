@@ -84,10 +84,10 @@ def run_region(_row_col,
             region.gaps = gpd.GeoDataFrame(data={'geometry':[gaps_geoms]},
                                            crs='EPSG:4326')
             region.gaps.insert(1,'status','gaps_found',False)
-        region.gaps.insert(2,'row',row_col[0],False)
-        region.gaps.insert(3,'col',row_col[1],False)
+        region.gaps.insert(2,'row',row,False)
+        region.gaps.insert(3,'col',col,False)
 
-        region.gaps.to_postgis('bldgs_mtg_v1',
+        region.gaps.to_postgis('bldgs_mtg_v2',
                                _write_engine,
                                if_exists='append',
                                schema=_schema)
@@ -100,10 +100,10 @@ def run_region(_row_col,
                                        columns=['geometry'],
                                        crs='EPSG:4326')
         region.gaps.insert(1,'status', 'failed', False)
-        region.gaps.insert(2,'row',row_col[0],False)
-        region.gaps.insert(3,'col',row_col[1],False)
+        region.gaps.insert(2,'row',row,False)
+        region.gaps.insert(3,'col',col,False)
 
-        region.gaps.to_postgis('bldgs_mtg_v1',
+        region.gaps.to_postgis('bldgs_mtg_v2',
                                write_engine,
                                if_exists='append',
                                schema=_schema)
@@ -151,8 +151,8 @@ if __name__ == "__main__":
     #connection.execute(text(clear_qry))
     #connection.commit()
 
-    with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
-    #with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
+    #with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
+    with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
             #              total=len(list(row_col))):
