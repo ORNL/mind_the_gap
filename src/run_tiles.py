@@ -27,15 +27,15 @@ def run_region(_row_col,
     
     Parameters
     ----------
-    row_col : array_like
+    _row_col : array_like
         Listof tuples containing row and column pairs
-    schema : String
-    table_name : String
+    _schema : String
+    _table_name : String
     
     """
 
-    _read_con = read_con
-    _write_engine = write_engine
+    _read_con = read_con # This should not be defined this way
+    _write_engine = write_engine # Same
 
     _read_engine = create_engine(_read_con)
 
@@ -63,7 +63,7 @@ def run_region(_row_col,
         region = Region(_read_engine, bound_qry, build_qry)
         _read_engine.dispose()
     except:
-        logging.exception('failed to make region')
+        logging.exception('failed to make region') # Is there a way to put this in the db?
         _read_engine.dispose()
         return
 
@@ -92,7 +92,7 @@ def run_region(_row_col,
                                if_exists='append',
                                schema=_schema)
         return
-    except:
+    except: # except exception? Make linter happy
         # Need to have a way to tag tiles that we failed on
         error_msg = 'Failed. Row: '+str(row)+' col: '+str(col[1])
         logging.exception(error_msg)
@@ -165,7 +165,6 @@ if __name__ == "__main__":
     # Dispose of engines
     write_engine.dispose()
     admin_engine.dispose()
-    # need to close connections if it fails
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
     print('done minding')

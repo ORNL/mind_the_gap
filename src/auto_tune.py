@@ -9,7 +9,6 @@ from shapely import geometry
 
 import mind_the_gap
 from chainage import chainage
-from sqlalchemy import create_engine
 
 # Region object
 class Region:
@@ -32,6 +31,8 @@ class Region:
     
         Parameters
         ----------
+        db_con : sqlalchemy engine
+            Engine for to read buildings from opendb
         bound_qry : String
             SQL query to get tile boundaries from database
         build_qry : String
@@ -68,11 +69,8 @@ class Region:
         self.buildings = gpd.GeoDataFrame.from_postgis(build_qry,
                                                        read_engine,
                                                        geom_col='geometry')
-        
-        #print('buildings loaded')
 
         # Make grid
-        #print('making grid')
         self.make_grid(size=grid_size)
 
     def make_grid(self, size=0.02):
