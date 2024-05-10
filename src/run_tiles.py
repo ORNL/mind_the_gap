@@ -22,7 +22,8 @@ from tqdm import tqdm
 
 def run_region(_row_col,
                _schema='google',
-               _table_name='bldgs_v3'):
+               _table_name='bldgs_v3',
+               _gaps_table='mtg_test'):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -51,7 +52,7 @@ def run_region(_row_col,
 
     build_qry = f"""SELECT b.pt_geom as geometry
                     FROM {_schema}.{_table_name} b
-                    INNER JOIN analytics.degree_tiles_stats t
+                    INNER JOIN public.country_tiles_sliversfix t
                     on st_intersects(b.pt_geom, t.geom)
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
 
@@ -62,7 +63,7 @@ def run_region(_row_col,
     try:
         region = Region(_read_engine, bound_qry, build_qry)
         _read_engine.dispose()
-    except:
+    except: # pylint: disable=bare-except
         logging.exception('failed to make region') # Is there a way to put this in the db?
         _read_engine.dispose()
         return
@@ -87,12 +88,12 @@ def run_region(_row_col,
         region.gaps.insert(2,'row',row,False)
         region.gaps.insert(3,'col',col,False)
 
-        region.gaps.to_postgis('bldgs_mtg_v2',
+        region.gaps.to_postgis(_gaps_table,
                                _write_engine,
                                if_exists='append',
                                schema=_schema)
         return
-    except: # except exception? Make linter happy
+    except: # pylint: disable=bare-except
         # Need to have a way to tag tiles that we failed on
         error_msg = 'Failed. Row: '+str(row)+' col: '+str(col[1])
         logging.exception(error_msg)
@@ -103,7 +104,7 @@ def run_region(_row_col,
         region.gaps.insert(2,'row',row,False)
         region.gaps.insert(3,'col',col,False)
 
-        region.gaps.to_postgis('bldgs_mtg_v2',
+        region.gaps.to_postgis(_gaps_table,
                                write_engine,
                                if_exists='append',
                                schema=_schema)
@@ -139,26 +140,25 @@ if __name__ == "__main__":
     row_col_df = pd.read_sql_query(row_col_qry, read_con)
     row_col = row_col_df.itertuples(index=False, name=None)
 
-
     regions = []
     region_dict = {}
 
     # wipe table
     bldgs_schema = 'google'
-    gaps_table = 'bldgs_v3_mtg_v1'
+    gaps_table = 'mtg_test'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-    #connection = admin_engine.connect()
-    #connection.execute(text(clear_qry))
-    #connection.commit()
+    connection = admin_engine.connect()
+    connection.execute(text(clear_qry))
+    connection.commit()
 
-    #with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
-    with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
+    with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
+    #with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
             #              total=len(list(row_col))):
             #    pass
             p.map(run_region, row_col, chunksize=1)
-        except:
+        except: # pylint: disable=bare-except
             #traceback.print_exc()
             logging.exception('Failed at Pool')
 
