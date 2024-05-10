@@ -23,7 +23,9 @@ from tqdm import tqdm
 def run_region(_row_col,
                _schema,
                _table_name,
-               _gaps_table):
+               _gaps_table,
+               _read_con,
+               _write_con):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -35,11 +37,11 @@ def run_region(_row_col,
     
     """
 
-    _read_con = read_con # This should not be defined this way
-    _write_engine = write_engine # Same
+    #_read_con = read_con # This should not be defined this way
+    #_write_engine = write_engine # Same
 
     _read_engine = create_engine(_read_con)
-
+    _write_engine = create_engine(_write_con)
     row = _row_col[0]
     col = _row_col[1]
 
@@ -92,7 +94,7 @@ def run_region(_row_col,
                                _write_engine,
                                if_exists='append',
                                schema=_schema)
-        return
+
     except: # pylint: disable=bare-except
         # Need to have a way to tag tiles that we failed on
         error_msg = 'Failed. Row: '+str(row)+' col: '+str(col[1])
@@ -105,12 +107,14 @@ def run_region(_row_col,
         region.gaps.insert(3,'col',col,False)
 
         region.gaps.to_postgis(_gaps_table,
-                               write_engine,
+                               _write_engine,
                                if_exists='append',
                                schema=_schema)
 
         # traceback.print_exc()
 
+    finally:
+        _write_engine.dispose()
         return
 
 def wrap_regions(args):
@@ -131,7 +135,7 @@ if __name__ == "__main__":
     read_con = 'postgresql://landscanuser:iseeyou@gshs-aurelia01:5432/opendb'
     write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
     admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
-    write_engine = create_engine(write_con)
+    #write_engine = create_engine(write_con)
     admin_engine = create_engine(admin_con)
 
     row_col_qry = """SELECT DISTINCT degree_row, degree_col
@@ -147,27 +151,29 @@ if __name__ == "__main__":
     bldgs_schema = 'google'
     gaps_table = 'mtg_test'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-    connection = admin_engine.connect()
-    connection.execute(text(clear_qry))
-    connection.commit()
+    #connection = admin_engine.connect()
+    #connection.execute(text(clear_qry))
+    #connection.commit()
+    #connection.close()
+    admin_engine.dispose()
 
     # prepare args
     bldgs_table = 'bldgs_v3'
     args = zip(row_col,
                repeat(bldgs_schema),
                repeat(bldgs_table),
-               repeat(gaps_table))
+               repeat(gaps_table),
+               repeat(read_con),
+               repeat(write_con))
+    
+    #args = list(args)
 
-    with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
-    #with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
+    #with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
+    with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
-            #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
-            #              total=len(list(row_col))):
-            #    pass
-            #p.map(run_region, row_col, chunksize=1)
             p.starmap(run_region, args, chunksize=1)
         except: # pylint: disable=bare-except
-            #traceback.print_exc()
+            traceback.print_exc()
             logging.exception('Failed at Pool')
 
     # Dispose of engines
