@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 def run_region(_row_col,
                _schema,
-               _table_name,
+               _bldgs_table,
                _gaps_table,
                _read_con,
                _write_con):
@@ -33,7 +33,10 @@ def run_region(_row_col,
     _row_col : array_like
         Listof tuples containing row and column pairs
     _schema : String
-    _table_name : String
+    _bldgs_table : String
+    _gaps_table : String
+    _read_con : String
+    _write_con : String
     
     """
 
@@ -53,7 +56,7 @@ def run_region(_row_col,
     col = int(col)
 
     build_qry = f"""SELECT b.pt_geom as geometry
-                    FROM {_schema}.{_table_name} b
+                    FROM {_schema}.{_bldgs_table} b
                     INNER JOIN public.country_tiles_sliversfix t
                     on st_intersects(b.pt_geom, t.geom)
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
@@ -135,7 +138,6 @@ if __name__ == "__main__":
     read_con = 'postgresql://landscanuser:iseeyou@gshs-aurelia01:5432/opendb'
     write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
     admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
-    #write_engine = create_engine(write_con)
     admin_engine = create_engine(admin_con)
 
     row_col_qry = """SELECT DISTINCT degree_row, degree_col
@@ -151,10 +153,10 @@ if __name__ == "__main__":
     bldgs_schema = 'google'
     gaps_table = 'mtg_test'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-    #connection = admin_engine.connect()
-    #connection.execute(text(clear_qry))
-    #connection.commit()
-    #connection.close()
+    connection = admin_engine.connect()
+    connection.execute(text(clear_qry))
+    connection.commit()
+    connection.close()
     admin_engine.dispose()
 
     # prepare args
@@ -166,7 +168,6 @@ if __name__ == "__main__":
                repeat(read_con),
                repeat(write_con))
     
-    #args = list(args)
 
     #with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
     with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
@@ -177,7 +178,6 @@ if __name__ == "__main__":
             logging.exception('Failed at Pool')
 
     # Dispose of engines
-    write_engine.dispose()
     admin_engine.dispose()
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
