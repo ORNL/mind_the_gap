@@ -18,7 +18,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 from shapely import MultiPolygon
 from shapely import Polygon
-from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 def run_region(_row_col,
                _schema,
@@ -26,6 +26,7 @@ def run_region(_row_col,
                _gaps_table,
                _read_con,
                _write_con):
+#def run_region(args):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -39,6 +40,14 @@ def run_region(_row_col,
     _write_con : String
     
     """
+
+    # unpack args
+    #_row_col = args[0]
+    #_schema = args[1]
+    #_bldgs_table = args[2]
+    #_gaps_table = args[3]
+    #_read_con = args[4]
+    #_write_con = args[5]
 
     #_read_con = read_con # This should not be defined this way
     #_write_engine = write_engine # Same
@@ -150,8 +159,8 @@ if __name__ == "__main__":
     region_dict = {}
 
     # wipe table
-    bldgs_schema = 'google'
-    gaps_table = 'mtg_test'
+    bldgs_schema = 'microsoft'
+    gaps_table = 'bldgs_01302024_mtg_v15'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
     connection = admin_engine.connect()
     connection.execute(text(clear_qry))
@@ -160,25 +169,33 @@ if __name__ == "__main__":
     admin_engine.dispose()
 
     # prepare args
-    bldgs_table = 'bldgs_v3'
+    bldgs_table = 'bldgs_01302024'
     args = zip(row_col,
                repeat(bldgs_schema),
                repeat(bldgs_table),
                repeat(gaps_table),
                repeat(read_con),
                repeat(write_con))
-    
+
 
     #with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
     with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             p.starmap(run_region, args, chunksize=1)
+            #for r in tqdm(p.imap(run_region, args, chunksize=1)):
+            #    pass
         except: # pylint: disable=bare-except
             traceback.print_exc()
             logging.exception('Failed at Pool')
 
+    '''
+    try:
+        r = process_map(run_region, args, max_workers=1, chunksize=1)
+    except: # pylint: disable=bare-except
+        traceback.print_exc()
+    '''
     # Dispose of engines
-    admin_engine.dispose()
+    #admin_engine.dispose()
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
     print('done minding')
