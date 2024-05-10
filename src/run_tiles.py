@@ -2,7 +2,7 @@
 
 import multiprocessing as mp
 from multiprocessing import Pool
-from itertools import product
+from itertools import repeat
 from math import isnan
 import traceback
 import sys
@@ -21,9 +21,9 @@ from shapely import Polygon
 from tqdm import tqdm
 
 def run_region(_row_col,
-               _schema='google',
-               _table_name='bldgs_v3',
-               _gaps_table='mtg_test'):
+               _schema,
+               _table_name,
+               _gaps_table):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -151,13 +151,21 @@ if __name__ == "__main__":
     connection.execute(text(clear_qry))
     connection.commit()
 
+    # prepare args
+    bldgs_table = 'bldgs_v3'
+    args = zip(row_col,
+               repeat(bldgs_schema),
+               repeat(bldgs_table),
+               repeat(gaps_table))
+
     with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
     #with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             #for i in tqdm(p.imap_unordered(run_region, row_col, chunksize=4),
             #              total=len(list(row_col))):
             #    pass
-            p.map(run_region, row_col, chunksize=1)
+            #p.map(run_region, row_col, chunksize=1)
+            p.starmap(run_region, args, chunksize=1)
         except: # pylint: disable=bare-except
             #traceback.print_exc()
             logging.exception('Failed at Pool')
