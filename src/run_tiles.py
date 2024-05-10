@@ -150,7 +150,7 @@ if __name__ == "__main__":
     admin_engine = create_engine(admin_con)
 
     row_col_qry = """SELECT DISTINCT degree_row, degree_col
-                     FROM analytics.degree_tiles_stats"""
+                     FROM public.country_tiles_sliversfix"""
 
     row_col_df = pd.read_sql_query(row_col_qry, read_con)
     row_col = row_col_df.itertuples(index=False, name=None)
