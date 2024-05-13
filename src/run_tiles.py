@@ -9,7 +9,6 @@ import sys
 import time
 from datetime import timedelta
 import logging
-from functools import partial
 
 import geopandas as gpd
 import pandas as pd
@@ -18,7 +17,6 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 from shapely import MultiPolygon
 from shapely import Polygon
-from tqdm.contrib.concurrent import process_map
 
 def run_region(_row_col,
                _schema,
@@ -159,7 +157,7 @@ if __name__ == "__main__":
         except: # pylint: disable=bare-except
             traceback.print_exc()
             logging.exception('Failed at Pool')
-    
+
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
     print('done minding')
