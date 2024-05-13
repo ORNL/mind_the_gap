@@ -10,3 +10,4 @@ Rtree>=1.0.0
 sqlalchemy>=1.4.44
 psycopg2-binary>=2.9.5
 geoalchemy2>=0.12.5
+tqdm>=4.66.2

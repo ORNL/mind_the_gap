@@ -1,5 +1,7 @@
 """Execute Mind the Gap with automated parameter selection"""
 
+import warnings
+
 import geopandas as gpd
 import pandas as pd
 import numpy as np
@@ -18,12 +20,9 @@ class Region:
     """
 
     def __init__(self,
-                 name,
                  db_con,
-                 bound_path='',
-                 build_path='',
-                 bound_from_file=False,
-                 build_from_file=False,
+                 bound_qry,
+                 build_qry,
                  grid_size=0.02):
         """The region we are running Mind the Gap on.
 
@@ -32,22 +31,17 @@ class Region:
     
         Parameters
         ----------
-        name : String
-            Name of the region as used in the database
-        db_con : String
-            String used to establis database connection
-        bound_path : String
-            Optional path to load boundaries from file
-        build_path : String
-            Optional path to load boundaries from file
-        bound_from_file : boolean
-            Use path to load boundaries or not
-        build_from_file : boolean
-            Use path to load buildings or not
+        db_con : sqlalchemy engine
+            Engine for to read buildings from opendb
+        bound_qry : String
+            SQL query to get tile boundaries from database
+        build_qry : String
+            SQL query to get buildings from the database
+        grid_size : float
+            Size of the grid used to find empty space
 
         """
 
-        self.name = name
         self.db_con = db_con
         self.gaps = []
         self.grid = []
@@ -55,46 +49,28 @@ class Region:
         self.area_ratio = 0
         self.all_points_gdf = None
 
+        # Create engine
+        read_engine = db_con
 
         # Load boundaries
-        if bound_from_file:
-            self.boundaries = gpd.read_file(bound_path)
-            self.boundaries_shape = self.boundaries
-            self.boundaries = ([self.boundaries.boundary][0])[0]
-
-        else:
-            # Load boundaries
-            boundaries_qry = f"""SELECT st_multi(st_buffer(geom,0.2)) as geom
-                                 FROM boundary.admin0
-                                 WHERE country = '{self.name}'"""
-            self.boundaries = gpd.GeoDataFrame.from_postgis(boundaries_qry,
-                                                            db_con,
-                                                            geom_col='geom')
-            self.boundaries_shape = self.boundaries
-            self.boundaries = ([self.boundaries.boundary][0])[0]
-            print('boundaries loaded')
-
-        print('boundaries loaded')
+        self.boundaries = gpd.GeoDataFrame.from_postgis(bound_qry,
+                                                        read_engine,
+                                                        geom_col='geometry')
+        self.boundaries_shape = self.boundaries
+        self.boundaries = ([self.boundaries.boundary][0])[0]
+        #print('boundaries loaded')
 
         # Generate chainage
         bnd_chain = chainage(self.boundaries, 0.01)
         self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
-        print('chainage done')
+        #print('chainage done')
 
         # Load buildings
-        if build_from_file:
-            self.buildings = gpd.read_file(build_path)
-        else:
-            buildings_qry = f"""SELECT ST_Centroid(geom) as geometry
-                                FROM microsoft.{self.name}"""
-            self.buildings = gpd.GeoDataFrame.from_postgis(buildings_qry,
-                                                           db_con,
-                                                           geom_col='geometry')
-
-        print('buildings loaded')
+        self.buildings = gpd.GeoDataFrame.from_postgis(build_qry,
+                                                       read_engine,
+                                                       geom_col='geometry')
 
         # Make grid
-        print('making grid')
         self.make_grid(size=grid_size)
 
     def make_grid(self, size=0.02):
@@ -156,7 +132,7 @@ class Region:
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
-        print('calling mtg')
+        
         try:
             self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf,
                                                   w,
@@ -166,11 +142,11 @@ class Region:
                                                   i,
                                                   i,
                                                   alpha=a)
-            print('mtg ran')
+
         except Exception as e:
-            print(e)
-            print('somehing broke setting gaps to []')
-            self.gaps = None #This breaks fit_check
+            self.gaps =  gpd.GeoDataFrame(columns=['geom'],
+                                          geometry='geom',
+                                          crs='EPSG:4326')
 
     def fit_check(self, build_thresh, area_floor, area_ceiling):
         """Checks how well the gaps fit the data
@@ -200,7 +176,9 @@ class Region:
             # Check proportion of buildings in the gaps
             buildings_series = self.buildings.geometry
             in_gaps = self.buildings.sjoin(self.gaps, how='inner')
-            self.in_gaps_ratio = in_gaps.size / buildings_series.size
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                self.in_gaps_ratio = in_gaps.size / buildings_series.size
 
             # Get open space or grid cells
             joined_grid = gpd.sjoin(self.grid,
@@ -208,16 +186,18 @@ class Region:
                                     how='left',
                                     predicate='contains')
             empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
-            empty_grid_area = sum(empty_grid['geometry'].area)
-            gaps_in_empty_grid = gpd.overlay(empty_grid, # sjoin might be better
-                                             self.gaps,
-                                             how='intersection')
-            gaps_in_empty_grid = gaps_in_empty_grid.unary_union
-            if gaps_in_empty_grid is None:
-                return False
-            gaps_in_empty_grid_area = gaps_in_empty_grid.area
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                empty_grid_area = sum(empty_grid['geometry'].area)
+                gaps_in_empty_grid = gpd.overlay(empty_grid, # sjoin might be better
+                                                 self.gaps,
+                                                 how='intersection')
+                gaps_in_empty_grid = gaps_in_empty_grid.unary_union
+                if gaps_in_empty_grid is None:
+                    return False
+                gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
-            self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
+                self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
 
             if (self.in_gaps_ratio < build_thresh) and \
                 ((self.area_ratio > area_floor) and \
@@ -230,7 +210,6 @@ class Region:
     def run(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
         """Iterates through parameters until a good set is settled on"""
 
-        print('tuning')
         # Starting params
         _w = 0.03
         _ln_ratio = 2
@@ -242,8 +221,10 @@ class Region:
         past_params = []
 
         while True:
-            print(these_params)
-            print(min(these_params))
+            if self.buildings.geometry.size == 0:
+                self.gaps = self.boundaries_shape
+                break
+
             if min(these_params) < 0:
                 break
 
@@ -255,17 +236,14 @@ class Region:
                 fit = self.fit_check(build_thresh, area_floor, area_ceiling)
 
                 if fit:
-                    print('gaps found')
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
-                    print(these_params)
                     break # Self.gaps will be our final gaps
                 else: #We will save the gaps and parameters and update
                     past_gaps.append(self.gaps)
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
-                    print(these_params)
                     past_params.append(these_params)
 
             if fit:
                 break
             # Update paramaters
-            _w = _w - 0.005 # Should this be hardcoded?
+            _w = _w - 0.0025 # Should this be hardcoded?
