@@ -128,11 +128,11 @@ class Region:
         # Combine buildings and border chainage
         self.all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,
                                                           self.chainage_gdf],
-                                                          ignore_index=True))
+                                                         ignore_index=True))
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
-        #print('calling mtg')
+        
         try:
             self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf,
                                                   w,
@@ -142,10 +142,8 @@ class Region:
                                                   i,
                                                   i,
                                                   alpha=a)
-            #print('mtg ran')
+
         except Exception as e:
-            #print(e)
-            #print('somehing broke setting gaps to []')
             self.gaps =  gpd.GeoDataFrame(columns=['geom'],
                                           geometry='geom',
                                           crs='EPSG:4326')
@@ -212,7 +210,6 @@ class Region:
     def run(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
         """Iterates through parameters until a good set is settled on"""
 
-        #print('tuning')
         # Starting params
         _w = 0.03
         _ln_ratio = 2
@@ -225,12 +222,9 @@ class Region:
 
         while True:
             if self.buildings.geometry.size == 0:
-                #print('Tile empty')
                 self.gaps = self.boundaries_shape
                 break
 
-            #print(these_params)
-            #print(min(these_params))
             if min(these_params) < 0:
                 break
 
@@ -242,14 +236,11 @@ class Region:
                 fit = self.fit_check(build_thresh, area_floor, area_ceiling)
 
                 if fit:
-                    #print('gaps found')
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
-                    #print(these_params)
                     break # Self.gaps will be our final gaps
                 else: #We will save the gaps and parameters and update
                     past_gaps.append(self.gaps)
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
-                    #print(these_params)
                     past_params.append(these_params)
 
             if fit:
