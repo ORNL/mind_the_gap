@@ -26,7 +26,6 @@ def run_region(_row_col,
                _gaps_table,
                _read_con,
                _write_con):
-#def run_region(args):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -40,17 +39,6 @@ def run_region(_row_col,
     _write_con : String
     
     """
-
-    # unpack args
-    #_row_col = args[0]
-    #_schema = args[1]
-    #_bldgs_table = args[2]
-    #_gaps_table = args[3]
-    #_read_con = args[4]
-    #_write_con = args[5]
-
-    #_read_con = read_con # This should not be defined this way
-    #_write_engine = write_engine # Same
 
     _read_engine = create_engine(_read_con)
     _write_engine = create_engine(_write_con)
@@ -85,8 +73,6 @@ def run_region(_row_col,
     try:
         region.run(build_thresh=0.07, area_floor=0.4, area_ceiling=0.8)
         if region.gaps.empty:
-            #logging.info('gaps are none')
-            #logging.info(row_col)
             region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                            columns=['geometry'],
                                            crs='EPSG:4326')
@@ -108,7 +94,6 @@ def run_region(_row_col,
                                schema=_schema)
 
     except: # pylint: disable=bare-except
-        # Need to have a way to tag tiles that we failed on
         error_msg = 'Failed. Row: '+str(row)+' col: '+str(col[1])
         logging.exception(error_msg)
         region.gaps = gpd.GeoDataFrame([MultiPolygon()],
@@ -123,18 +108,9 @@ def run_region(_row_col,
                                if_exists='append',
                                schema=_schema)
 
-        # traceback.print_exc()
-
     finally:
         _write_engine.dispose()
         return
-
-def wrap_regions(args):
-    """Wrapper for passing multiple arguments to run_region with map"""
-
-    run_region(args[0],args[1],args[2],args[3],args[4])
-
-    return
 
 if __name__ == "__main__":
 
@@ -177,25 +153,13 @@ if __name__ == "__main__":
                repeat(read_con),
                repeat(write_con))
 
-
-    #with Pool(processes=1, maxtasksperchild=4) as p: # for debugging
     with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             p.starmap(run_region, args, chunksize=1)
-            #for r in tqdm(p.imap(run_region, args, chunksize=1)):
-            #    pass
         except: # pylint: disable=bare-except
             traceback.print_exc()
             logging.exception('Failed at Pool')
-
-    '''
-    try:
-        r = process_map(run_region, args, max_workers=1, chunksize=1)
-    except: # pylint: disable=bare-except
-        traceback.print_exc()
-    '''
-    # Dispose of engines
-    #admin_engine.dispose()
+    
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
     print('done minding')
