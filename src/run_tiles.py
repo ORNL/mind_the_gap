@@ -71,7 +71,7 @@ def run_region(_row_col,
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
 
     bound_qry = f"""SELECT t.geom as geometry
-                    FROM analytics.degree_tiles_stats t
+                    FROM public.country_tiles_sliversfix t
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
 
     try:
@@ -83,7 +83,7 @@ def run_region(_row_col,
         return
 
     try:
-        region.run(build_thresh=0.07, area_floor=0.3, area_ceiling=0.7)
+        region.run(build_thresh=0.07, area_floor=0.4, area_ceiling=0.8)
         if region.gaps.empty:
             #logging.info('gaps are none')
             #logging.info(row_col)
@@ -159,8 +159,8 @@ if __name__ == "__main__":
     region_dict = {}
 
     # wipe table
-    bldgs_schema = 'microsoft'
-    gaps_table = 'bldgs_01302024_mtg_v15'
+    bldgs_schema = 'google'
+    gaps_table = 'bldgs_v3_mtg_v3'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
     connection = admin_engine.connect()
     connection.execute(text(clear_qry))
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     admin_engine.dispose()
 
     # prepare args
-    bldgs_table = 'bldgs_01302024'
+    bldgs_table = 'bldgs_v3'
     args = zip(row_col,
                repeat(bldgs_schema),
                repeat(bldgs_table),
