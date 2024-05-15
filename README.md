@@ -15,3 +15,11 @@ Mind the Gap requires two inputs: building footprints (or just centroids) and a 
 ### Outputs
 
 Gaps will be stored as a GeoDataFrame of the Region object once `Region.run` has ran.
+
+## What's new
+
+Version 2.0 brings two significant updates:
+
+The `auto_tune` module allows you to get some pretty good gaps without having to play around with too many parameters
+
+`run_tiles.py` Provides a process for executing `auto_tune` on a large tiled dataset stored in a PostGIS database.
