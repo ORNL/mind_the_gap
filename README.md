@@ -1,6 +1,6 @@
 # Mind the Gap
 
-
+Mind the Gap is an algorithm for detecting gaps in building footprints datasets, with a preference for finsing the rectangular-shaped gaps caused by missing imagery tiles. It works best on country-sized datasets or smaller, or larger datasets divided into smaller chunks.
 
 ## Getting started
 
