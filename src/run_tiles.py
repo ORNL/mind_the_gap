@@ -136,10 +136,10 @@ if __name__ == "__main__":
     bldgs_schema = 'google'
     gaps_table = 'bldgs_v3_mtg_v3'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-    connection = admin_engine.connect()
-    connection.execute(text(clear_qry))
-    connection.commit()
-    connection.close()
+    #connection = admin_engine.connect()
+    #connection.execute(text(clear_qry))
+    #connection.commit()
+    #connection.close()
     admin_engine.dispose()
 
     # prepare args
