@@ -4,7 +4,6 @@ import multiprocessing as mp
 from multiprocessing import Pool
 from itertools import repeat
 from math import isnan
-import traceback
 import sys
 import time
 from datetime import timedelta
@@ -65,7 +64,8 @@ def run_region(_row_col,
         region = Region(_read_engine, bound_qry, build_qry)
         _read_engine.dispose()
     except: # pylint: disable=bare-except
-        logging.exception('failed to make region') # Is there a way to put this in the db?
+        logging.exception('Failed to make region. Row: ' + \
+                          str(row) + ' Col: ' + str(col))
         _read_engine.dispose()
         return
 
@@ -93,7 +93,7 @@ def run_region(_row_col,
                                schema=_schema)
 
     except: # pylint: disable=bare-except
-        error_msg = 'Failed. Row: '+str(row)+' col: '+str(col[1])
+        error_msg = 'Failed to run. Row: '+str(row)+' col: '+str(col)
         logging.exception(error_msg)
         region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                        columns=['geometry'],
@@ -166,12 +166,11 @@ if __name__ == "__main__":
     logging.info('Buildings table: ' + bldgs_table)
     logging.info('Gaps table: ' + gaps_table)
 
-    #with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
-    #    try:
-    #        p.starmap(run_region, args, chunksize=1)
-    #    except: # pylint: disable=bare-except
-    #        traceback.print_exc()
-    #        logging.exception('Failed at Pool')
+    with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
+        try:
+            p.starmap(run_region, args, chunksize=1)
+        except: # pylint: disable=bare-except
+            logging.exception('Failed at Pool')
 
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
