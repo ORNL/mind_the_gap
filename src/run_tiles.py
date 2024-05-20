@@ -8,6 +8,7 @@ import traceback
 import sys
 import time
 from datetime import timedelta
+from datetime import datetime
 import logging
 
 import geopandas as gpd
@@ -112,8 +113,9 @@ def run_region(_row_col,
 
 if __name__ == "__main__":
 
-    # Logging 
-    log_filename = 'mtg.log'
+    # Logging
+    now_str = str(datetime.now().strftime("%Y%m%d%H%M%S"))
+    log_filename = 'mtg_' + now_str + '.log'
     logging.basicConfig(filename=log_filename,
                         filemode='w',
                         format = '%(asctime)s %(levelname)-8s %(message)s',
