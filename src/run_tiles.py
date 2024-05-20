@@ -112,8 +112,14 @@ def run_region(_row_col,
 
 if __name__ == "__main__":
 
-    logging.basicConfig(filename='run_tile_google.log')
+    # Logging 
+    log_filename = 'mtg.log'
+    logging.basicConfig(filename=log_filename,
+                        filemode='w',
+                        datefmt='%Y-%m-%d %H:%M:%S')
 
+    logging.info('Run started')
+    
     start_time = time.perf_counter()
 
     sys.setrecursionlimit(5000)
