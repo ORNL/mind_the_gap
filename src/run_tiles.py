@@ -116,7 +116,8 @@ if __name__ == "__main__":
     log_filename = 'mtg.log'
     logging.basicConfig(filename=log_filename,
                         filemode='w',
-                        datefmt='%Y-%m-%d %H:%M:%S')
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        level=0)
 
     logging.info('Run started')
     
