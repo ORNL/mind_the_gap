@@ -109,7 +109,8 @@ def run_region(_row_col,
 
     finally:
         _write_engine.dispose()
-        return
+
+    return
 
 if __name__ == "__main__":
 
