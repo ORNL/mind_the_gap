@@ -64,8 +64,8 @@ def run_region(_row_col,
         region = Region(_read_engine, bound_qry, build_qry)
         _read_engine.dispose()
     except: # pylint: disable=bare-except
-        logging.exception('Failed to make region. Row: ' + \
-                          str(row) + ' Col: ' + str(col))
+        error_msg = 'Failed to make region. Row: '+str(row)+' Col: '+str(col)
+        logging.exception(error_msg)
         _read_engine.dispose()
         return
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
                         level=0)
 
     logging.info('Run started')
-    
+
     start_time = time.perf_counter()
 
     sys.setrecursionlimit(5000)
@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
-    print('done minding')
+    print('Done minding')
     time_string = 'Run time: ' + str(duration)
     print(time_string)
 
