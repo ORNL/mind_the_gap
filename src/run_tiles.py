@@ -4,10 +4,10 @@ import multiprocessing as mp
 from multiprocessing import Pool
 from itertools import repeat
 from math import isnan
-import traceback
 import sys
 import time
 from datetime import timedelta
+from datetime import datetime
 import logging
 
 import geopandas as gpd
@@ -64,7 +64,8 @@ def run_region(_row_col,
         region = Region(_read_engine, bound_qry, build_qry)
         _read_engine.dispose()
     except: # pylint: disable=bare-except
-        logging.exception('failed to make region') # Is there a way to put this in the db?
+        error_msg = 'Failed to make region. Row: '+str(row)+' Col: '+str(col)
+        logging.exception(error_msg)
         _read_engine.dispose()
         return
 
@@ -92,7 +93,7 @@ def run_region(_row_col,
                                schema=_schema)
 
     except: # pylint: disable=bare-except
-        error_msg = 'Failed. Row: '+str(row)+' col: '+str(col[1])
+        error_msg = 'Failed to run. Row: '+str(row)+' col: '+str(col)
         logging.exception(error_msg)
         region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                        columns=['geometry'],
@@ -108,11 +109,21 @@ def run_region(_row_col,
 
     finally:
         _write_engine.dispose()
-        return
+
+    return
 
 if __name__ == "__main__":
 
-    logging.basicConfig(filename='run_tile_google.log')
+    # Logging
+    now_str = str(datetime.now().strftime("%Y%m%d%H%M%S"))
+    log_filename = 'mtg_' + now_str + '.log'
+    logging.basicConfig(filename=log_filename,
+                        filemode='w',
+                        format = '%(asctime)s %(levelname)-8s %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        level=0)
+
+    logging.info('Run started')
 
     start_time = time.perf_counter()
 
@@ -134,13 +145,13 @@ if __name__ == "__main__":
 
     # wipe table
     bldgs_schema = 'google'
-    gaps_table = 'bldgs_v3_mtg_v3'
+    gaps_table = 'bldgs_v3_mtg_v4'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-    connection = admin_engine.connect()
-    connection.execute(text(clear_qry))
-    connection.commit()
-    connection.close()
-    admin_engine.dispose()
+    #connection = admin_engine.connect()
+    #connection.execute(text(clear_qry))
+    #connection.commit()
+    #connection.close()
+    #admin_engine.dispose()
 
     # prepare args
     bldgs_table = 'bldgs_v3'
@@ -151,14 +162,22 @@ if __name__ == "__main__":
                repeat(read_con),
                repeat(write_con))
 
+    # Add database info to the log file
+    logging.info('Buildings schema: ' + bldgs_schema)
+    logging.info('Buildings table: ' + bldgs_table)
+    logging.info('Gaps table: ' + gaps_table)
+
     with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             p.starmap(run_region, args, chunksize=1)
         except: # pylint: disable=bare-except
-            traceback.print_exc()
             logging.exception('Failed at Pool')
 
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
-    print('done minding')
-    print('Run time: ', duration)
+    print('Done minding')
+    time_string = 'Run time: ' + str(duration)
+    print(time_string)
+
+    logging.info('Done minding')
+    logging.info(time_string)

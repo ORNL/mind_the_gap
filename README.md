@@ -23,3 +23,5 @@ Version 2.0 brings two significant updates:
 The `auto_tune` module allows you to get some pretty good gaps without having to play around with too many parameters
 
 `run_tiles.py` Provides a process for executing `auto_tune` on a large tiled dataset stored in a PostGIS database.
+
+Version 2.0.1: Improved logging in `run_tiles.py`
