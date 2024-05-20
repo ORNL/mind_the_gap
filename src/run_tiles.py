@@ -159,6 +159,11 @@ if __name__ == "__main__":
                repeat(read_con),
                repeat(write_con))
 
+    # Add database info to the log file
+    logging.info('Buildings schema: ' + bldgs_schema)
+    logging.info('Buildings table: ' + bldgs_table)
+    logging.info('Gaps table: ' + gaps_table)
+
     #with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
     #    try:
     #        p.starmap(run_region, args, chunksize=1)
