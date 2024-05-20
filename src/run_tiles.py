@@ -116,6 +116,7 @@ if __name__ == "__main__":
     log_filename = 'mtg.log'
     logging.basicConfig(filename=log_filename,
                         filemode='w',
+                        format = '%(asctime)s %(levelname)-8s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
                         level=0)
 
@@ -141,13 +142,13 @@ if __name__ == "__main__":
 
     # wipe table
     bldgs_schema = 'google'
-    gaps_table = 'bldgs_v3_mtg_v3'
+    gaps_table = 'bldgs_v3_mtg_v4'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-    connection = admin_engine.connect()
-    connection.execute(text(clear_qry))
-    connection.commit()
-    connection.close()
-    admin_engine.dispose()
+    #connection = admin_engine.connect()
+    #connection.execute(text(clear_qry))
+    #connection.commit()
+    #connection.close()
+    #admin_engine.dispose()
 
     # prepare args
     bldgs_table = 'bldgs_v3'
@@ -158,14 +159,18 @@ if __name__ == "__main__":
                repeat(read_con),
                repeat(write_con))
 
-    with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
-        try:
-            p.starmap(run_region, args, chunksize=1)
-        except: # pylint: disable=bare-except
-            traceback.print_exc()
-            logging.exception('Failed at Pool')
+    #with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
+    #    try:
+    #        p.starmap(run_region, args, chunksize=1)
+    #    except: # pylint: disable=bare-except
+    #        traceback.print_exc()
+    #        logging.exception('Failed at Pool')
 
     # Finish
     duration = timedelta(seconds=time.perf_counter()-start_time)
     print('done minding')
-    print('Run time: ', duration)
+    time_string = 'Run time: ' + str(duration)
+    print(time_string)
+
+    logging.info('Done minding')
+    logging.info(time_string)
