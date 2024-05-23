@@ -186,6 +186,11 @@ if __name__ == "__main__":
     logging.info('Buildings table: ' + bldgs_table)
     logging.info('Gaps table: ' + gaps_table)
 
+    # Add Region.run parameters to the log file
+    logging.info('Building threshold: ' + building_thresh)
+    logging.info('Area floor: ' + area_floor)
+    logging.info('Area ceiling: ' + area_ceiling)
+    
     with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             p.starmap(run_region, args, chunksize=1)
