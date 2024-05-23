@@ -132,7 +132,7 @@ if __name__ == "__main__":
                         filemode='w',
                         format = '%(asctime)s %(levelname)-8s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
-                        level=0)
+                        level=20)
 
     logging.info('Run started')
 
