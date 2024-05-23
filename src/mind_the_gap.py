@@ -1492,6 +1492,10 @@ def mind_the_gap(in_points,
         return polygons
 
     if polygon_type == 'rim':
+        warn_message = '''rim polygons are depracted as of v2.1.0
+                          and will be removed in v3.0.
+                          Use alpha polygons instead.'''
+        warn(warn_message, DeprecationWarning,stacklevel=2)
         polygons = generate_rim_polygons(cluster_x,
                                          cluster_y,
                                          all_gap_segments,
