@@ -38,11 +38,11 @@ def run_region(_row_col,
     _gaps_table : String
     _read_con : String
     _write_con : String
-    b_thresh : float
+    _b_thresh : float
         building threshold for auto_tune.Region.run
-    a_floor : float
+    _a_floor : float
         area floor threshold for auto_tune.Region.run
-    a_ceiling : float
+    _a_ceiling : float
         area cieling threshold for auto_tune.Region.run
 
     """
