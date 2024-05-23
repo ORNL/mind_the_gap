@@ -19,6 +19,7 @@ __author__ = "Jack Gonzales"
 
 from operator import itemgetter
 from itertools import chain
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -960,6 +961,11 @@ def get_outer_points(x_inds, y_inds, gaps):
 
     """
 
+    warn_message = '''get_outer_points function is depracted as of v2.1.0
+                      and will be removed in v3.0.
+                      Use alpha polygons instead.'''
+    warn(warn_message, DeprecationWarning,stacklevel=2)
+
     # outer_points = np.zeros([np.shape(gaps[:,1])[0]*2,2])
     outer_points = []
 
@@ -1287,6 +1293,11 @@ def generate_rim_polygons(x_clusters,
 
     """
 
+    warn_message = '''generate_rim_polygons function is depracted as of v2.1.0
+                      and will be removed in v3.0.
+                      Use alpha polygons instead.'''
+    warn(warn_message, DeprecationWarning,stacklevel=2)
+
     shapes = []
 
     for i, _ in enumerate(x_clusters):
@@ -1481,6 +1492,10 @@ def mind_the_gap(in_points,
         return polygons
 
     if polygon_type == 'rim':
+        warn_message = '''rim polygons are depracted as of v2.1.0
+                          and will be removed in v3.0.
+                          Use alpha polygons instead.'''
+        warn(warn_message, DeprecationWarning,stacklevel=2)
         polygons = generate_rim_polygons(cluster_x,
                                          cluster_y,
                                          all_gap_segments,
