@@ -156,7 +156,9 @@ if __name__ == "__main__":
 
     # wipe table
     bldgs_schema = 'google'
-    gaps_table = 'bldgs_v3_mtg_v4'
+    bldgs_table = 'bldgs_v3'
+    gaps_version = '4'
+    gaps_table = f"""{bldgs_table}_mtg_v{gaps_version}"""
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
     #connection = admin_engine.connect()
     #connection.execute(text(clear_qry))
