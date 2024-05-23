@@ -23,19 +23,28 @@ def run_region(_row_col,
                _bldgs_table,
                _gaps_table,
                _read_con,
-               _write_con):
+               _write_con,
+               _b_thresh,
+               _a_floor,
+               _a_ceiling):
     """"Execute the `run` method on a region object
     
     Parameters
     ----------
     _row_col : array_like
-        Listof tuples containing row and column pairs
+        List of tuples containing row and column pairs
     _schema : String
     _bldgs_table : String
     _gaps_table : String
     _read_con : String
     _write_con : String
-    
+    _b_thresh : float
+        building threshold for auto_tune.Region.run
+    _a_floor : float
+        area floor threshold for auto_tune.Region.run
+    _a_ceiling : float
+        area cieling threshold for auto_tune.Region.run
+
     """
 
     _read_engine = create_engine(_read_con)
@@ -70,7 +79,9 @@ def run_region(_row_col,
         return
 
     try:
-        region.run(build_thresh=0.07, area_floor=0.4, area_ceiling=0.8)
+        region.run(build_thresh = _b_thresh,
+                   area_floor = _a_floor,
+                   area_ceiling = _a_ceiling)
         if region.gaps.empty:
             region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                            columns=['geometry'],
@@ -153,6 +164,11 @@ if __name__ == "__main__":
     #connection.close()
     #admin_engine.dispose()
 
+    # Region.run parameters
+    building_thresh = 0.07
+    area_floor = 0.4
+    area_ceiling = 0.8
+
     # prepare args
     bldgs_table = 'bldgs_v3'
     args = zip(row_col,
@@ -160,7 +176,10 @@ if __name__ == "__main__":
                repeat(bldgs_table),
                repeat(gaps_table),
                repeat(read_con),
-               repeat(write_con))
+               repeat(write_con),
+               repeat(building_thresh),
+               repeat(area_floor),
+               repeat(area_ceiling))
 
     # Add database info to the log file
     logging.info('Buildings schema: ' + bldgs_schema)
