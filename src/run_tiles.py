@@ -24,9 +24,9 @@ def run_region(_row_col,
                _gaps_table,
                _read_con,
                _write_con,
-               b_thresh,
-               a_floor,
-               a_ceiling):
+               _b_thresh,
+               _a_floor,
+               _a_ceiling):
     """"Execute the `run` method on a region object
     
     Parameters
@@ -79,9 +79,9 @@ def run_region(_row_col,
         return
 
     try:
-        region.run(build_thresh=b_thresh,
-                   area_floor=a_floor,
-                   area_ceiling=a_ceiling)
+        region.run(build_thresh = _b_thresh,
+                   area_floor = _a_floor,
+                   area_ceiling = _a_ceiling)
         if region.gaps.empty:
             region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                            columns=['geometry'],
