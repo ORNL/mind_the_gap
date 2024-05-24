@@ -140,31 +140,47 @@ if __name__ == "__main__":
 
     sys.setrecursionlimit(5000)
 
+    # db info
     read_con = 'postgresql://landscanuser:iseeyou@gshs-aurelia01:5432/opendb'
     write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
     admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
-    admin_engine = create_engine(admin_con)
 
-    row_col_qry = """SELECT DISTINCT degree_row, degree_col
-                     FROM public.country_tiles_sliversfix"""
+    bldgs_schema = 'microsoft'
+    bldgs_table = 'bldgs_01302024'
+    gaps_version = 'n'
+    gaps_table = f"""{bldgs_table}_mtg_v{gaps_version}"""
+
+    resume = False
+
+    # Resume run or new
+    if resume:
+        logging.info('Resuming previous run')
+        row_col_qry = f"""SELECT DISTINCT degree_row, degree_col
+                          FROM public.country_tiles_sliversfix cts
+                          LEFT JOIN {bldgs_schema}.{gaps_table} bvmv
+                              ON cts.degree_row = bvmv.row
+                                  AND cts.degree_col = bvmv.col
+                          WHERE bvmv.status IS NULL"""
+
+    else:
+        logging.info('Starting new run')
+        row_col_qry = """SELECT DISTINCT degree_row, degree_col
+                         FROM public.country_tiles_sliversfix"""
+
+        # Wipe table
+        clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
+        admin_engine = create_engine(admin_con)
+        connection = admin_engine.connect()
+        connection.execute(text(clear_qry))
+        connection.commit()
+        connection.close()
+        admin_engine.dispose()
 
     row_col_df = pd.read_sql_query(row_col_qry, read_con)
     row_col = row_col_df.itertuples(index=False, name=None)
 
     regions = []
     region_dict = {}
-
-    # wipe table
-    bldgs_schema = 'google'
-    bldgs_table = 'bldgs_v3'
-    gaps_version = '4'
-    gaps_table = f"""{bldgs_table}_mtg_v{gaps_version}"""
-    clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
-    #connection = admin_engine.connect()
-    #connection.execute(text(clear_qry))
-    #connection.commit()
-    #connection.close()
-    #admin_engine.dispose()
 
     # Region.run parameters
     building_thresh = 0.07
@@ -192,7 +208,7 @@ if __name__ == "__main__":
     logging.info('Building threshold: ' + building_thresh)
     logging.info('Area floor: ' + area_floor)
     logging.info('Area ceiling: ' + area_ceiling)
-    
+
     with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
             p.starmap(run_region, args, chunksize=1)
