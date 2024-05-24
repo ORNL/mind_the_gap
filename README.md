@@ -18,10 +18,19 @@ Gaps will be stored as a GeoDataFrame of the Region object once `Region.run` has
 
 ## What's new
 
-Version 2.0 brings two significant updates:
+#### Version 2.0 brings two significant updates:
 
 The `auto_tune` module allows you to get some pretty good gaps without having to play around with too many parameters
 
 `run_tiles.py` Provides a process for executing `auto_tune` on a large tiled dataset stored in a PostGIS database.
 
-Version 2.0.1: Improved logging in `run_tiles.py`
+#### Version 2.0.1:
+Improved logging in `run_tiles.py`
+
+#### Version 2.1.0:
+- Deprecated the 'rim polygons' feature of `mind_the_gap.mind_the_gap`
+- Better avoids accidentally dropping the buildings table by automatically constructing the name of the buildigns table
+- Saves `auto_tune.run` parameters to the log
+- Pass `auto_tune.run` parameters to `run_region` as parameters instead of hardcoding (i.e. everything that needs to be changed for data source, destination, parameters, etc. is in the `if __name__ == "__main__":` block of `run_tiles.py`).
+- Set logging level to 20 (info)
+- Add option to resume or start new run
