@@ -188,7 +188,6 @@ if __name__ == "__main__":
     area_ceiling = 0.8
 
     # prepare args
-    bldgs_table = 'bldgs_v3'
     args = zip(row_col,
                repeat(bldgs_schema),
                repeat(bldgs_table),
