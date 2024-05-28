@@ -145,9 +145,9 @@ if __name__ == "__main__":
     write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
     admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
 
-    bldgs_schema = 'microsoft'
-    bldgs_table = 'bldgs_01302024'
-    gaps_version = 'n'
+    bldgs_schema = 'google'
+    bldgs_table = 'bldgs_v3'
+    gaps_version = '_sa_test_1'
     gaps_table = f"""{bldgs_table}_mtg_v{gaps_version}"""
 
     resume = False
