@@ -34,3 +34,6 @@ Improved logging in `run_tiles.py`
 - Pass `auto_tune.run` parameters to `run_region` as parameters instead of hardcoding (i.e. everything that needs to be changed for data source, destination, parameters, etc. is in the `if __name__ == "__main__":` block of `run_tiles.py`).
 - Set logging level to 20 (info)
 - Add option to resume or start new run
+
+#### Version 2.1.1:
+Bug patches
