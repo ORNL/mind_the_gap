@@ -20,9 +20,8 @@ class Region:
     """
 
     def __init__(self,
-                 db_con,
-                 bound_qry,
-                 build_qry,
+                 buildings,
+                 boundary,
                  grid_size=0.02):
         """The region we are running Mind the Gap on.
 
@@ -31,44 +30,29 @@ class Region:
     
         Parameters
         ----------
-        db_con : sqlalchemy engine
-            Engine for to read buildings from opendb
-        bound_qry : String
-            SQL query to get tile boundaries from database
-        build_qry : String
-            SQL query to get buildings from the database
+        buildings : GeoDataFrame
+            Input building centroids
+        boundary : String
+            Polygon of region boundary
         grid_size : float
             Size of the grid used to find empty space
 
         """
 
-        self.db_con = db_con
+        self.buildings = buildings
+        self.boundary = boundary
         self.gaps = []
         self.grid = []
         self.in_gaps_ratio = 0
         self.area_ratio = 0
         self.all_points_gdf = None
 
-        # Create engine
-        read_engine = db_con
-
-        # Load boundaries
-        self.boundaries = gpd.GeoDataFrame.from_postgis(bound_qry,
-                                                        read_engine,
-                                                        geom_col='geometry')
-        self.boundaries_shape = self.boundaries
-        self.boundaries = ([self.boundaries.boundary][0])[0]
-        #print('boundaries loaded')
+        self.boundaries_shape = self.boundary # Does this ever get used?
+        self.boundaries = ([self.boundary.boundary][0])[0]
 
         # Generate chainage
         bnd_chain = chainage(self.boundaries, 0.01)
         self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
-        #print('chainage done')
-
-        # Load buildings
-        self.buildings = gpd.GeoDataFrame.from_postgis(build_qry,
-                                                       read_engine,
-                                                       geom_col='geometry')
 
         # Make grid
         self.make_grid(size=grid_size)
