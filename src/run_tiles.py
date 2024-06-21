@@ -145,9 +145,9 @@ if __name__ == "__main__":
     write_con = 'postgresql://mtgwrite:nomoregaps@gshs-aurelia01:5432/opendb'
     admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
 
-    bldgs_schema = 'microsoft'
-    bldgs_table = 'bldgs_01302024'
-    gaps_version = 'n'
+    bldgs_schema = 'google'
+    bldgs_table = 'bldgs_v3'
+    gaps_version = '_sa_test_1'
     gaps_table = f"""{bldgs_table}_mtg_v{gaps_version}"""
 
     resume = False
@@ -188,7 +188,6 @@ if __name__ == "__main__":
     area_ceiling = 0.8
 
     # prepare args
-    bldgs_table = 'bldgs_v3'
     args = zip(row_col,
                repeat(bldgs_schema),
                repeat(bldgs_table),
@@ -205,9 +204,9 @@ if __name__ == "__main__":
     logging.info('Gaps table: ' + gaps_table)
 
     # Add Region.run parameters to the log file
-    logging.info('Building threshold: ' + building_thresh)
-    logging.info('Area floor: ' + area_floor)
-    logging.info('Area ceiling: ' + area_ceiling)
+    logging.info('Building threshold: ' + str(building_thresh))
+    logging.info('Area floor: ' + str(area_floor))
+    logging.info('Area ceiling: ' + str(area_ceiling))
 
     with Pool(processes=(mp.cpu_count()-1), maxtasksperchild=4) as p:
         try:
