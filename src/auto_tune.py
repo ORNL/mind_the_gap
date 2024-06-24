@@ -249,7 +249,7 @@ class Region:
                      area_floor=0.4,
                      area_cieling=0.6,
                      tile_size=1,
-                     processes=mp.cpu_count):
+                     cpus=mp.cpu_count):
         """Divides the region into square tiles and processes in parallel.
         
         Large datasets benefit from both using different parameters for
@@ -265,5 +265,23 @@ class Region:
             Maximum proportion of open space to be filled by gaps
         tile_size : float
             Size of tiles to divide the dataset in degrees
-        processes : int
+        cpus : int
             Number of processes for multiprocessing"""
+
+
+        # Divide data
+        total_bounds = self.boundary.total_bounds
+        print('stop')
+
+        # Prepare tiles
+        tile_data = [] # List of 2 tuples containing buildings and boundary for each tile
+        tiles = []
+        for t in tile_data:
+            _tile = Region(t[0],t[1])
+            tiles.append(_tile)
+
+        # Execute 
+        with mp.Pool(processes=cpus) as p:
+            p.map() # call run method for each tile
+
+        # Reassemble gaps
