@@ -1,6 +1,7 @@
 """Execute Mind the Gap with automated parameter selection"""
 
 import warnings
+import multiprocessing as mp
 
 import geopandas as gpd
 import pandas as pd
@@ -192,7 +193,18 @@ class Region:
 
 
     def run(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
-        """Iterates through parameters until a good set is settled on"""
+        """Iterates through parameters until a good set is settled on"
+        
+        Parameters
+        ----------
+        build_thresh : float
+            Maximum proportion of buildings allowed in gaps
+        area_floor : float
+            Minimum proportion of open space to be filled by gaps
+        area_cieling : float
+            Maximum proportion of open space to be filled by gaps
+
+        """
 
         # Starting params
         _w = 0.03
@@ -231,3 +243,27 @@ class Region:
                 break
             # Update paramaters
             _w = _w - 0.0025 # Should this be hardcoded?
+
+    def run_parallel(self,
+                     build_thresh=0.07,
+                     area_floor=0.4,
+                     area_cieling=0.6,
+                     tile_size=1,
+                     processes=mp.cpu_count):
+        """Divides the region into square tiles and processes in parallel.
+        
+        Large datasets benefit from both using different parameters for
+        different areas as well as parallel processing for performance gains.
+        
+        Parameters
+        ----------
+        build_thresh : float
+            Maximum proportion of buildings allowed in gaps
+        area_floor : float
+            Minimum proportion of open space to be filled by gaps
+        area_cieling : float
+            Maximum proportion of open space to be filled by gaps
+        tile_size : float
+            Size of tiles to divide the dataset in degrees
+        processes : int
+            Number of processes for multiprocessing"""
