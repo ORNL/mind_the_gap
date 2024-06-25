@@ -270,7 +270,27 @@ class Region:
 
 
         # Divide data
-        total_bounds = self.boundary.total_bounds
+        bounds = self.boundaries.bounds
+
+        min_x = bounds[0]
+        min_y = bounds[1]
+        max_x = bounds[2]
+        max_y = bounds[3]
+
+        cols = list(np.arange(min_x, max_x + tile_size, tile_size))
+        rows = list(np.arange(min_y, max_y + tile_size, tile_size))
+
+        polygons = []
+        for x in cols[:-1]:
+            for y in rows[:-1]:
+                polygons.append(geometry.Polygon([(x,y),
+                                                  (x + tile_size, y),
+                                                  (x + tile_size, y + tile_size),
+                                                  (x, y + tile_size)]))
+        tiles = gpd.GeoDataFrame({'geometry':polygons},crs='EPSG:4326')
+
+        # Clip tiles to region extent
+        tiles = gpd.clip(tiles, self.boundaries_shape)
         print('stop')
 
         # Prepare tiles
