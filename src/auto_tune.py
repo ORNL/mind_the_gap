@@ -249,7 +249,7 @@ class Region:
                      area_floor=0.4,
                      area_cieling=0.6,
                      tile_size=1,
-                     cpus=mp.cpu_count):
+                     cpus=mp.cpu_count()-1):
         """Divides the region into square tiles and processes in parallel.
         
         Large datasets benefit from both using different parameters for
@@ -303,6 +303,7 @@ class Region:
         print('stop')
         # Execute 
         with mp.Pool(processes=cpus) as p:
-            p.map() # call run method for each tile
+            gaps = p.map(Region.run, tile_regions) # call run method for each tile
 
+        print('gaps found')
         # Reassemble gaps
