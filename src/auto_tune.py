@@ -33,7 +33,7 @@ class Region:
         ----------
         buildings : GeoDataFrame
             Input building centroids
-        boundary : String
+        boundary : GeoDataFrame
             Polygon of region boundary
         grid_size : float
             Size of the grid used to find empty space
@@ -48,7 +48,7 @@ class Region:
         self.area_ratio = 0
         self.all_points_gdf = None
 
-        self.boundaries_shape = self.boundary # Does this ever get used?
+        self.boundaries_shape = self.boundary
         self.boundaries = ([self.boundary.boundary][0])[0]
 
         # Generate chainage
@@ -291,15 +291,16 @@ class Region:
 
         # Clip tiles to region extent
         tiles = gpd.clip(tiles, self.boundaries_shape)
-        print('stop')
 
         # Prepare tiles
-        tile_data = [] # List of 2 tuples containing buildings and boundary for each tile
-        tiles = []
-        for t in tile_data:
-            _tile = Region(t[0],t[1])
-            tiles.append(_tile)
-
+        tile_regions = []
+        for t in tiles['geometry']:
+            bs = gpd.clip(self.buildings, t)
+            t = gpd.GeoDataFrame({'geometry':[t]},crs='EPSG:4326')
+            t_region = Region(bs,t)
+            tile_regions.append(t_region)
+    
+        print('stop')
         # Execute 
         with mp.Pool(processes=cpus) as p:
             p.map() # call run method for each tile
