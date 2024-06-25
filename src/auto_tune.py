@@ -303,7 +303,7 @@ class Region:
         print('stop')
         # Execute 
         with mp.Pool(processes=cpus) as p:
-            gaps = p.map(Region.run, tile_regions) # call run method for each tile
+            p.map(Region.run, tile_regions) # call run method for each tile
 
         print('gaps found')
         # Reassemble gaps
