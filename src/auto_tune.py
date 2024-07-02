@@ -129,8 +129,8 @@ class Region:
                                                   alpha=a)
 
         except Exception as e:
-            self.gaps =  gpd.GeoDataFrame(columns=['geom'],
-                                          geometry='geom',
+            self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
+                                          geometry='geometry',
                                           crs='EPSG:4326')
 
     def fit_check(self, build_thresh, area_floor, area_ceiling):
@@ -192,7 +192,7 @@ class Region:
                 return False
 
 
-    def run(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
+    def run(self, build_thresh=0.07, area_floor=0.2, area_ceiling=0.8):
         """Iterates through parameters until a good set is settled on"
         
         Parameters
@@ -207,7 +207,7 @@ class Region:
         """
 
         # Starting params
-        _w = 0.03
+        _w = 0.1
         _ln_ratio = 2
         _i = 3
         _a = 20
@@ -242,7 +242,13 @@ class Region:
             if fit:
                 break
             # Update paramaters
-            _w = _w - 0.0025 # Should this be hardcoded?
+            _w = _w - 0.025 # Should this be hardcoded?
+
+    def parallel_run(self):
+        """Wrapper for the run method to return gaps"""
+
+        self.run()
+        return self.gaps
 
     def run_parallel(self,
                      build_thresh=0.07,
@@ -299,11 +305,12 @@ class Region:
             t = gpd.GeoDataFrame({'geometry':[t]},crs='EPSG:4326')
             t_region = Region(bs,t)
             tile_regions.append(t_region)
-    
-        print('stop')
+
         # Execute 
         with mp.Pool(processes=cpus) as p:
-            p.map(Region.run, tile_regions) # call run method for each tile
+            gs = p.map(Region.parallel_run, tile_regions) # call run method for each tile
 
         print('gaps found')
-        # Reassemble gaps
+
+        # Combine gaps
+        self.gaps = gpd.GeoDataFrame(pd.concat(gs, ignore_index=True))
