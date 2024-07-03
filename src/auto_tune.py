@@ -2,6 +2,7 @@
 
 import warnings
 import multiprocessing as mp
+from itertools import repeat
 
 import geopandas as gpd
 import pandas as pd
@@ -117,7 +118,7 @@ class Region:
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
-        
+
         try:
             self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf,
                                                   w,
@@ -233,8 +234,8 @@ class Region:
 
                 if fit:
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
-                    break # Self.gaps will be our final gaps
-                else: #We will save the gaps and parameters and update
+                    break
+                else:
                     past_gaps.append(self.gaps)
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
                     past_params.append(these_params)
@@ -244,17 +245,22 @@ class Region:
             # Update paramaters
             _w = _w - 0.025 # Should this be hardcoded?
 
-    def parallel_run(self):
-        """Wrapper for the run method to return gaps"""
+    def parallel_run(self,
+                     b_thresh=0.07,
+                     a_floor=0.2,
+                     a_ceiling=0.8):
+        """Wrapper to execute run method and return gaps"""
 
-        self.run()
+        self.run(build_thresh=b_thresh,
+                 area_floor=a_floor,
+                 area_ceiling=a_ceiling)
         return self.gaps
 
     def run_parallel(self,
-                     build_thresh=0.07,
-                     area_floor=0.4,
-                     area_cieling=0.6,
                      tile_size=1,
+                     build_thresh=0.07,
+                     area_floor=0.2,
+                     area_ceiling=0.8,
                      cpus=mp.cpu_count()-1):
         """Divides the region into square tiles and processes in parallel.
         
@@ -291,7 +297,7 @@ class Region:
             for y in rows[:-1]:
                 polygons.append(geometry.Polygon([(x,y),
                                                   (x + tile_size, y),
-                                                  (x + tile_size, y + tile_size),
+                                                  (x + tile_size, y+tile_size),
                                                   (x, y + tile_size)]))
         tiles = gpd.GeoDataFrame({'geometry':polygons},crs='EPSG:4326')
 
@@ -306,9 +312,15 @@ class Region:
             t_region = Region(bs,t)
             tile_regions.append(t_region)
 
-        # Execute 
+        # Prepare args
+        args = zip(tile_regions,
+                   repeat(build_thresh),
+                   repeat(area_floor),
+                   repeat(area_ceiling))
+
+        # Execute
         with mp.Pool(processes=cpus) as p:
-            gs = p.map(Region.parallel_run, tile_regions) # call run method for each tile
+            gs = p.starmap(Region.parallel_run, args)
 
         print('gaps found')
 
