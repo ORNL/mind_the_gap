@@ -336,63 +336,6 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
             i += 1
     return gaps
 
-# ---------------------Find Adjacent gaps---------------------
-def is_adjacent(gap_1, gap_2, gap_size):
-    """Tests to see if two gaps are adjacent.
-
-    Parameters
-    ----------
-    gap_1 : array_like
-        The first gap to test, containing the bin index, bin lat or lon
-        coordinate, endpoint 1 index, endpoint 1 lat or lon coordinate,
-        endpoint 2 index, endpoint 2 lat or lon coordinate, and length.
-    gap_2 : array_like
-        The first gap to test, containing the bin index, bin lat or lon
-        cooridinate, endpoint 1 index, endpoint 1 lat or lon coordinate,
-        endpoint 2 index, endpoint 2 lat or lon coordinate, and length.
-    gap_size : float
-        The width of each gap or bin
-
-    Returns
-    -------
-    int
-        0 if not adjacent, 1 if partially adjacent (one pair of endpoints
-        match), and 2 if fully adjacent (both pairs of endpoints match)
-
-    Notes
-    -----
-    Both gaps must have the same orientation.
-    This function is not used and I'm not 100% sure it works properly.
-
-    """
-
-    gap_1_bin = gap_1[1]
-    gap_2_bin = gap_2[1]
-    if np.abs(gap_1_bin - gap_2_bin) > gap_size:
-        return 0
-
-    else:
-        # Find if only one or two endpoints are close (within some threshold)
-        gap_1_end_1 = np.asarray([gap_1[1], gap_1[3]])
-        gap_1_end_2 = np.asarray([gap_1[1], gap_1[5]])
-        gap_2_end_1 = np.asarray([gap_2[1], gap_2[3]])
-        gap_2_end_2 = np.asarray([gap_2[1], gap_2[5]])
-
-        gap_end_dists = [np.linalg.norm(gap_1_end_1 - gap_2_end_1),
-                         np.linalg.norm(gap_1_end_1 - gap_2_end_2),
-                         np.linalg.norm(gap_1_end_2 - gap_2_end_1),
-                         np.linalg.norm(gap_1_end_2 - gap_2_end_2)]
-
-        num_close_ends = 0
-        for dist in gap_end_dists:
-            if dist < .05: # If distance is within some threshold distance
-                num_close_ends += 1
-
-                if num_close_ends == 2:
-                    return num_close_ends
-
-            return num_close_ends
-
 # --------------Find if a pair of segments cross--------------
 def does_cross(x_gap, y_gap):
     """Finds if a y gap and x gap cross.
