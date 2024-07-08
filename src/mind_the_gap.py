@@ -311,7 +311,7 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
         lons_top = lons_sorted[1:len(lons_sorted)]
         succ_dists = lons_top - lons_bottom
         successive_dists = succ_dists
-        
+
         # Do some basic stats
         try:
             dist_max = max(successive_dists)
@@ -691,394 +691,6 @@ def find_clusters(x_gaps, y_gaps):
 
     return all_gaps, gap_cluster_ids, clusters, split_index
 
-# ---------------------Find corner points---------------------
-def find_corners(points):
-    """Finds the corners in a set of perimeter points.
-
-    Parameters
-    ----------
-    points : array_like
-        All the points that make up the shape outline. List of 2-element np
-        arrays
-
-    Returns
-    -------
-    true_corners : array_like
-        All corner points. List of 2-element np arrays
-
-    """
-
-    def is_corner(points, index):
-        """Determines whether or not a point is a corner or on an edge.
-
-        It does this by taking a set of perimeter points, with the index of a
-        point of interest. The point of interest and its two adjacent neighbors
-        are then projected into a 3D space, with all having a z value of zero.
-        Then the cross product of vectors connecting the point of interest to
-        the neighbors is taken. A cross product of zero indicates the points
-        are aligned, and that the point of interest is on an edge. A nonzero
-        cross product indicates that the point is a corner.
-
-        Parameters
-        ----------
-        points : array_like
-            List of all outer points in clockwise order
-        index : int
-            Index of the point of interest in `points`
-
-        Returns
-        -------
-        boolean
-            True if the point of interest is a corner, False if not
-
-        Notes
-        -----
-        Considering point p, with neighbors p and q, the following will be true
-        for a point lying on an edge:
-
-        .. math::  overrightarrow{pq}  times overrightarrow{pr}  =  0
-
-        Any other result indicates a corner.
-
-        """
-
-        # Compute cross product to test if point is on an edge or corner
-        p = np.hstack([points[i], 0])
-        q = np.hstack([points[(i - 1) % len(points)], 0])
-        r = np.hstack([points[(i + 1) % len(points)], 0])
-        pq = p - q
-        pr = p - r
-
-        if np.linalg.norm(np.cross(pq,pr)) != 0:
-            return True
-
-        return False
-
-    def is_true_corner(points, corner):
-        """Determines if a corner point is a true 90 degree corner.
-
-        Parameters
-        ----------
-        points : array_like
-            List of clockwise ordered points
-        corner : array_like
-            The corner point we are testing, plus its index in `points`
-
-        Returns
-        --------
-        boolean
-            True if it is a true 90 degree corner, False if not
-
-        Notes
-        -----
-        To determine the angle of a corner, find the angle theta between
-        vectors connecting point p to neighbors q and r:
-
-         .. mat:: \theta = arccos\big(\frac{\overrightarrow{pq}\bullet
-         \overrightarrow{pr}}{\|\overrightarrow{pq}\|\|\overrightarrow{pr}\|}
-         \big)
-
-        """
-
-        # Get neighbor points
-        index = int(corner[2])
-        neighbor_1 = points[(index - 1) % len(points)]
-        neighbor_2 = points[(index + 1) % len(points)]
-
-        # define vectors
-        v1 = corner[0:2] - neighbor_1
-        v1_mag = np.linalg.norm(v1)
-        v2 = corner[0:2] - neighbor_2
-        v2_mag = np.linalg.norm(v2)
-
-        # get angle betwixt vectors
-        theta = np.arccos(np.dot(v1,v2) / (v1_mag * v2_mag))
-        if (theta % (np.pi / 2)) == 0:
-            return True
-
-        return False
-
-    def find_true_corner(points, false_corner):
-        """This function returns the true concave corner from a false corner.
-
-        Paramters
-        ---------
-        points : array_like
-            Clockwise ordered list of points
-        false_corner : array_like
-            The corner point we are testing, plus its index in `points`
-
-        Returns
-        -------
-        true_corner : array_like
-            Three element ndarray, [x coord, y coord, 0]
-
-        """
-
-        # Get neighbor points
-        index = int(corner[2])
-        neighbor_1 = points[(index - 1) % len(points)]
-        neighbor_2 = points[(index + 1) % len(points)]
-
-        # find matching coordinate in neighbors
-        if false_corner[0] == neighbor_1[0]:
-            true_x = false_corner[0]
-            o = 1
-            old_neighbor = neighbor_2
-
-            while True:
-                new_neighbor = points[(index + 1 + o) % len(points)]
-                if new_neighbor[1] == old_neighbor[1]:
-                    true_y = new_neighbor[1]
-                    break
-                o += 1
-
-        elif false_corner[1] == neighbor_1[1]:
-            true_y = false_corner[1]
-            o = 1
-            old_neighbor = neighbor_2
-
-            while True:
-                new_neighbor = points[(index + 1 + o) % len(points)]
-                if new_neighbor[0] == old_neighbor[0]:
-                    true_x = new_neighbor[0]
-                    break
-                o += 1
-
-        elif false_corner[0] == neighbor_2[0]:
-            true_x = false_corner[0]
-            o = 1
-            old_neighbor = neighbor_1
-
-            while True:
-                new_neighbor = points[(index + 1 + o) % len(points)]
-                if new_neighbor[1] == old_neighbor[1]:
-                    true_y = new_neighbor[1]
-                    break
-                o += 1
-
-        elif false_corner[1] == neighbor_2[1]:
-            true_y = false_corner[1]
-            o = 1
-            old_neighbor = neighbor_1
-
-            while True:
-                new_neighbor = points[(index + 1 + o) % len(points)]
-                if new_neighbor[0] == old_neighbor[0]:
-                    true_x = new_neighbor[0]
-                    break
-                o += 1
-        else:
-            return
-
-        true_corner = np.asarray([true_x, true_y, 0])
-
-        return true_corner
-
-    # Define corners list
-    corners = []
-
-    for i, _ in enumerate(points):
-        if is_corner(points, i):
-            corners.append(np.hstack([points[i], i]))
-
-    true_corners = []
-
-    # ---------------Tease out true concave corners---------------
-    for corner in corners:
-        if is_true_corner(points, corner):
-            true_corners.append(corner)
-        else:
-            t_corner = find_true_corner(points, corner)
-            true_corners.append(t_corner)
-
-    return true_corners
-
-# ---------------Find outer intersection points---------------
-def get_outer_points(x_inds, y_inds, gaps):
-    """Gets points on the perimeter of the data gap in clockwise order.
-
-    Parameters
-    ----------
-    x_inds : array_like
-        Indices of all the x_gaps in `gaps` that make up a cluster
-    y_inds : array_like
-        Indices of all the y_gaps in `gaps` that make up a cluster
-    gaps : array_like
-        An array of all gaps (x and y) vstacked together
-
-    Returns
-    -------
-    cw_sorted_points : list
-        List of outer points of the cluster of points sorted into clockwise
-        order, starting from the top right(ish) point
-
-    """
-
-    warn_message = '''get_outer_points function is depracted as of v2.1.0
-                      and will be removed in v3.0.
-                      Use alpha polygons instead.'''
-    warn(warn_message, DeprecationWarning,stacklevel=2)
-
-    # outer_points = np.zeros([np.shape(gaps[:,1])[0]*2,2])
-    outer_points = []
-
-    def get_cross_inds(test_gap, cross_gaps):
-        """Finds the indices of all the lines that cross `test_gap`.
-
-        Parameters
-        ----------
-        test_gap : array_like
-            The gap for which we want to know which lines cross
-        cross_gaps : array_like
-            The gaps that may or may not cross test_gap
-
-        Returns
-        -------
-        list
-            List of indices in `gaps` of lines that cross `test_gap`
-
-        """
-
-        cross_inds = []
-
-        for i, _ in enumerate(cross_gaps[:,1]):
-            if does_cross(test_gap,cross_gaps[i,:]):
-                cross_inds.append(i)
-        return cross_inds
-
-    def step_by_step(point, all_points, clock_w_points):
-        """Function that finds the next point in clockwise order.
-
-        Parameters
-        ----------
-        point : array_like
-            The point from which we are stepping
-        all_points : array_like
-            The list of all outer points
-        clock_w_points : array_like
-            List of points that have already been clockwise sorted
-
-        Returns
-        -------
-        next_point : ndarray
-            The next point in clockwise order
-
-        """
-
-        def take_step(points_df, clock_w_points):
-            """Finds the next point coordinates in the step.
-
-            Parameters
-            ----------
-            points_df : Pandas DataFrame
-                Point coordinates with distances from the point of interest
-            clock_w_points : array_like
-                List of points already sorted into clockwise order
-
-            Returns
-            -------
-            test_point : array_like
-                The next point in clockwise order
-
-            """
-
-            i = 0
-            while True:
-                test_point = points_df.iloc[i].to_numpy()
-                # Test to see if the test point has been sorted already
-                test = True
-                for cw_point in clock_w_points:
-                    if test_point[0] == cw_point[0] and \
-                       test_point[1] == cw_point[1]:
-                        test = False
-
-
-                if (not test) and (i + 1) < points_df.shape[0]:
-                    i += 1
-                else:
-                    break
-
-            return test_point
-
-        # Find closest points
-        dists = np.linalg.norm(point - all_points, axis=-1 )
-        points_dists = np.column_stack((all_points,dists))
-        df = pd.DataFrame(points_dists)
-        df = df.sort_values(2)
-
-        next_point = take_step(df, clock_w_points)
-
-        return next_point
-
-
-    for ind in x_inds:
-        this_gap = gaps[ind,:]
-        crossing_inds = get_cross_inds(this_gap,gaps[y_inds,:])
-        crossing_inds = list(itemgetter(*crossing_inds)(y_inds))
-        crossing_ys = gaps[:,1]
-        crossing_ys = list(itemgetter(*crossing_inds)(crossing_ys))
-        min_y = min(crossing_ys)
-        max_y = max(crossing_ys)
-        x = gaps[ind,1]
-        these_points = np.asarray([np.asarray([x,min_y]),
-                                  np.asarray([x,max_y])])
-        outer_points.append(these_points)
-
-    for ind in y_inds:
-        this_gap = gaps[ind,:]
-        crossing_inds = get_cross_inds(this_gap,gaps[x_inds,:])
-        crossing_inds = list(itemgetter(*crossing_inds)(x_inds))
-        crossing_xs = gaps[:,1]
-        crossing_xs = list(itemgetter(*crossing_inds)(crossing_xs))
-        min_x = min(crossing_xs)
-        max_x = max(crossing_xs)
-        y = gaps[ind,1]
-        these_points = np.asarray([np.asarray([min_x,y]),
-                                  np.asarray([max_x,y])])
-        outer_points.append(these_points)
-
-    # Convert to list of 2-element arrays
-    outer_points = np.vstack(outer_points)
-    outer_points = list(outer_points)
-    # Remove any duplicates
-    outer_unique = pd.DataFrame(outer_points)
-    outer_unique = list(outer_unique.drop_duplicates().values)
-    outer_points = np.asarray(outer_unique)
-
-
-    # Walk around the perimter and put all the points in clockwise order
-    # Get starting point
-    top_row_inds = np.where(outer_points[:,1] == max(outer_points[:,1]))[0]
-    top_row_points = outer_points[top_row_inds,:]
-    right_corner_ind = (np.where(top_row_points[:,0] ==
-                        max(top_row_points[:,0]))[0])
-    top_right_point = top_row_points[right_corner_ind,:][0]
-    x_matches = np.where(top_right_point[0] == outer_points[:,0])[0]
-    y_matches = np.where(top_right_point[1] == outer_points[:,1])[0]
-    start_row_ind = np.intersect1d(x_matches, y_matches)
-    anti_cw_neighbor_point = top_row_points[np.argsort(top_row_points[:,0], \
-                                                       axis=0)[-2],:]
-
-    cw_sorted_points = [anti_cw_neighbor_point, top_right_point]
-
-    next_point = step_by_step(outer_points[start_row_ind],
-                              outer_points,
-                              cw_sorted_points)
-
-    while True:
-        if (min(np.linalg.norm(next_point[0:2] - cw_sorted_points, axis=-1)) ==
-            0):
-            break
-        else:
-            cw_sorted_points.append(next_point[0:2])
-            next_point = step_by_step(next_point[0:2],
-                                      outer_points,
-                                      cw_sorted_points)
-
-    # return outer_points
-    return cw_sorted_points
-
 # ---------------Find intersections in clusters---------------
 def cluster_intersections(x_inds, y_inds, gaps):
     """Finds intersections of lines in a cluster of connected lines.
@@ -1125,10 +737,7 @@ def cluster_intersections(x_inds, y_inds, gaps):
 
 # -------------Generate polygons with alpha_shapes-------------
 def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
-    """Generates polygons for data gaps using alpha_shape.
-
-    Returns shapely polygons in a GeoDataFrame. Less precise polygons, but more
-    resilient than generate_rim_polygons.
+    """Generates polygons for data gaps using alpha_shapes.
 
     Parameters
     ----------
@@ -1196,7 +805,7 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         #print(type(inters))
 
         a_shape = make_alpha_shape(inters, alpha)[0]
- 
+
         inters = MultiPoint(inters)
         all_inters.append([inters])
 
@@ -1217,61 +826,6 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
 
     return gaps_df, points_gdf
 
-# -------------Generate polygons with outer poitns------------
-def generate_rim_polygons(x_clusters,
-                          y_clusters,
-                          gap_segments,
-                          gaps,
-                          corners):
-    """Generates polygons by finding the corners of the gap region.
-
-    Generates polygons by finding the outer rim of intersections between x
-    and y gaps. Returns shapely polygons in GeoDataFrame
-    Requires parameters to be well tuned or you will get wacky polygons.
-
-    Parameters
-    ---------
-    x_clusters : array_like
-        x_gap indices in each cluster
-    y_clusters : array_like
-        y_gap indices in each cluster
-    gap_segments : array_like
-        All gap line segment endpoints
-    gaps : array_like
-        Array of all data gaps
-
-    Returns
-    -------
-    GeoDataFrame
-        Polygons of data gaps
-
-    """
-
-    warn_message = '''generate_rim_polygons function is depracted as of v2.1.0
-                      and will be removed in v3.0.
-                      Use alpha polygons instead.'''
-    warn(warn_message, DeprecationWarning,stacklevel=2)
-
-    shapes = []
-
-    for i, _ in enumerate(x_clusters):
-        x_inds = x_clusters[i]
-        y_inds = y_clusters[i]
-
-        outer_points = get_outer_points(x_inds, y_inds, gaps)
-
-        # Find corners if desired else just make polygons from all outer points
-        if corners:
-            outer_points = find_corners(outer_points)
-
-        # Make shapely polygon from points
-        shape = shapely.geometry.Polygon(outer_points)
-        shapes.append(shape)
-
-    df = gpd.GeoDataFrame(shapes,columns=['geometry'],crs='EPSG:4326')
-    df.set_geometry(col='geometry', inplace=True)
-    return df
-
 def mind_the_gap(in_points,
                  x_bin_size,
                  y_bin_size,
@@ -1281,15 +835,14 @@ def mind_the_gap(in_points,
                  y_min_intersections,
                  alpha=15,
                  cluster_points=False,
-                 write_points = False,
-                 corners=True):
+                 write_points = False):
     """Finds gaps in geographic point data.
 
     Given a set of points in 2D space, this function will find gaps in
     points, with adjustable sensitivity. This is best suited to identify
     rectilinear systematic gaps, such as those resulting from missing
     imagery. However it can also find gaps resulting from natural
-    features- such as lakes or forests. Produces either polygons representing 
+    features such as lakes or forests. Produces either polygons representing 
     gaps or points filling in the gap area.
 
     Parameters :
@@ -1315,9 +868,6 @@ def mind_the_gap(in_points,
     write_points : boolean
         If True, this function will return a GeoDataFrame of points that fill
         in the data gap instead of polygons.
-    corners : boolean
-        If True, will make polygons using only corner points, if False will use
-        all outer points. Only matters if 'rim' polygons are used
 
     Returns
     -------
@@ -1365,8 +915,8 @@ def mind_the_gap(in_points,
             y_gap_LineStrings
 
     # Check for bad value
-    if polygon_type != 'rim' and polygon_type != 'alpha':
-        raise ValueError("plolygon_type must be 'rim' or 'alpha'.")
+    #if polygon_type != 'rim' and polygon_type != 'alpha':
+    #    raise ValueError("plolygon_type must be 'rim' or 'alpha'.")
 
     #Load in building centroids
     point_coords = get_coordinates(in_points)
