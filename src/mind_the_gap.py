@@ -554,8 +554,6 @@ def intersection_filter(x_gaps,
 
         iterations += 1
 
-    # print("Filter iterations: " + str(iterations))
-
     return x_gaps, y_gaps
 
 # -------------Find clusters of connecting lines--------------
@@ -744,24 +742,6 @@ def find_corners(points):
 
         """
 
-        # def isConcaveCorner(pointOfInterest):
-        #     # tests to see if a corner is concave or not
-        #     # pointOfInterest: The corner point in question
-        #     # Define points
-        #     pointOfInterest = np.asarray([pointOfInterest])
-
-        #     # Define vectors
-        #     v1 = pointOfInterest - neighbor_1
-        #     v2 = pointOfInterest - neighbor_2
-
-        #     # Calculate cross product
-        #     crossProduct = np.cross(v1,v2)
-
-        #     if crossProduct == np.asarray([0,0,0]):
-        #         return False
-        #     else:
-        #         return True
-
         # Compute cross product to test if point is on an edge or corner
         p = np.hstack([points[i], 0])
         q = np.hstack([points[(i - 1) % len(points)], 0])
@@ -911,32 +891,6 @@ def find_corners(points):
         else:
             t_corner = find_true_corner(points, corner)
             true_corners.append(t_corner)
-
-    # for point in points:
-    #     p = np.hstack([point,0])
-    #     # find neighboring points
-    #     dists = (np.linalg.norm(point - points[:],axis=-1))
-    #     distsSorted = np.sort(dists)
-    #     neighborDists = [distsSorted[1], distsSorted[2]]
-    #     neighbor_1Ind = np.where(neighborDists[0] == dists)[0]
-    #     neighbor_1 = points[neighbor_1Ind[0]]
-    #     q = np.hstack([neighbor_1,0])
-    #     neighbor_2Ind = np.where(neighborDists[1] == dists)[0]
-    #     neighbor_2 = points[neighbor_2Ind[0]]
-    #     r = np.hstack([neighbor_2,0])
-    #     # print(p)
-    #     # print(q)
-    #     # print(r)
-    #     pq = p - q
-    #     pr = p - r
-    #     pqXpr = (np.cross(pq,pr))
-    #     if np.linalg.norm(pqXpr) != 0:
-    #         corners.append(point)
-    #     # print(pqXpr)
-    #     # plt.scatter(point[0],point[1],c='#ff7f0e')
-    #     neighbors = np.vstack([neighbor_1,neighbor_2])
-    #     # plt.scatter(neighbors[:,0],neighbors[:,1],c='#bcbd22')
-    #     # break
 
     return true_corners
 
@@ -1428,15 +1382,6 @@ def mind_the_gap(in_points,
     x_gaps = find_lat_gaps(stacked, x_bins, x_gap_len_threshold)
     y_gaps = find_lon_gaps(stacked, y_bins, y_gap_len_threshold)
 
-    # Plot gaps before filter for test purposes:
-    # all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, y_gap_LineStrings = \
-    #     gen_gap_LineStrings(x_gaps, y_gaps)
-    # lc = mc.LineCollection(all_gap_segments, linewidths=0.5)
-    # fig, ax = pl.subplots()
-    # ax.add_collection(lc)
-    # ax.autoscale()
-    # ax.margins(0.1)
-
     # ---------Filter out gap strips without intersections--------
     x_gaps, y_gaps = intersection_filter(x_gaps,
                                          y_gaps,
@@ -1447,11 +1392,6 @@ def mind_the_gap(in_points,
     all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
     y_gap_LineStrings = gen_gap_LineStrings(x_gaps, y_gaps)
 
-    #lc = mc.LineCollection(all_gap_segments, linewidths=0.5)
-    #fig, ax = pl.subplots()
-    #ax.add_collection(lc)
-    #ax.autoscale()
-    #ax.margins(0.1)
     # ---------------Find intersections with shapely--------------
     intersections = find_intersections(all_gap_LineStrings)
 
