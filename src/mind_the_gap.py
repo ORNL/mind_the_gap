@@ -1279,7 +1279,6 @@ def mind_the_gap(in_points,
                  y_gap_len_threshold,
                  x_min_intersections,
                  y_min_intersections,
-                 polygon_type='alpha',
                  alpha=15,
                  cluster_points=False,
                  write_points = False,
@@ -1310,8 +1309,6 @@ def mind_the_gap(in_points,
         Minimum number of intersections to filter gap lines
     y_min_intersections : int
         Minimum number of intersections to filter gap lines
-    polygon_type : string
-        Either 'alpha' or 'rim'. The type of polygon generation to be used
     cluster_points : boolean
         True with 'alpha' `polygon_type` returns a geodataframe of MultiPoints
         for each gap as well as polygons
@@ -1422,23 +1419,10 @@ def mind_the_gap(in_points,
         cluster_y.append(this_cluster_y_gaps)
 
     # ------------------------Make polygons-----------------------
-    if (polygon_type == 'alpha'):
-        polygons, points = generate_alpha_polygons(cluster_x,
-                                                   cluster_y,
-                                                   all_gap_segments,
-                                                   alpha)
-        if cluster_points:
-            return polygons, points
-        return polygons
-
-    if polygon_type == 'rim':
-        warn_message = '''rim polygons are depracted as of v2.1.0
-                          and will be removed in v3.0.
-                          Use alpha polygons instead.'''
-        warn(warn_message, DeprecationWarning,stacklevel=2)
-        polygons = generate_rim_polygons(cluster_x,
-                                         cluster_y,
-                                         all_gap_segments,
-                                         all_gaps,
-                                         corners)
-        return polygons
+    polygons, points = generate_alpha_polygons(cluster_x,
+                                               cluster_y,
+                                               all_gap_segments,
+                                               alpha)
+    if cluster_points:
+        return polygons, points
+    return polygons
