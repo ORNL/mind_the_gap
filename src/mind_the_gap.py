@@ -19,13 +19,8 @@ __author__ = "Jack Gonzales"
 
 from operator import itemgetter
 from itertools import chain
-from warnings import warn
 
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.collections as mc
-import pylab as pl
 import geopandas as gpd
 import shapely
 from libpysal.cg import alpha_shape
