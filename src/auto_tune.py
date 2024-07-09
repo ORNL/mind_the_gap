@@ -173,7 +173,7 @@ class Region:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
                 empty_grid_area = sum(empty_grid['geometry'].area)
-                gaps_in_empty_grid = gpd.overlay(empty_grid, # sjoin might be better
+                gaps_in_empty_grid = gpd.overlay(empty_grid,
                                                  self.gaps,
                                                  how='intersection')
                 gaps_in_empty_grid = gaps_in_empty_grid.unary_union
@@ -221,8 +221,8 @@ class Region:
 
                 if fit:
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
-                    break # Self.gaps will be our final gaps
-                else: #We will save the gaps and parameters and update
+                    break
+                else:
                     past_gaps.append(self.gaps)
                     these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
                     past_params.append(these_params)
@@ -230,4 +230,4 @@ class Region:
             if fit:
                 break
             # Update paramaters
-            _w = _w - 0.0025 # Should this be hardcoded?
+            _w = _w - 0.0025
