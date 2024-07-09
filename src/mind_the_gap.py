@@ -42,7 +42,9 @@ def get_coordinates(points):
     -------
     ndarray
         Array of point coordinates (x,y)
+    
     """
+
     point_geom = points['geometry']
 
     points_coords = np.zeros([np.size(point_geom),2])
