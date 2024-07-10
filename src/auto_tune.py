@@ -175,7 +175,7 @@ class Region:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
                 empty_grid_area = sum(empty_grid['geometry'].area)
-                gaps_in_empty_grid = gpd.overlay(empty_grid, # sjoin might be better
+                gaps_in_empty_grid = gpd.overlay(empty_grid,
                                                  self.gaps,
                                                  how='intersection')
                 gaps_in_empty_grid = gaps_in_empty_grid.unary_union
@@ -233,11 +233,13 @@ class Region:
                 fit = self.fit_check(build_thresh, area_floor, area_ceiling)
 
                 if fit:
-                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
+                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, \
+                                    self.area_ratio]
                     break
                 else:
                     past_gaps.append(self.gaps)
-                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
+                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, \
+                                    self.area_ratio]
                     past_params.append(these_params)
 
             if fit:
