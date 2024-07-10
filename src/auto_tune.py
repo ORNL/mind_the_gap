@@ -47,7 +47,7 @@ class Region:
         self.area_ratio = 0
         self.all_points_gdf = None
 
-        self.boundaries_shape = self.boundary # Does this ever get used?
+        self.boundaries_shape = self.boundary
         self.boundaries = ([self.boundary.boundary][0])[0]
 
         # Generate chainage
@@ -116,7 +116,7 @@ class Region:
 
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
-        
+
         try:
             self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf,
                                                   w,
