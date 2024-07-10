@@ -220,11 +220,13 @@ class Region:
                 fit = self.fit_check(build_thresh, area_floor, area_ceiling)
 
                 if fit:
-                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
+                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, \
+                                    self.area_ratio]
                     break
                 else:
                     past_gaps.append(self.gaps)
-                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, self.area_ratio]
+                    these_params = [_w, _ln_ratio, i, _a, self.in_gaps_ratio, \
+                                    self.area_ratio]
                     past_params.append(these_params)
 
             if fit:
