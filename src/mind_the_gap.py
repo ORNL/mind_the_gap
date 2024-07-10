@@ -125,7 +125,7 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
         # put points into whichever bin they are closest to
         for i, _ in enumerate(bin_assignment):
             diffs = np.abs(points[i,0] - bins[:])
-            bin_index = np.where(min(diffs) == np.abs(points[i,0] - bins[:]))[0]
+            bin_index = np.where(min(diffs) == np.abs(points[i,0]-bins[:]))[0]
 
             bin_assignment[i] = bin_index
 
@@ -742,7 +742,6 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         endpoints = MultiPoint(gap_ends)
         inters = MultiPoint(inters)
         inters = shapely.ops.unary_union([endpoints,inters])
-        #print(type(inters))
 
         a_shape = make_alpha_shape(inters, alpha)[0]
 
