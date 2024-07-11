@@ -193,7 +193,15 @@ class Region:
                 return False
 
 
-    def run(self, build_thresh=0.07, area_floor=0.2, area_ceiling=0.8):
+    def run(self,
+            build_thresh=0.07,
+            area_floor=0.2,
+            area_ceiling=0.8,
+            _w=0.1,
+            _w_step=0.025,
+            _ln_ratio=2,
+            _i=3,
+            _a=20,):
         """Iterates through parameters until a good set is settled on"
         
         Parameters
@@ -204,6 +212,16 @@ class Region:
             Minimum proportion of open space to be filled by gaps
         area_cieling : float
             Maximum proportion of open space to be filled by gaps
+        _w : float
+            Starting width value
+        _w_step : float
+            Value to update _w by each iteration
+        _ln_ratio : float
+            Ratio of minimum strip length to width
+        _i : int
+            Starting minimum number of intersections
+        _a : int
+            Alpha value for alpha-shapes
 
         """
 
@@ -245,17 +263,27 @@ class Region:
             if fit:
                 break
             # Update paramaters
-            _w = _w - 0.025 # Should this be hardcoded?
+            _w = _w - _w_step
 
     def parallel_run(self,
-                     b_thresh=0.07,
-                     a_floor=0.2,
-                     a_ceiling=0.8):
+                     b_thresh,
+                     a_floor,
+                     a_ceiling,
+                     w,
+                     w_step,
+                     ln_ratio,
+                     i,
+                     a):
         """Wrapper to execute run method and return gaps"""
 
         self.run(build_thresh=b_thresh,
                  area_floor=a_floor,
-                 area_ceiling=a_ceiling)
+                 area_ceiling=a_ceiling,
+                 _w=w,
+                 _w_step=w_step,
+                 _ln_ratio=ln_ratio,
+                 _i=i,
+                 _a=a)
         return self.gaps
 
     def run_parallel(self,
@@ -263,7 +291,12 @@ class Region:
                      build_thresh=0.07,
                      area_floor=0.2,
                      area_ceiling=0.8,
-                     cpus=mp.cpu_count()-1):
+                     cpus=mp.cpu_count()-1,
+                     _w=0.1,
+                     _w_step=0.025,
+                     _ln_ratio=2,
+                     _i=3,
+                     _a=20):
         """Divides the region into square tiles and processes in parallel.
         
         Large datasets benefit from both using different parameters for
@@ -280,7 +313,19 @@ class Region:
         tile_size : float
             Size of tiles to divide the dataset in degrees
         cpus : int
-            Number of processes for multiprocessing"""
+            Number of processes for multiprocessing
+        _w : float
+            Starting width value
+        _w_step : float
+            Value to update _w by each iteration
+        _ln_ratio : float
+            Ratio of minimum strip length to width
+        _i : int
+            Starting minimum number of intersections
+        _a : int
+            Alpha value for alpha-shapes
+            
+        """
 
 
         # Divide data
@@ -318,7 +363,12 @@ class Region:
         args = zip(tile_regions,
                    repeat(build_thresh),
                    repeat(area_floor),
-                   repeat(area_ceiling))
+                   repeat(area_ceiling),
+                   repeat(_w),
+                   repeat(_w_step),
+                   repeat(_ln_ratio),
+                   repeat(_i),
+                   repeat(_a))
 
         # Execute
         with mp.Pool(processes=cpus) as p:
