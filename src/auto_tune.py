@@ -225,12 +225,6 @@ class Region:
 
         """
 
-        # Starting params
-        _w = 0.1
-        _ln_ratio = 2
-        _i = 3
-        _a = 20
-
         past_gaps = []
         these_params = [_w, _ln_ratio, _i, _a]
         past_params = []
