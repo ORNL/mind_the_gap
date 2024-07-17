@@ -1,6 +1,8 @@
 """Execute Mind the Gap with automated parameter selection"""
 
 import warnings
+import multiprocessing as mp
+from itertools import repeat
 
 import geopandas as gpd
 import pandas as pd
@@ -32,7 +34,7 @@ class Region:
         ----------
         buildings : GeoDataFrame
             Input building centroids
-        boundary : String
+        boundary : GeoDataFrame
             Polygon of region boundary
         grid_size : float
             Size of the grid used to find empty space
@@ -128,8 +130,8 @@ class Region:
                                                   alpha=a)
 
         except Exception as e:
-            self.gaps =  gpd.GeoDataFrame(columns=['geom'],
-                                          geometry='geom',
+            self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
+                                          geometry='geometry',
                                           crs='EPSG:4326')
 
     def fit_check(self, build_thresh, area_floor, area_ceiling):
@@ -191,14 +193,37 @@ class Region:
                 return False
 
 
-    def run(self, build_thresh=0.07, area_floor=0.4, area_ceiling=0.6):
-        """Iterates through parameters until a good set is settled on"""
+    def run(self,
+            build_thresh=0.07,
+            area_floor=0.2,
+            area_ceiling=0.8,
+            _w=0.1,
+            _w_step=0.025,
+            _ln_ratio=2,
+            _i=3,
+            _a=20,):
+        """Iterates through parameters until a good set is settled on"
+        
+        Parameters
+        ----------
+        build_thresh : float
+            Maximum proportion of buildings allowed in gaps
+        area_floor : float
+            Minimum proportion of open space to be filled by gaps
+        area_cieling : float
+            Maximum proportion of open space to be filled by gaps
+        _w : float
+            Starting width value
+        _w_step : float
+            Value to update _w by each iteration
+        _ln_ratio : float
+            Ratio of minimum strip length to width
+        _i : int
+            Starting minimum number of intersections
+        _a : int
+            Alpha value for alpha-shapes
 
-        # Starting params
-        _w = 0.03
-        _ln_ratio = 2
-        _i = 3
-        _a = 20
+        """
 
         past_gaps = []
         these_params = [_w, _ln_ratio, _i, _a]
@@ -232,4 +257,118 @@ class Region:
             if fit:
                 break
             # Update paramaters
-            _w = _w - 0.0025
+            _w = _w - _w_step
+
+    def parallel_run(self,
+                     b_thresh,
+                     a_floor,
+                     a_ceiling,
+                     w,
+                     w_step,
+                     ln_ratio,
+                     i,
+                     a):
+        """Wrapper to execute run method and return gaps"""
+
+        self.run(build_thresh=b_thresh,
+                 area_floor=a_floor,
+                 area_ceiling=a_ceiling,
+                 _w=w,
+                 _w_step=w_step,
+                 _ln_ratio=ln_ratio,
+                 _i=i,
+                 _a=a)
+        return self.gaps
+
+    def run_parallel(self,
+                     tile_size=1,
+                     build_thresh=0.07,
+                     area_floor=0.2,
+                     area_ceiling=0.8,
+                     cpus=mp.cpu_count()-1,
+                     _w=0.1,
+                     _w_step=0.025,
+                     _ln_ratio=2,
+                     _i=3,
+                     _a=20):
+        """Divides the region into square tiles and processes in parallel.
+        
+        Large datasets benefit from both using different parameters for
+        different areas as well as parallel processing for performance gains.
+        
+        Parameters
+        ----------
+        build_thresh : float
+            Maximum proportion of buildings allowed in gaps
+        area_floor : float
+            Minimum proportion of open space to be filled by gaps
+        area_cieling : float
+            Maximum proportion of open space to be filled by gaps
+        tile_size : float
+            Size of tiles to divide the dataset in degrees
+        cpus : int
+            Number of processes for multiprocessing
+        _w : float
+            Starting width value
+        _w_step : float
+            Value to update _w by each iteration
+        _ln_ratio : float
+            Ratio of minimum strip length to width
+        _i : int
+            Starting minimum number of intersections
+        _a : int
+            Alpha value for alpha-shapes
+            
+        """
+
+
+        # Divide data
+        bounds = self.boundaries.bounds
+
+        min_x = bounds[0]
+        min_y = bounds[1]
+        max_x = bounds[2]
+        max_y = bounds[3]
+
+        cols = list(np.arange(min_x, max_x + tile_size, tile_size))
+        rows = list(np.arange(min_y, max_y + tile_size, tile_size))
+
+        polygons = []
+        for x in cols[:-1]:
+            for y in rows[:-1]:
+                polygons.append(geometry.Polygon([(x,y),
+                                                  (x + tile_size, y),
+                                                  (x + tile_size, y+tile_size),
+                                                  (x, y + tile_size)]))
+        tiles = gpd.GeoDataFrame({'geometry':polygons},crs='EPSG:4326')
+
+        # Clip tiles to region extent
+        tiles = gpd.clip(tiles, self.boundaries_shape)
+
+        # Prepare tiles
+        tile_regions = []
+        for t in tiles['geometry']:
+            bs = gpd.clip(self.buildings, t)
+            t = gpd.GeoDataFrame({'geometry':[t]},crs='EPSG:4326')
+            t_region = Region(bs,t)
+            tile_regions.append(t_region)
+
+        # Prepare args
+        args = zip(tile_regions,
+                   repeat(build_thresh),
+                   repeat(area_floor),
+                   repeat(area_ceiling),
+                   repeat(_w),
+                   repeat(_w_step),
+                   repeat(_ln_ratio),
+                   repeat(_i),
+                   repeat(_a))
+
+        # Execute
+        with mp.Pool(processes=cpus) as p:
+            gs = p.starmap(Region.parallel_run, args)
+
+        print('gaps found')
+
+        # Combine gaps
+        self.gaps = gpd.GeoDataFrame(pd.concat(gs, ignore_index=True))
