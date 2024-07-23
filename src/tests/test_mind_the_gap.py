@@ -7,6 +7,7 @@ import geopandas as gpd
 import numpy as np
 from numpy.testing import assert_array_equal
 from shapely.geometry import Point
+from shapely.geometry import LineString
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import mind_the_gap
@@ -53,3 +54,22 @@ class TestMindTheGap:
         cross_2 = mind_the_gap.does_cross(xg2,yg2)
 
         assert cross_1 is True and cross_2 is False
+
+    def test_find_intersections(self):
+        lines = [LineString([[1,0],[1,3]]),
+                 LineString([[0,1],[4,1]]),
+                 LineString([[0,2],[5,2]]),
+                 LineString([[2,-1],[2,6]])]
+
+        intersections = mind_the_gap.find_intersections(lines)
+
+        expected_intersections = [Point(1,1),
+                                  Point(1,2),
+                                  Point(1,1),
+                                  Point(2,1),
+                                  Point(1,2),
+                                  Point(2,2),
+                                  Point(2,1),
+                                  Point(2,2)]
+
+        assert_array_equal(intersections, expected_intersections)
