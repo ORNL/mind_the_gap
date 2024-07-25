@@ -96,3 +96,22 @@ class TestMindTheGap:
                                   Point(2,2)]
 
         assert_array_equal(intersections, expected_intersections)
+
+    def test_intersection_filter(self):
+        point_coords = mtg.get_coordinates(self.points)
+        stacked, x_bins, y_bins = mtg.into_the_bins(point_coords,0.061,0.07)
+        lat_gaps = mtg.find_lat_gaps(stacked, x_bins, 0.3)
+        lon_gaps = mtg.find_lon_gaps(stacked, y_bins, 0.3)
+
+        x_gaps, y_gaps = mtg.intersection_filter(lat_gaps,
+                                                 lon_gaps,
+                                                 3,
+                                                 3)
+
+        assert len(lat_gaps) == 11
+        assert len(x_gaps) == 11
+        assert len(lon_gaps) == 21
+        assert len(y_gaps) == 19
+
+    def test_gen_gap_linestrings(self):
+        pass
