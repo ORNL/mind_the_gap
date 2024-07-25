@@ -16,9 +16,13 @@ import mind_the_gap as mtg
 class TestMindTheGap:
     def setup_method(self):
         self.points = gpd.read_file('./src/tests/data/test_points.geojson')
+
         with open('./src/tests/data/exp_x_gaps.csv') as f:
             self.expected_lat_gaps = \
                 list(csv.reader(f,quoting=csv.QUOTE_NONNUMERIC))
+        with open('./src/tests/data/exp_y_gaps.csv') as f:
+            self.expected_lon_gaps = \
+                list(csv.reader(f, quoting=csv.QUOTE_NONNUMERIC))
 
     def test_get_coordinates(self):
         points_d = {'geometry': [Point(1,2), Point(2,1), Point(3,4)]}
@@ -46,16 +50,21 @@ class TestMindTheGap:
 
     def test_find_lat_gaps(self):
         point_coords = mtg.get_coordinates(self.points)
-        stacked, x_bins, y_bins = mtg.into_the_bins(point_coords,0.061,0.7)
+        stacked, x_bins, y_bins = mtg.into_the_bins(point_coords,0.061,0.07)
         lat_gaps = mtg.find_lat_gaps(stacked, x_bins, 0.3)
 
         assert isinstance(lat_gaps, list)
         assert isinstance(lat_gaps[0], list)
         assert_array_equal(lat_gaps, self.expected_lat_gaps)
 
-
     def test_find_lon_gaps(self):
-        pass
+        point_coords = mtg.get_coordinates(self.points)
+        stacked, x_bins, y_bins = mtg.into_the_bins(point_coords,0.061,0.07)
+        lon_gaps = mtg.find_lon_gaps(stacked, y_bins, 0.3)
+
+        assert isinstance(lon_gaps, list)
+        #assert isinstance(lon_gaps[0], list)
+        assert_array_equal(lon_gaps, self.expected_lon_gaps)
 
     def test_does_cross(self):
         xg1 = [0, 1, 0, 1, 0, 3, 2]
