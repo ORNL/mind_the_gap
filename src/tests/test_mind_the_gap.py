@@ -30,7 +30,14 @@ class TestMindTheGap:
             gpd.read_file('./src/tests/data/exp_cluster_inters.geojson')
         self.exp_cluster_inters = cluster_inters['geometry']
 
-        self.gaps = gpd.read_file('./src/tests/data/expected_gaps.geojson')
+        self.exp_gaps_shapes = \
+            gpd.read_file('./src/tests/data/expected_gaps_shapes.geojson')
+
+        self.exp_gaps_points = \
+            gpd.read_file('./src/tests/data/expected_gaps_points.geojson')
+
+        self.exp_write_points = \
+            gpd.read_file('./src/tests/data/expected_write_points.geojson')
 
     def test_get_coordinates(self):
         points_d = {'geometry': [Point(1,2), Point(2,1), Point(3,4)]}
@@ -210,14 +217,52 @@ class TestMindTheGap:
                       [11,12,13,14,15,16,17,18,19,21],
                       [20,22,23,24,25,26,27,28,29]]
 
-        shapes = mtg.generate_alpha_polygons(x_clusters,
-                                             y_clusters,
-                                             all_gap_segments,
-                                             18)
+        shapes, points = mtg.generate_alpha_polygons(x_clusters,
+                                                     y_clusters,
+                                                     all_gap_segments,
+                                                     18)
 
-        assert_geodataframe_equal(shapes[0],
-                                  self.gaps,
+        assert_geodataframe_equal(shapes,
+                                  self.exp_gaps_shapes,
+                                  check_less_precise=True)
+        assert_geodataframe_equal(points,
+                                  self.exp_gaps_points,
                                   check_less_precise=True)
 
     def test_mind_the_gap(self):
-        pass
+        gaps_shapes = mtg.mind_the_gap(self.points,0.061,0.07,0.3,0.3,3,3,alpha=18)
+
+        assert_geodataframe_equal(gaps_shapes,
+                                  self.exp_gaps_shapes,
+                                  check_less_precise=True)
+
+        gaps_shapes, gaps_points = mtg.mind_the_gap(self.points,
+                                                    0.061,
+                                                    0.07,
+                                                    0.3,
+                                                    0.3,
+                                                    3,
+                                                    3,
+                                                    alpha=18,
+                                                    cluster_points=True)
+
+        assert_geodataframe_equal(gaps_shapes,
+                                  self.exp_gaps_shapes,
+                                  check_less_precise=True)
+        assert_geodataframe_equal(gaps_points,
+                                  self.exp_gaps_points,
+                                  check_less_precise=True)
+
+        gaps_points = mtg.mind_the_gap(self.points,
+                                       0.061,
+                                       0.07,
+                                       0.3,
+                                       0.3,
+                                       3,
+                                       3,
+                                       alpha=18,
+                                       write_points=True)
+
+        assert_geodataframe_equal(gaps_points,
+                                  self.exp_write_points,
+                                  check_less_precise=True)
