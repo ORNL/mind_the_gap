@@ -5,6 +5,7 @@ import sys
 import csv
 
 import geopandas as gpd
+from geopandas.testing import assert_geoseries_equal
 import numpy as np
 from numpy.testing import assert_array_equal
 from shapely.geometry import Point
@@ -23,6 +24,10 @@ class TestMindTheGap:
         with open('./src/tests/data/exp_y_gaps.csv') as f:
             self.expected_lon_gaps = \
                 list(csv.reader(f, quoting=csv.QUOTE_NONNUMERIC))
+
+        cluster_inters = \
+            gpd.read_file('./src/tests/data/exp_cluster_inters.geojson')
+        self.exp_cluster_inters = cluster_inters['geometry']
 
     def test_get_coordinates(self):
         points_d = {'geometry': [Point(1,2), Point(2,1), Point(3,4)]}
@@ -113,5 +118,70 @@ class TestMindTheGap:
         assert len(lon_gaps) == 21
         assert len(y_gaps) == 19
 
-    def test_gen_gap_linestrings(self):
+    def test_find_clusters(self):
+        point_coords = mtg.get_coordinates(self.points)
+        stacked, x_bins, y_bins = mtg.into_the_bins(point_coords,0.061,0.07)
+        lat_gaps = mtg.find_lat_gaps(stacked, x_bins, 0.3)
+        lon_gaps = mtg.find_lon_gaps(stacked, y_bins, 0.3)
+
+        x_gaps, y_gaps = mtg.intersection_filter(lat_gaps,
+                                                 lon_gaps,
+                                                 3,
+                                                 3)
+
+        all_gaps, ids, gap_clusters, split_ind = \
+            mtg.find_clusters(x_gaps, y_gaps)
+
+        expected_ids = np.array([1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,2,1, \
+                                 2,2,2,2,2,2,2,2])
+        expected_gap_clusters = [[11,0,1,12,2,13,3,14,4,15,16,17,18,19,21],
+                                 [11,0,1,12,2,13,3,14,4,15,16,17,18,19,21],
+                                 [20,5,6,22,7,23,8,24,9,25,10,26,27,28,29]]
+
+        assert_array_equal(all_gaps,np.vstack([x_gaps,y_gaps]))
+        assert_array_equal(ids, expected_ids)
+        assert_array_equal(gap_clusters,expected_gap_clusters)
+        assert split_ind == 11
+
+    def test_cluster_intersections(self):
+        point_coords = mtg.get_coordinates(self.points)
+        stacked, x_bins, y_bins = mtg.into_the_bins(point_coords,0.061,0.07)
+        lat_gaps = mtg.find_lat_gaps(stacked, x_bins, 0.3)
+        lon_gaps = mtg.find_lon_gaps(stacked, y_bins, 0.3)
+
+        x_gaps, y_gaps = mtg.intersection_filter(lat_gaps,
+                                                 lon_gaps,
+                                                 3,
+                                                 3)
+
+        all_gaps, ids, gap_clusters, split_ind = \
+            mtg.find_clusters(x_gaps, y_gaps)
+
+        all_gap_segments = []
+        for i, g in enumerate(all_gaps):
+            if i < split_ind:
+                seg = [(g[1],g[3]),(g[1],g[5])]
+            elif i >= split_ind:
+                seg = [(g[3],g[1]),(g[5],g[1])]
+            all_gap_segments.append(seg)
+
+        x_clusters = [0,1,2,3,4]
+        y_clusters = [11,12,13,14,15,16,17,18,19,21]
+
+        inters = mtg.cluster_intersections(x_clusters,
+                                           y_clusters,
+                                           all_gap_segments)
+
+        inters_gs = gpd.GeoSeries(inters,crs='EPSG:4326')
+
+        assert isinstance(inters, list)
+        assert isinstance(inters[0],Point)
+        assert_geoseries_equal(inters_gs,
+                               self.exp_cluster_inters,
+                               check_less_precise=True)
+
+    def test_generate_alpha_polygons(self):
+        pass
+
+    def test_mind_the_gap(self):
         pass
