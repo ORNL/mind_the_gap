@@ -6,6 +6,7 @@ import csv
 
 import geopandas as gpd
 from geopandas.testing import assert_geoseries_equal
+from geopandas.testing import assert_geodataframe_equal
 import numpy as np
 from numpy.testing import assert_array_equal
 from shapely.geometry import Point
@@ -28,6 +29,8 @@ class TestMindTheGap:
         cluster_inters = \
             gpd.read_file('./src/tests/data/exp_cluster_inters.geojson')
         self.exp_cluster_inters = cluster_inters['geometry']
+
+        self.gaps = gpd.read_file('./src/tests/data/expected_gaps.geojson')
 
     def test_get_coordinates(self):
         points_d = {'geometry': [Point(1,2), Point(2,1), Point(3,4)]}
@@ -181,7 +184,40 @@ class TestMindTheGap:
                                check_less_precise=True)
 
     def test_generate_alpha_polygons(self):
-        pass
+        point_coords = mtg.get_coordinates(self.points)
+        stacked, x_bins, y_bins = mtg.into_the_bins(point_coords,0.061,0.07)
+        lat_gaps = mtg.find_lat_gaps(stacked, x_bins, 0.3)
+        lon_gaps = mtg.find_lon_gaps(stacked, y_bins, 0.3)
+
+        x_gaps, y_gaps = mtg.intersection_filter(lat_gaps,
+                                                 lon_gaps,
+                                                 3,
+                                                 3)
+
+        all_gaps, ids, gap_clusters, split_ind = \
+            mtg.find_clusters(x_gaps, y_gaps)
+
+        all_gap_segments = []
+        for i, g in enumerate(all_gaps):
+            if i < split_ind:
+                seg = [(g[1],g[3]),(g[1],g[5])]
+            elif i >= split_ind:
+                seg = [(g[3],g[1]),(g[5],g[1])]
+            all_gap_segments.append(seg)
+
+        x_clusters = [[0,1,2,3,4],[0,1,2,3,4],[5,6,7,8,9,10]]
+        y_clusters = [[11,12,13,14,15,16,17,18,19,21],
+                      [11,12,13,14,15,16,17,18,19,21],
+                      [20,22,23,24,25,26,27,28,29]]
+
+        shapes = mtg.generate_alpha_polygons(x_clusters,
+                                             y_clusters,
+                                             all_gap_segments,
+                                             18)
+
+        assert_geodataframe_equal(shapes[0],
+                                  self.gaps,
+                                  check_less_precise=True)
 
     def test_mind_the_gap(self):
         pass
