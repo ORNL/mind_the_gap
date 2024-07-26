@@ -230,7 +230,14 @@ class TestMindTheGap:
                                   check_less_precise=True)
 
     def test_mind_the_gap(self):
-        gaps_shapes = mtg.mind_the_gap(self.points,0.061,0.07,0.3,0.3,3,3,alpha=18)
+        gaps_shapes = mtg.mind_the_gap(self.points,
+                                       0.061,
+                                       0.07,
+                                       0.3,
+                                       0.3,
+                                       3,
+                                       3,
+                                       alpha=18)
 
         assert_geodataframe_equal(gaps_shapes,
                                   self.exp_gaps_shapes,
