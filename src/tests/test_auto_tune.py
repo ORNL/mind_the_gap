@@ -51,3 +51,11 @@ class TestRegion:
         reg.mind(0.063, 2, 3, 18)
 
         assert_geodataframe_equal(reg.gaps, self.exp_mind_gaps)
+
+        reg.mind(-0.063, -2, -3, -18)
+
+        empty_gdf = gpd.GeoDataFrame(columns=['geometry'],
+                                     geometry='geometry',
+                                     crs='EPSG:4326')
+        
+        assert_geodataframe_equal(reg.gaps, empty_gdf)
