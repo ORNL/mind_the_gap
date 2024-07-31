@@ -24,6 +24,9 @@ class TestRegion:
         self.exp_grid = gpd.read_file('./src/tests/data/exp_grid.geojson')
         self.exp_grid = self.exp_grid.set_index('index').rename_axis(None)
 
+        self.exp_mind_gaps = \
+            gpd.read_file('./src/tests/data/exp_mind_gaps.gpkg')
+
     def test_init(self):
         reg = Region(self.points, self.bound)
 
@@ -43,3 +46,8 @@ class TestRegion:
                                   self.exp_grid,
                                   check_index_type=False,
                                   check_less_precise=True)
+    def test_mind(self):
+        reg = Region(self.points, self.bound)
+        reg.mind(0.063, 2, 3, 18)
+
+        assert_geodataframe_equal(reg.gaps, self.exp_mind_gaps)
