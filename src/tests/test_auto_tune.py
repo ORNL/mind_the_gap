@@ -26,6 +26,8 @@ class TestRegion:
 
         self.exp_mind_gaps = \
             gpd.read_file('./src/tests/data/exp_mind_gaps.gpkg')
+        self.exp_auto_gaps = \
+            gpd.read_file('./src/tests/data/exp_auto_gaps.gpkg')
 
     def test_init(self):
         reg = Region(self.points, self.bound)
@@ -61,7 +63,7 @@ class TestRegion:
         assert_geodataframe_equal(reg.gaps, empty_gdf)
 
     def test_fit_check(self):
-        reg = Region(self.points, self.bound, grid_size= 0.05)
+        reg = Region(self.points, self.bound, grid_size=0.05)
         reg.mind(0.063, 2, 3, 18)
         fit = reg.fit_check(0.07,0.2,0.8)
 
@@ -70,3 +72,16 @@ class TestRegion:
         fit = reg.fit_check(0.07,0.7,0.8)
 
         assert fit is False
+
+    def test_run(self):
+        reg = Region(self.points, self.bound, grid_size=0.05)
+        reg.run(area_ceiling=0.5)
+
+        assert_geodataframe_equal(reg.gaps, self.exp_auto_gaps)
+
+    def test_parallel_run(self):
+        reg = Region(self.points, self.bound, grid_size=0.05)
+
+        reg.parallel_run(0.07,0.2,0.5,0.1,0.025,2,3,20)
+
+        assert_geodataframe_equal(reg.gaps, self.exp_auto_gaps)
