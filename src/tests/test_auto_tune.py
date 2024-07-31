@@ -85,3 +85,6 @@ class TestRegion:
         reg.parallel_run(0.07,0.2,0.5,0.1,0.025,2,3,20)
 
         assert_geodataframe_equal(reg.gaps, self.exp_auto_gaps)
+
+    def test_run_parallel(self):
+        pass
