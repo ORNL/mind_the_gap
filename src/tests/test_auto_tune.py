@@ -57,5 +57,16 @@ class TestRegion:
         empty_gdf = gpd.GeoDataFrame(columns=['geometry'],
                                      geometry='geometry',
                                      crs='EPSG:4326')
-        
+
         assert_geodataframe_equal(reg.gaps, empty_gdf)
+
+    def test_fit_check(self):
+        reg = Region(self.points, self.bound, grid_size= 0.05)
+        reg.mind(0.063, 2, 3, 18)
+        fit = reg.fit_check(0.07,0.2,0.8)
+
+        assert fit
+
+        fit = reg.fit_check(0.07,0.7,0.8)
+
+        assert fit == False
