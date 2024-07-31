@@ -28,6 +28,8 @@ class TestRegion:
             gpd.read_file('./src/tests/data/exp_mind_gaps.gpkg')
         self.exp_auto_gaps = \
             gpd.read_file('./src/tests/data/exp_auto_gaps.gpkg')
+        self.exp_parallel_gaps = \
+            gpd.read_file('./src/tests/data/exp_parallel_gaps.gpkg')
 
     def test_init(self):
         reg = Region(self.points, self.bound)
@@ -87,4 +89,8 @@ class TestRegion:
         assert_geodataframe_equal(reg.gaps, self.exp_auto_gaps)
 
     def test_run_parallel(self):
-        pass
+        reg = Region(self.points, self.bound, grid_size=0.05)
+
+        reg.run_parallel(tile_size=0.8)
+
+        assert_geodataframe_equal(reg.gaps, self.exp_parallel_gaps)
