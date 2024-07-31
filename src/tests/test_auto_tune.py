@@ -69,4 +69,4 @@ class TestRegion:
 
         fit = reg.fit_check(0.07,0.7,0.8)
 
-        assert fit == False
+        assert fit is False
