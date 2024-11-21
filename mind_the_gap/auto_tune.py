@@ -121,13 +121,13 @@ class Region:
 
         try:
             self.gaps = mtg.mind_the_gap(self.all_points_gdf,
-                                                  w,
-                                                  w,
-                                                  l,
-                                                  l,
-                                                  i,
-                                                  i,
-                                                  alpha=a)
+                                         w,
+                                         w,
+                                         l,
+                                         l,
+                                         i,
+                                         i,
+                                         alpha=a)
 
         except Exception as e:
             self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
