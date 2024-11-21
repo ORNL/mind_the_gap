@@ -13,8 +13,7 @@ from shapely.geometry import Point
 from shapely.geometry import LineString
 import pytest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import mind_the_gap as mtg
+import mind_the_gap.mind_the_gap as mtg
 
 @pytest.fixture()
 def points():

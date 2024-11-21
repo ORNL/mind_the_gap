@@ -14,7 +14,7 @@ from shapely.geometry import LineString
 from shapely.testing import assert_geometries_equal
 import pytest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from auto_tune import Region
 
 @pytest.fixture()
