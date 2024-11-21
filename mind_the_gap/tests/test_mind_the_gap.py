@@ -18,44 +18,44 @@ import mind_the_gap as mtg
 
 @pytest.fixture()
 def points():
-    _points = gpd.read_file('./src/tests/data/test_points.geojson')
+    _points = gpd.read_file('./mind_the_gap/tests/data/test_points.geojson')
     return _points
 
 @pytest.fixture()
 def expected_lat_gaps():
-    with open('./src/tests/data/exp_x_gaps.csv') as f:
+    with open('./mind_the_gap/tests/data/exp_x_gaps.csv') as f:
         _expected_lat_gaps = list(csv.reader(f,quoting=csv.QUOTE_NONNUMERIC))
     return _expected_lat_gaps
 
 @pytest.fixture()
 def expected_lon_gaps():
-    with open('./src/tests/data/exp_y_gaps.csv') as f:
+    with open('./mind_the_gap/tests/data/exp_y_gaps.csv') as f:
         _expected_lon_gaps = list(csv.reader(f, quoting=csv.QUOTE_NONNUMERIC))
     return _expected_lon_gaps
 
 @pytest.fixture()
 def exp_cluster_inters():
     cluster_inters = \
-        gpd.read_file('./src/tests/data/exp_cluster_inters.geojson')
+        gpd.read_file('./mind_the_gap/tests/data/exp_cluster_inters.geojson')
     _exp_cluster_inters = cluster_inters['geometry']
     return _exp_cluster_inters
 
 @pytest.fixture()
 def exp_gaps_shapes():
     _exp_gaps_shapes = \
-        gpd.read_file('./src/tests/data/expected_gaps_shapes.geojson')
+        gpd.read_file('./mind_the_gap/tests/data/expected_gaps_shapes.geojson')
     return _exp_gaps_shapes
 
 @pytest.fixture()
 def exp_gaps_points():
     _exp_gaps_points = \
-        gpd.read_file('./src/tests/data/expected_gaps_points.geojson')
+        gpd.read_file('./mind_the_gap/tests/data/expected_gaps_points.geojson')
     return _exp_gaps_points
 
 @pytest.fixture()
 def exp_write_points():
     _exp_write_points = \
-        gpd.read_file('./src/tests/data/expected_write_points.geojson')
+        gpd.read_file('./mind_the_gap/tests/data/expected_write_points.geojson')
     return _exp_write_points
 
 class TestMindTheGap:

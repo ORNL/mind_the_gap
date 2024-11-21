@@ -19,33 +19,33 @@ from auto_tune import Region
 
 @pytest.fixture()
 def points():
-    _points = gpd.read_file('./src/tests/data/test_points.geojson')
+    _points = gpd.read_file('./mind_the_gap/tests/data/test_points.geojson')
     return _points
 
 @pytest.fixture()
 def bound():
-    _bound = gpd.read_file('./src/tests/data/test_bound.geojson')
+    _bound = gpd.read_file('./mind_the_gap/tests/data/test_bound.geojson')
     return _bound
 
 @pytest.fixture()
 def exp_grid():
-    _exp_grid = gpd.read_file('./src/tests/data/exp_grid.geojson')
+    _exp_grid = gpd.read_file('./mind_the_gap/tests/data/exp_grid.geojson')
     _exp_grid = _exp_grid.set_index('index').rename_axis(None)
     return _exp_grid
 
 @pytest.fixture()
 def exp_mind_gaps():
-    _exp_mind_gaps = gpd.read_file('./src/tests/data/exp_mind_gaps.gpkg')
+    _exp_mind_gaps = gpd.read_file('./mind_the_gap/tests/data/exp_mind_gaps.gpkg')
     return _exp_mind_gaps
 
 @pytest.fixture()
 def exp_auto_gaps():
-    _exp_auto_gaps = gpd.read_file('./src/tests/data/exp_auto_gaps.gpkg')
+    _exp_auto_gaps = gpd.read_file('./mind_the_gap/tests/data/exp_auto_gaps.gpkg')
     return _exp_auto_gaps
 
 @pytest.fixture()
 def exp_parallel_gaps():
-    _exp_parallel_gaps=gpd.read_file('./src/tests/data/exp_parallel_gaps.gpkg')
+    _exp_parallel_gaps=gpd.read_file('./mind_the_gap/tests/data/exp_parallel_gaps.gpkg')
     return _exp_parallel_gaps
 
 class TestRegion:
