@@ -9,8 +9,8 @@ import pandas as pd
 import numpy as np
 from shapely import geometry
 
-import mind_the_gap
-from chainage import chainage
+import mind_the_gap.mind_the_gap
+from mind_the_gap.chainage import chainage
 
 # Region object
 class Region:
