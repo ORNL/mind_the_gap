@@ -16,5 +16,3 @@ testing:
         - pytest --junitxml=report.xml
     artifacts:
       when: always
-      reports:
-          junit: /builds/USERNAME/mind_the_Gap/tests/report.xml
