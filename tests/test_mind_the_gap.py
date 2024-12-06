@@ -1,7 +1,5 @@
 """Test for functions in Mind the Gap main module"""
 
-import os
-import sys
 import csv
 
 import geopandas as gpd
