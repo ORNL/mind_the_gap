@@ -1,0 +1,20 @@
+default:
+  image: python:3.10
+
+before_script:
+    - pip install poetry
+    - poetry install
+    - source `poetry env info --path`/bin/activate
+
+stages:
+  - test
+
+testing:
+    stage: test
+    script:
+        - echo "This is the test stage"
+        - pytest --junitxml=report.xml
+    artifacts:
+      when: always
+      reports:
+          junit: /builds/USERNAME/mind_the_Gap/tests/report.xml
