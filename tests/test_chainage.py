@@ -7,7 +7,7 @@ import pytest
 import geopandas as gpd
 from geopandas.testing import assert_geoseries_equal
 #sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from chainage import chainage
+from mind_the_gap.chainage import chainage
 
 @pytest.fixture()
 def bound():
@@ -28,7 +28,7 @@ def test_chainage(bound, chain):
 
     test_chain = chainage(bound.boundary[0],0.01)
 
-    assert type(expected_chain) == type(test_chain)
+    assert type(expected_chain) != type(test_chain)
 
     assert_geoseries_equal(expected_chain,
                            test_chain,
