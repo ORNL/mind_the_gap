@@ -8,6 +8,8 @@ stages:
 
 testing:
     stage: test
+    tags:
+      - mtg_unit_tests
     script:
         - echo "This is the test stage"
         - pytest --junitxml=report.xml
