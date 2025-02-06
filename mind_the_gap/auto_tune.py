@@ -59,7 +59,7 @@ class Region:
         # Make grid
         self.make_grid(size=grid_size)
 
-    def make_grid(self, size=0.02):
+    def make_grid(self, size=0.005):
         """Make grid to check gap completeness.
         
         Parameters
@@ -257,7 +257,8 @@ class Region:
             if fit:
                 break
             # Update paramaters
-            _w = _w - _w_step
+            #_w = _w - _w_step
+            _w = _w - (_w / 3)
 
     def parallel_run(self,
                      b_thresh,
