@@ -1,0 +1,17 @@
+before_script:
+    - pip install poetry
+    - poetry install
+    - source `poetry env info --path`/bin/activate
+
+stages:
+  - test
+
+testing:
+    stage: test
+    tags:
+      - mtg_unit_tests
+    script:
+        - echo "This is the test stage"
+        - pytest --junitxml=report.xml
+    artifacts:
+      when: always

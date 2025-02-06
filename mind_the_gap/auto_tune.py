@@ -9,8 +9,8 @@ import pandas as pd
 import numpy as np
 from shapely import geometry
 
-import mind_the_gap
-from chainage import chainage
+import mind_the_gap.mind_the_gap as mtg
+from mind_the_gap.chainage import chainage
 
 # Region object
 class Region:
@@ -120,14 +120,14 @@ class Region:
         l = w * ln_ratio + (w / 4)
 
         try:
-            self.gaps = mind_the_gap.mind_the_gap(self.all_points_gdf,
-                                                  w,
-                                                  w,
-                                                  l,
-                                                  l,
-                                                  i,
-                                                  i,
-                                                  alpha=a)
+            self.gaps = mtg.mind_the_gap(self.all_points_gdf,
+                                         w,
+                                         w,
+                                         l,
+                                         l,
+                                         i,
+                                         i,
+                                         alpha=a)
 
         except Exception as e:
             self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
