@@ -134,12 +134,18 @@ if __name__ == "__main__":
     admin_con = 'postgresql://openadmin:openadmin@gshs-aurelia01:5432/opendb'
     admin_engine = create_engine(admin_con)
 
+    '''
     row_col_qry = """SELECT DISTINCT degree_row, degree_col
                      FROM public.country_tiles_sliversfix cts
                      LEFT JOIN google.bldgs_v3_mtg_v3 bvmv
                         ON cts.degree_row = bvmv.row
                             AND cts.degree_col = bvmv.col
                      WHERE bvmv.status IS NULL"""
+    '''
+    row_col_qry = """SELECT DISTINCT degree_row, degree_col
+                     FROM public.country_tiles_sliversfix cts
+                     WHERE 'Spain' = ANY(cts.countries) OR
+                        'Mexico' = ANY(cts.countries)"""
 
     row_col_df = pd.read_sql_query(row_col_qry, read_con)
     row_col = row_col_df.itertuples(index=False, name=None)
