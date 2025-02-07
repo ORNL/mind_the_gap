@@ -12,7 +12,7 @@ import logging
 
 import geopandas as gpd
 import pandas as pd
-from mind_the_gap.auto_tune import Region
+from auto_tune import Region
 from sqlalchemy import create_engine
 from sqlalchemy import text
 from shapely import MultiPolygon
@@ -70,7 +70,7 @@ def run_region(_row_col,
         return
 
     try:
-        region.run(build_thresh=0.07, area_floor=0.1, area_ceiling=0.9,_w=0.5)
+        region.run(build_thresh=0.07, area_floor=0.4, area_ceiling=0.8)
         if region.gaps.empty:
             region.gaps = gpd.GeoDataFrame([MultiPolygon()],
                                            columns=['geometry'],
@@ -148,8 +148,8 @@ if __name__ == "__main__":
     region_dict = {}
 
     # wipe table
-    bldgs_schema = 'microsoft'
-    gaps_table = 'bldgs_01302024_mtg_v16'
+    bldgs_schema = 'google'
+    gaps_table = 'bldgs_v3_mtg_v4'
     clear_qry = f"""DROP TABLE IF EXISTS {bldgs_schema}.{gaps_table}"""
     #connection = admin_engine.connect()
     #connection.execute(text(clear_qry))
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     admin_engine.dispose()
 
     # prepare args
-    bldgs_table = 'bldgs_01302024'
+    bldgs_table = 'bldgs_v3'
     args = zip(row_col,
                repeat(bldgs_schema),
                repeat(bldgs_table),
