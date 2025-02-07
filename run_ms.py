@@ -61,14 +61,7 @@ def run_region(_row_col,
                     WHERE t.degree_row = {row} and t.degree_col = {col}"""
 
     try:
-        buildings = gpd.GeoDataFrame.from_postgis(build_qry,
-                                                  _read_engine,
-                                                  geom_col='geometry')
-        bounds = gpd.GeoDataFrame.from_postgis(bound_qry,
-                                               _read_engine,
-                                               geom_col='geometry')
-
-        region = Region(buildings, boundary)
+        region = Region(_read_engine, bound_qry, build_qry)
         _read_engine.dispose()
     except: # pylint: disable=bare-except
         error_msg = 'Failed to make region. Row: '+str(row)+' Col: '+str(col)
