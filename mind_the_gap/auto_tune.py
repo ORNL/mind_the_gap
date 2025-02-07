@@ -258,10 +258,7 @@ class Region:
                 break
             # Update paramaters
             #_w = _w - _w_step
-            if _w > 0.05:
-                _w = _w - (_w / 3)
-            else:
-                _w = _w - _w_step
+            _w = _w - (_w / 3)
 
     def parallel_run(self,
                      b_thresh,
