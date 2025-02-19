@@ -4,7 +4,7 @@ Mind the Gap is an algorithm for detecting gaps in building footprints datasets,
 
 ## Getting started
 
-A Dockerfile and docker-compose.yml are included, and can help you set up a suitable container. 
+A Dockerfile and requirements are included, and can help you set up a suitable container. 
 
 Alternatively, you can use poetry by running:
 `pip install poetry`
