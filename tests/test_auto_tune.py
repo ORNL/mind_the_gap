@@ -11,17 +11,17 @@ from mind_the_gap.auto_tune import Region
 
 @pytest.fixture()
 def points():
-    _points = gpd.read_file('./tests/data/test_points.geojson')
+    _points = gpd.read_file('./tests/data/test_points.gpkg')
     return _points
 
 @pytest.fixture()
 def bound():
-    _bound = gpd.read_file('./tests/data/test_bound.geojson')
+    _bound = gpd.read_file('./tests/data/test_bound.gpkg')
     return _bound
 
 @pytest.fixture()
 def exp_grid():
-    _exp_grid = gpd.read_file('./tests/data/exp_grid.geojson')
+    _exp_grid = gpd.read_file('./tests/data/exp_grid.gpkg')
     _exp_grid = _exp_grid.set_index('index').rename_axis(None)
     return _exp_grid
 
