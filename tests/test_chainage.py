@@ -10,12 +10,12 @@ from mind_the_gap.chainage import chainage
 
 @pytest.fixture()
 def bound():
-    _bound = gpd.read_file('./tests/data/slovakia_bound.geojson')
+    _bound = gpd.read_file('./tests/data/slovakia_bound.gpkg')
     return _bound
 
 @pytest.fixture()
 def chain():
-    _chain = gpd.read_file('./tests/data/slovakia_chain.geojson')
+    _chain = gpd.read_file('./tests/data/slovakia_chain.gpkg')
     _chain = _chain['geometry']
     return _chain
 
