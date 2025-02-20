@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "mind-the-gap"
+version = "1.0.0"
+description = "Mind the Gap is an algorithm for detecting gaps in building footprints datasets "
+authors = ["Jack Gonzales <gonzalesjj@ornl.gov>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pytest = "^8.3.4"
+geopandas = "^1.0.1"
+shapely = "^2.0.6"
+libpysal = "^4.12.1"
+numba = "^0.60.0"
+psycopg2-binary = "^2.9.10"
+geoalchemy = "^0.7.2"
+rtree = "^1.3.0"
+sphinx = "^8.1.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
