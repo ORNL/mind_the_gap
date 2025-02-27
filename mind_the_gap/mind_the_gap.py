@@ -127,6 +127,9 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
             diffs = np.abs(points[i,0] - bins[:])
             bin_index = np.where(min(diffs) == np.abs(points[i,0]-bins[:]))[0]
 
+            if len(bin_index) == 2:
+                bin_index=bin_index[0] # If the point lies perfectly between two bins, just put it in the first one
+
             bin_assignment[i] = bin_index
 
         return bin_assignment, bins
@@ -166,6 +169,9 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
             diffs = np.abs(points[i,1] - bins[:])
             bin_index = np.where(min(diffs) ==
                                  np.abs(points[i,1] - bins[:]))[0]
+       
+            if len(bin_index) == 2:
+                bin_index=bin_index[0] # If the point lies perfectly between two bins, just put it in the first one
 
             bin_assignment[i] = bin_index
 
@@ -233,28 +239,28 @@ def find_lat_gaps(points, bins, gap_length_threshold=0.05):
         successive_dists = succ_dists
 
         # Do some basic stats
-        try:
-            dist_max = max(successive_dists)
+        #try:
+        dist_max = max(successive_dists)
 
-            # If large gaps are present, where are they?
-            if dist_max >= (gap_length_threshold):
-                big_dist_inds = np.where(successive_dists >=
-                                         (gap_length_threshold))[0]
+        # If large gaps are present, where are they?
+        if dist_max >= (gap_length_threshold):
+            big_dist_inds = np.where(successive_dists >=
+                                     (gap_length_threshold))[0]
 
-                # Append each gap's info to list of all gaps
-                for gap_ind in big_dist_inds:
-                    this_gap = [i,
-                                binn,
-                                gap_ind,
-                                lats_sorted[gap_ind],
-                                gap_ind + 1,
-                                lats_sorted[gap_ind + 1],
-                                successive_dists[gap_ind]]
-                    gaps.append(this_gap)
-        except Exception:
-            pass
-        finally:
-            continue
+            # Append each gap's info to list of all gaps
+            for gap_ind in big_dist_inds:
+                this_gap = [i,
+                            binn,
+                            gap_ind,
+                            lats_sorted[gap_ind],
+                            gap_ind + 1,
+                            lats_sorted[gap_ind + 1],
+                            successive_dists[gap_ind]]
+                gaps.append(this_gap)
+    #except Exception:
+    #    pass
+    #finally:
+    #    continue
 
     return gaps
 
@@ -310,27 +316,27 @@ def find_lon_gaps(points, bins, gap_length_threshold=0.05):
         successive_dists = succ_dists
 
         # Do some basic stats
-        try:
-            dist_max = max(successive_dists)
+        #try: I cannot for the life of me think of why this might raise an error that we would want to pass
+        dist_max = max(successive_dists)
 
-            # If large gaps are present, where are they?
-            if dist_max >= (gap_length_threshold):
-                big_dist_inds = np.where(successive_dists >=
-                                         (gap_length_threshold))[0]
-                # Append each gap's info to list of all gaps
-                for gap_ind in big_dist_inds:
-                    this_gap = [i,
-                                binn,
-                                gap_ind,
-                                lons_sorted[gap_ind],
-                                gap_ind + 1,
-                                lons_sorted[gap_ind + 1],
-                                successive_dists[gap_ind]]
-                    gaps.append(this_gap)
-        except Exception:
-            pass
-        finally:
-            i += 1
+        # If large gaps are present, where are they?
+        if dist_max >= (gap_length_threshold):
+            big_dist_inds = np.where(successive_dists >=
+                                     (gap_length_threshold))[0]
+            # Append each gap's info to list of all gaps
+            for gap_ind in big_dist_inds:
+                this_gap = [i,
+                            binn,
+                            gap_ind,
+                            lons_sorted[gap_ind],
+                            gap_ind + 1,
+                            lons_sorted[gap_ind + 1],
+                            successive_dists[gap_ind]]
+                gaps.append(this_gap)
+    #except Exception:
+    #    pass
+    #finally:
+    #    i += 1
     return gaps
 
 # --------------Find if a pair of segments cross--------------
