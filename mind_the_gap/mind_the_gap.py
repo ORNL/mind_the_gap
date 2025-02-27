@@ -127,8 +127,8 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
             diffs = np.abs(points[i,0] - bins[:])
             bin_index = np.where(min(diffs) == np.abs(points[i,0]-bins[:]))[0]
 
-            if len(bin_index) == 2:
-                bin_index=bin_index[0] # If the point lies perfectly between two bins, just put it in the first one
+            if len(bin_index) > 1:
+                continue
 
             bin_assignment[i] = bin_index
 
@@ -169,9 +169,9 @@ def into_the_bins(points, x_bin_size=0.005, y_bin_size=0.005):
             diffs = np.abs(points[i,1] - bins[:])
             bin_index = np.where(min(diffs) ==
                                  np.abs(points[i,1] - bins[:]))[0]
-       
-            if len(bin_index) == 2:
-                bin_index=bin_index[0] # If the point lies perfectly between two bins, just put it in the first one
+
+            if len(bin_index) > 1:
+                continue
 
             bin_assignment[i] = bin_index
 
