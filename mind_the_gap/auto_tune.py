@@ -144,9 +144,9 @@ class Region:
                                      i,
                                      alpha=a)
 
-        self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
-                                      geometry='geometry',
-                                      crs='EPSG:4326')
+        #self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
+        #                              geometry='geometry',
+        #                              crs='EPSG:4326')
                                           
     def fit_check(self, build_thresh, area_floor, area_ceiling):
         """Checks how well the gaps fit the data
