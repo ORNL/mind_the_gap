@@ -859,6 +859,10 @@ def mind_the_gap(in_points,
         return all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
             y_gap_LineStrings
 
+    if min([x_bin_size, y_bin_size, x_gap_len_threshold, y_gap_len_threshold,\
+            x_min_intersections, y_min_intersections]) <= 0:
+        raise ValueError('All parameters must be positive')
+
     #Load in building centroids
     point_coords = get_coordinates(in_points)
 
