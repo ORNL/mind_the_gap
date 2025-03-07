@@ -249,6 +249,9 @@ class Region:
                 break
 
             if min(these_params) < 0 or _w < (_w_step/2):
+                self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
+                                              geometry='geometry',
+                                              crs='EPSG:4326')
                 break
 
             _is = [2,3,4]
