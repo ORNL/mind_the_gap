@@ -467,6 +467,12 @@ def intersection_filter(x_gaps,
     iterations = 0
 
     while True:
+        # If either has no gaps, there can be no intersections
+        if np.shape(x_gaps)[0] < 1 or np.shape(y_gaps)[0] < 1:
+            x_gaps = np.ndarray(0)
+            y_gaps = np.ndarray(0)
+            break
+
         x_gap_does_cross = np.zeros(np.shape(x_gaps[:,1])[0])
         y_gap_does_cross = np.zeros(np.shape(y_gaps[:,1])[0])
 
@@ -606,7 +612,7 @@ def find_clusters(x_gaps, y_gaps):
     all_gap_inds = list(range(0,len(all_gaps[:,0])))
 
     # start cluster ID
-    cluster_id = 0
+    cluster_id = 1
 
     # Sort into clusters
     while in_clusters.sort() != all_gap_inds:
@@ -749,7 +755,9 @@ def generate_alpha_polygons(x_clusters, y_clusters, gaps, alpha):
         inters = MultiPoint(inters)
         inters = shapely.ops.unary_union([endpoints,inters])
 
-        a_shape = make_alpha_shape(inters, alpha)[0]
+        a_shape = make_alpha_shape(inters, alpha)
+        if len(a_shape) > 0:
+            a_shape = a_shape[0]
 
         inters = MultiPoint(inters)
         all_inters.append([inters])
@@ -859,6 +867,7 @@ def mind_the_gap(in_points,
         return all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \
             y_gap_LineStrings
 
+    # Make sure parameters are all positive numbers
     if min([x_bin_size, y_bin_size, x_gap_len_threshold, y_gap_len_threshold,\
             x_min_intersections, y_min_intersections]) <= 0:
         raise ValueError('All parameters must be positive')
@@ -879,6 +888,21 @@ def mind_the_gap(in_points,
                                          y_gaps,
                                          x_min_intersections,
                                          y_min_intersections)
+    
+    # ---If x_gaps or y_gaps are empty, there are no gaps found---
+    if np.shape(x_gaps)[0] == 0 or np.shape(y_gaps)[0] == 0:
+        # Set points and polygons to empty GeoDataFrames
+        polygons = gpd.GeoDataFrame(columns=['geometry'],
+                                  geometry='geometry',
+                                  crs='EPSG:4326')
+        points = gpd.GeoDataFrame(columns=['geometry'],
+                                    geometry='geometry',
+                                    crs='EPSG:4326')
+        
+        # Return
+        if cluster_points:
+            return polygons, points
+        return polygons
 
     # ------------------Generate gap LineStrings------------------
     all_gap_LineStrings, all_gap_segments, x_gap_LineStrings, \

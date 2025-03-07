@@ -379,11 +379,11 @@ class Region:
                    repeat(_a))
 
         # Execute
-        #with mp.Pool(processes=cpus) as p:
-        #    gs = p.starmap(Region.parallel_run, args)
-        from itertools import starmap
-        gs = starmap(Region.parallel_run, args)
-        print('gaps found')
+        with mp.Pool(processes=cpus) as p:
+            gs = p.starmap(Region.parallel_run, args)
+        #from itertools import starmap
+        #gs = starmap(Region.parallel_run, args)
+        #print('gaps found')
 
         # Combine gaps
         self.gaps = gpd.GeoDataFrame(pd.concat(gs, ignore_index=True))
