@@ -166,8 +166,11 @@ class Region:
                                     how='left',
                                     predicate='contains')
             empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
+            
             with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
+                warnings.filterwarnings("ignore",
+                                        message =
+                                        "Geometry is in a geographic CRS.")
                 empty_grid_area = sum(empty_grid['geometry'].area)
                 gaps_in_empty_grid = gpd.overlay(empty_grid,
                                                  self.gaps,
@@ -178,7 +181,18 @@ class Region:
                 gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
                 self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
+            '''
+            empty_grid_area = sum(empty_grid['geometry'].area)
+            gaps_in_empty_grid = gpd.overlay(empty_grid,
+                                             self.gaps,
+                                             how='intersection')
+            gaps_in_empty_grid = gaps_in_empty_grid.unary_union
+            if gaps_in_empty_grid is None:
+                return False
+            gaps_in_empty_grid_area = gaps_in_empty_grid.area
 
+            self.area_ratio = gaps_in_empty_grid_area / empty_grid_area
+            '''
             if (self.in_gaps_ratio < build_thresh) and \
                 ((self.area_ratio > area_floor) and \
                  (self.area_ratio < area_ceiling)):
