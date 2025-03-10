@@ -68,6 +68,7 @@ class TestRegion:
                                   exp_grid,
                                   check_index_type=False,
                                   check_less_precise=True)
+
     def test_mind(self, exp_mind_gaps):
         reg = Region(self.points, self.bound)
         reg.mind(0.063, 2, 3, 18)
