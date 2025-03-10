@@ -807,6 +807,8 @@ def mind_the_gap(in_points,
         Minimum number of intersections to filter gap lines
     y_min_intersections : int
         Minimum number of intersections to filter gap lines
+    alpha : int
+        alpha value for finding alphashapes
     cluster_points : boolean
         True with 'alpha' `polygon_type` returns a geodataframe of MultiPoints
         for each gap as well as polygons

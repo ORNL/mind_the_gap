@@ -295,3 +295,16 @@ class TestMindTheGap:
         assert_geodataframe_equal(gaps_points,
                                   exp_write_points,
                                   check_less_precise=True)
+
+    def test_mind_the_gap_neg_error(self, points):
+
+        with pytest.raises(ValueError,
+                           match='All parameters must be positive'):
+            gaps_shapes = mtg.mind_the_gap(points,
+                                           -0.061,
+                                           -0.07,
+                                           -0.3,
+                                           -0.3,
+                                           -3,
+                                           -3,
+                                           alpha=-18)
