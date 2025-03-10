@@ -119,20 +119,14 @@ class Region:
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
 
-        try:
-            self.gaps = mtg.mind_the_gap(self.all_points_gdf,
-                                         w,
-                                         w,
-                                         l,
-                                         l,
-                                         i,
-                                         i,
-                                         alpha=a)
-
-        except Exception as e:
-            self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
-                                          geometry='geometry',
-                                          crs='EPSG:4326')
+        self.gaps = mtg.mind_the_gap(self.all_points_gdf,
+                                     w,
+                                     w,
+                                     l,
+                                     l,
+                                     i,
+                                     i,
+                                     alpha=a)
 
     def fit_check(self, build_thresh, area_floor, area_ceiling):
         """Checks how well the gaps fit the data
@@ -234,7 +228,10 @@ class Region:
                 self.gaps = self.boundaries_shape
                 break
 
-            if min(these_params) < 0:
+            if min(these_params) < 0 or _w < (_w_step/2):
+                self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
+                                              geometry='geometry',
+                                              crs='EPSG:4326')
                 break
 
             _is = [2,3,4]
@@ -278,6 +275,7 @@ class Region:
                  _ln_ratio=ln_ratio,
                  _i=i,
                  _a=a)
+
         return self.gaps
 
     def run_parallel(self,
@@ -367,8 +365,6 @@ class Region:
         # Execute
         with mp.Pool(processes=cpus) as p:
             gs = p.starmap(Region.parallel_run, args)
-
-        print('gaps found')
 
         # Combine gaps
         self.gaps = gpd.GeoDataFrame(pd.concat(gs, ignore_index=True))

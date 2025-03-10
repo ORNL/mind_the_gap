@@ -70,7 +70,7 @@ class TestMindTheGap:
         points_in_bins, y_bins, x_bins = \
             mtg.into_the_bins(_points, x_bin_size=0.5, y_bin_size=0.5)
 
-        expexted_points_in_bins = np.array([[1,2,2,0],
+        expected_points_in_bins = np.array([[1,2,2,0],
                                             [2,1,0,2],
                                             [3,4,6,4]])
         expected_x_bins = np.array([1,1.5,2,2.5,3,3.5,4])
@@ -78,7 +78,7 @@ class TestMindTheGap:
 
         assert_array_equal(y_bins, expected_y_bins)
         assert_array_equal(x_bins, expected_x_bins)
-        assert_array_equal(points_in_bins, expexted_points_in_bins)
+        assert_array_equal(points_in_bins, expected_points_in_bins)
 
     def test_find_lat_gaps(self, points, expected_lat_gaps):
         point_coords = mtg.get_coordinates(points)
@@ -162,7 +162,6 @@ class TestMindTheGap:
         expected_ids = np.array([1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,2,1, \
                                  2,2,2,2,2,2,2,2])
         expected_gap_clusters = [[11,0,1,12,2,13,3,14,4,15,16,17,18,19,21],
-                                 [11,0,1,12,2,13,3,14,4,15,16,17,18,19,21],
                                  [20,5,6,22,7,23,8,24,9,25,10,26,27,28,29]]
 
         assert_array_equal(all_gaps,np.vstack([x_gaps,y_gaps]))
@@ -232,9 +231,8 @@ class TestMindTheGap:
                 seg = [(g[3],g[1]),(g[5],g[1])]
             all_gap_segments.append(seg)
 
-        x_clusters = [[0,1,2,3,4],[0,1,2,3,4],[5,6,7,8,9,10]]
+        x_clusters = [[0,1,2,3,4],[5,6,7,8,9,10]]
         y_clusters = [[11,12,13,14,15,16,17,18,19,21],
-                      [11,12,13,14,15,16,17,18,19,21],
                       [20,22,23,24,25,26,27,28,29]]
 
         shapes, points = mtg.generate_alpha_polygons(x_clusters,
@@ -297,3 +295,16 @@ class TestMindTheGap:
         assert_geodataframe_equal(gaps_points,
                                   exp_write_points,
                                   check_less_precise=True)
+
+    def test_mind_the_gap_neg_error(self, points):
+
+        with pytest.raises(ValueError,
+                           match='All parameters must be positive'):
+            gaps_shapes = mtg.mind_the_gap(points,
+                                           -0.061,
+                                           -0.07,
+                                           -0.3,
+                                           -0.3,
+                                           -3,
+                                           -3,
+                                           alpha=-18)
