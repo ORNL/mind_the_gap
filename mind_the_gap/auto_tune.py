@@ -156,9 +156,8 @@ class Region:
             # Check proportion of buildings in the gaps
             buildings_series = self.buildings.geometry
             in_gaps = self.buildings.sjoin(self.gaps, how='inner')
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-                self.in_gaps_ratio = in_gaps.size / buildings_series.size
+
+            self.in_gaps_ratio = in_gaps.size / buildings_series.size
 
             # Get open space or grid cells
             joined_grid = gpd.sjoin(self.grid,
