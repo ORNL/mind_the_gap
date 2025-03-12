@@ -278,7 +278,7 @@ class Region:
                  _w=w,
                  _w_step=w_step,
                  _ln_ratio=ln_ratio,
-                 _i=i,
+                 _is=i,
                  _a=a)
 
         return self.gaps
@@ -292,7 +292,7 @@ class Region:
                      _w=0.1,
                      _w_step=0.025,
                      _ln_ratio=2,
-                     _i=3,
+                     _is=[2,3,4],
                      _a=20):
         """Divides the region into square tiles and processes in parallel.
         
@@ -364,7 +364,7 @@ class Region:
                    repeat(_w),
                    repeat(_w_step),
                    repeat(_ln_ratio),
-                   repeat(_i),
+                   repeat(_is),
                    repeat(_a))
 
         # Execute
