@@ -199,7 +199,7 @@ class Region:
             _w=0.1,
             _w_step=0.025,
             _ln_ratio=2,
-            _i=3,
+            _is=[2,3,4]
             _a=20,):
         """Iterates through parameters until a good set is settled on"
         
@@ -239,7 +239,7 @@ class Region:
                                               crs='EPSG:4326')
                 break
 
-            _is = [2,3,4]
+            #_is = [2,3,4]
 
             for i in _is:
                 self.mind(_w, _ln_ratio, i, _a)
