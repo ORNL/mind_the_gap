@@ -225,7 +225,7 @@ class Region:
         """
 
         past_gaps = []
-        #these_params = [_w, _ln_ratio, _i, _a]
+        these_params = [_w, _ln_ratio, _is[0], _a]
         past_params = []
 
         while True:
