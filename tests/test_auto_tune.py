@@ -95,7 +95,7 @@ class TestRegion:
     def test_parallel_run(self, exp_auto_gaps):
         reg = Region(self.points, self.bound, grid_size=0.05)
 
-        reg.parallel_run(0.07,0.2,0.5,0.1,0.025,2,3,20)
+        reg.parallel_run(0.07,0.2,0.5,0.1,0.025,2,(2,3,4),20)
 
         assert_geodataframe_equal(reg.gaps, exp_auto_gaps)
 

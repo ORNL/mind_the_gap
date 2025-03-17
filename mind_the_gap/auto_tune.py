@@ -12,7 +12,6 @@ from shapely import geometry
 import mind_the_gap.mind_the_gap as mtg
 from mind_the_gap.chainage import chainage
 
-# Region object
 class Region:
     """The region to run Mind the Gap on.
     
@@ -28,7 +27,8 @@ class Region:
         """The region we are running Mind the Gap on.
 
         Loads in building and boundary data, builds chainage, etc. Everything
-        needed to run MTG and builds grid to autotune parameters to.
+        needed to run MtG and builds grid to autotune parameters to.
+
     
         Parameters
         ----------
@@ -92,8 +92,6 @@ class Region:
         grid = gpd.clip(grid, self.boundaries_shape)
 
         self.grid = grid
-
-
 
     def mind(self, w, ln_ratio, i, a):
         """Execute mind the gap
@@ -191,7 +189,6 @@ class Region:
             else:
                 return False
 
-
     def run(self,
             build_thresh=0.07,
             area_floor=0.2,
@@ -199,7 +196,7 @@ class Region:
             _w=0.1,
             _w_step=0.025,
             _ln_ratio=2,
-            _i=3,
+            _is=(2,3,4),
             _a=20,):
         """Iterates through parameters until a good set is settled on"
         
@@ -217,15 +214,14 @@ class Region:
             Value to update _w by each iteration
         _ln_ratio : float
             Ratio of minimum strip length to width
-        _i : int
-            Starting minimum number of intersections
+        _is : array_like
+            1-d set of numbers of interesections to try
         _a : int
             Alpha value for alpha-shapes
 
         """
 
         past_gaps = []
-        these_params = [_w, _ln_ratio, _i, _a]
         past_params = []
 
         while True:
@@ -233,15 +229,15 @@ class Region:
                 self.gaps = self.boundaries_shape
                 break
 
-            if min(these_params) < 0 or _w < (_w_step/2):
-                self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
-                                              geometry='geometry',
-                                              crs='EPSG:4326')
-                break
-
-            _is = [2,3,4]
-
             for i in _is:
+                these_params = [_w, _ln_ratio, i, _a]
+
+                if min(these_params) < 0 or _w < (_w_step/2):
+                    self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
+                                                  geometry='geometry',
+                                                  crs='EPSG:4326')
+                    break
+
                 self.mind(_w, _ln_ratio, i, _a)
 
                 fit = self.fit_check(build_thresh, area_floor, area_ceiling)
@@ -258,6 +254,9 @@ class Region:
 
             if fit:
                 break
+            elif min(these_params) < 0 or _w < (_w_step/2):
+                break
+
             # Update paramaters
             _w = _w - _w_step
 
@@ -278,7 +277,7 @@ class Region:
                  _w=w,
                  _w_step=w_step,
                  _ln_ratio=ln_ratio,
-                 _i=i,
+                 _is=i,
                  _a=a)
 
         return self.gaps
@@ -292,7 +291,7 @@ class Region:
                      _w=0.1,
                      _w_step=0.025,
                      _ln_ratio=2,
-                     _i=3,
+                     _is=(2,3,4),
                      _a=20):
         """Divides the region into square tiles and processes in parallel.
         
@@ -317,13 +316,12 @@ class Region:
             Value to update _w by each iteration
         _ln_ratio : float
             Ratio of minimum strip length to width
-        _i : int
-            Starting minimum number of intersections
+        _is : array_like
+            1-d set of numbers of interesections to try
         _a : int
             Alpha value for alpha-shapes
             
         """
-
 
         # Divide data
         bounds = self.boundaries.bounds
@@ -364,7 +362,7 @@ class Region:
                    repeat(_w),
                    repeat(_w_step),
                    repeat(_ln_ratio),
-                   repeat(_i),
+                   repeat(_is),
                    repeat(_a))
 
         # Execute
