@@ -196,7 +196,7 @@ class Region:
             _w=0.1,
             _w_step=0.025,
             _ln_ratio=2,
-            _is=[2,3,4],
+            _is=(2,3,4),
             _a=20,):
         """Iterates through parameters until a good set is settled on"
         
@@ -215,14 +215,14 @@ class Region:
         _ln_ratio : float
             Ratio of minimum strip length to width
         _is : array_like
-            Numbers of interesections to try
+            1-d set of numbers of interesections to try
         _a : int
             Alpha value for alpha-shapes
 
         """
 
         past_gaps = []
-        these_params = [_w, _ln_ratio, _is[0], _a]
+        #these_params = [_w, _ln_ratio, _is[0], _a]
         past_params = []
 
         while True:
@@ -254,6 +254,8 @@ class Region:
                     past_params.append(these_params)
 
             if fit:
+                break
+            elif min(these_params) < 0 or _w < (_w_step/2):
                 break
 
             # Update paramaters
@@ -290,7 +292,7 @@ class Region:
                      _w=0.1,
                      _w_step=0.025,
                      _ln_ratio=2,
-                     _is=[2,3,4],
+                     _is=(2,3,4),
                      _a=20):
         """Divides the region into square tiles and processes in parallel.
         
@@ -316,7 +318,7 @@ class Region:
         _ln_ratio : float
             Ratio of minimum strip length to width
         _is : array_like
-            Numbers of interesections to try
+            1-d set of numbers of interesections to try
         _a : int
             Alpha value for alpha-shapes
             
