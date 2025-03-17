@@ -12,7 +12,6 @@ from shapely import geometry
 import mind_the_gap.mind_the_gap as mtg
 from mind_the_gap.chainage import chainage
 
-# Region object
 class Region:
     """The region to run Mind the Gap on.
     
@@ -28,7 +27,8 @@ class Region:
         """The region we are running Mind the Gap on.
 
         Loads in building and boundary data, builds chainage, etc. Everything
-        needed to run MTG and builds grid to autotune parameters to.
+        needed to run MtG and builds grid to autotune parameters to.
+
     
         Parameters
         ----------
@@ -222,7 +222,6 @@ class Region:
         """
 
         past_gaps = []
-        #these_params = [_w, _ln_ratio, _is[0], _a]
         past_params = []
 
         while True:
@@ -323,7 +322,6 @@ class Region:
             Alpha value for alpha-shapes
             
         """
-
 
         # Divide data
         bounds = self.boundaries.bounds
