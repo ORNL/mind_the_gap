@@ -93,8 +93,6 @@ class Region:
 
         self.grid = grid
 
-
-
     def mind(self, w, ln_ratio, i, a):
         """Execute mind the gap
     
@@ -191,7 +189,6 @@ class Region:
             else:
                 return False
 
-
     def run(self,
             build_thresh=0.07,
             area_floor=0.2,
@@ -217,8 +214,8 @@ class Region:
             Value to update _w by each iteration
         _ln_ratio : float
             Ratio of minimum strip length to width
-        _i : int
-            Starting minimum number of intersections
+        _is : array_like
+            Numbers of interesections to try
         _a : int
             Alpha value for alpha-shapes
 
@@ -233,15 +230,15 @@ class Region:
                 self.gaps = self.boundaries_shape
                 break
 
-            if min(these_params) < 0 or _w < (_w_step/2):
-                self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
-                                              geometry='geometry',
-                                              crs='EPSG:4326')
-                break
-
-            #_is = [2,3,4]
-
             for i in _is:
+                these_params = [_w, _ln_ratio, i, _a]
+
+                if min(these_params) < 0 or _w < (_w_step/2):
+                    self.gaps =  gpd.GeoDataFrame(columns=['geometry'],
+                                                  geometry='geometry',
+                                                  crs='EPSG:4326')
+                    break
+
                 self.mind(_w, _ln_ratio, i, _a)
 
                 fit = self.fit_check(build_thresh, area_floor, area_ceiling)
@@ -258,6 +255,7 @@ class Region:
 
             if fit:
                 break
+
             # Update paramaters
             _w = _w - _w_step
 
@@ -317,8 +315,8 @@ class Region:
             Value to update _w by each iteration
         _ln_ratio : float
             Ratio of minimum strip length to width
-        _i : int
-            Starting minimum number of intersections
+        _is : array_like
+            Numbers of interesections to try
         _a : int
             Alpha value for alpha-shapes
             
