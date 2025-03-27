@@ -1,5 +1,8 @@
 [tool.poetry]
-name = "mind-the-gap"
+name = "mindthegap"
+packages = [
+    {include = "mind_the_gap"}
+]
 version = "1.0.0"
 description = "Mind the Gap is an algorithm for detecting gaps in building footprints datasets "
 authors = ["Jack Gonzales <gonzalesjj@ornl.gov>"]
