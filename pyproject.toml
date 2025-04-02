@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "mindthegap"
+name = "mind-t-gap"
 packages = [
     {include = "mind_the_gap"}
 ]
