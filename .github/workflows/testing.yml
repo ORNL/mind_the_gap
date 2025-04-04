@@ -30,7 +30,7 @@ jobs:
         poetry install
     - name: Lint with pylint
       run: |
-        pylint $(git ls-files '*.py') --exit-zero 
+        poetry run pylint $(git ls-files '*.py') --exit-zero 
     - name: Test with pytest
       run: |
         poetry run pytest
