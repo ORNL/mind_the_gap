@@ -53,3 +53,31 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
         return chainage_ds
     else:
         raise TypeError("boundary_line must be LineString or MultiLineString")
+
+def prepare_points(buildings, boundary, interval):
+    """Generates a chainage and combines with buildings.
+    
+    This prepares a GeoDataFrame of points ready to be used in Mind the Gap.
+    It first converts the buildings to centroids if necessary, and generates
+    a chainage of the boundary, then returns all points from both buildings and
+    the boundary chainage combined in a singloe GeoDataFrame
+    
+    Parameters
+    ----------
+    buildings : GeoDataFrame
+        Building footprints or centroids
+    boundary : GeoDataFrame
+        AOI boundary
+    interval : interval to generate the chainage on
+    
+    """
+
+    # Convert buildings to points
+
+    # Extract line geometry from boundary
+
+    # Generate chainage
+
+    # Combine buildings and chainage
+
+    pass
