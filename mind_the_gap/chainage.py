@@ -59,9 +59,8 @@ def prepare_points(buildings, boundary, interval):
     """Generates a chainage and combines with buildings.
     
     This prepares a GeoDataFrame of points ready to be used in Mind the Gap.
-    It first converts the buildings to centroids if necessary, and generates
-    a chainage of the boundary, then returns all points from both buildings and
-    the boundary chainage combined in a singloe GeoDataFrame
+    It first generates a chainage of the boundary, then returns all points from
+    both buildings and the boundary chainage combined in a single GeoDataFrame.
     
     Parameters
     ----------
@@ -69,7 +68,8 @@ def prepare_points(buildings, boundary, interval):
         Building centroids
     boundary : GeoDataFrame
         AOI boundary
-    interval : interval to generate the chainage on
+    interval : float
+        interval to generate the chainage on
     
     """
 
