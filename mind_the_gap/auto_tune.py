@@ -29,7 +29,6 @@ class Region:
         Loads in building and boundary data, builds chainage, etc. Everything
         needed to run MtG and builds grid to autotune parameters to.
 
-    
         Parameters
         ----------
         buildings : GeoDataFrame
