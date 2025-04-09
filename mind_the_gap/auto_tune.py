@@ -10,7 +10,7 @@ import numpy as np
 from shapely import geometry
 
 import mind_the_gap.mind_the_gap as mtg
-from mind_the_gap.chainage import chainage
+from mind_the_gap.chainage import prepare_points
 
 class Region:
     """The region to run Mind the Gap on.
@@ -29,7 +29,6 @@ class Region:
         Loads in building and boundary data, builds chainage, etc. Everything
         needed to run MtG and builds grid to autotune parameters to.
 
-    
         Parameters
         ----------
         buildings : GeoDataFrame
@@ -52,9 +51,10 @@ class Region:
         self.boundaries_shape = self.boundary
         self.boundaries = ([self.boundary.boundary][0])[0]
 
-        # Generate chainage
-        bnd_chain = chainage(self.boundaries, 0.01)
-        self.chainage_gdf = gpd.GeoDataFrame(geometry=bnd_chain)
+        # Generate chainage and combine with building points
+        self.all_points_gdf = prepare_points(self.buildings,
+                                             self.boundary,
+                                             0.01)
 
         # Make grid
         self.make_grid(size=grid_size)
@@ -109,11 +109,6 @@ class Region:
         
         """
 
-        # Combine buildings and border chainage
-        self.all_points_gdf = gpd.GeoDataFrame(pd.concat([self.buildings,
-                                                          self.chainage_gdf],
-                                                         ignore_index=True))
-
         # Execute mind the gap
         l = w * ln_ratio + (w / 4)
 
@@ -163,7 +158,7 @@ class Region:
                                     how='left',
                                     predicate='contains')
             empty_grid = joined_grid.loc[joined_grid['index_right'].isna()]
-            
+
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore",
                                         message =

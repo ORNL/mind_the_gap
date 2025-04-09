@@ -1,6 +1,7 @@
 """Generate boundary chainage for mind_the_gap"""
 
 import geopandas as gpd
+import pandas as pd
 import numpy as np
 from shapely.ops import unary_union
 from shapely.geometry import MultiPoint
@@ -53,3 +54,34 @@ def chainage(boundary_line, interval, coord_sys='EPSG:4326'):
         return chainage_ds
     else:
         raise TypeError("boundary_line must be LineString or MultiLineString")
+
+def prepare_points(buildings, boundary, interval):
+    """Generates a chainage and combines with buildings.
+    
+    This prepares a GeoDataFrame of points ready to be used in Mind the Gap.
+    It first generates a chainage of the boundary, then returns all points from
+    both buildings and the boundary chainage combined in a single GeoDataFrame.
+    
+    Parameters
+    ----------
+    buildings : GeoDataFrame
+        Building centroids
+    boundary : GeoDataFrame
+        AOI boundary
+    interval : float
+        interval to generate the chainage on
+    
+    """
+
+    # Extract line geometry from boundary
+    boundary_line = ([boundary.boundary][0])[0]
+
+    # Generate chainage
+    chainage_series = chainage(boundary_line, interval)
+    chainage_gdf = gpd.GeoDataFrame(geometry=chainage_series)
+
+    # Combine buildings and chainage
+    all_points_gdf = gpd.GeoDataFrame(pd.concat([buildings,chainage_gdf],
+                                                ignore_index=True))
+
+    return all_points_gdf
