@@ -40,6 +40,11 @@ def exp_parallel_gaps():
     _exp_parallel_gaps=gpd.read_file('./tests/data/exp_parallel_gaps.gpkg')
     return _exp_parallel_gaps
 
+@pytest.fixture()
+def exp_all_points():
+    _exp_all_points = gpd.read_file('./tests/data/exp_points.gpkg')
+    return _exp_all_points
+
 class TestRegion:
     @pytest.fixture(autouse=True)
     def _test_points(self, points):
@@ -49,7 +54,7 @@ class TestRegion:
     def _test_bound(self, bound):
         self.bound = bound
 
-    def test_init(self):
+    def test_init(self, exp_all_points):
         reg = Region(self.points, self.bound)
 
         exp_boundaries = LineString([(-1.2593125, 1.0945),
@@ -59,6 +64,8 @@ class TestRegion:
                                      (-1.2593125, 1.0945)])
 
         assert_geometries_equal(reg.boundaries, exp_boundaries)
+
+        assert_geodataframe_equal(reg.all_points_gdf, exp_all_points)
 
     def test_make_grid(self, exp_grid):
         reg = Region(self.points, self.bound, grid_size = 0.02)

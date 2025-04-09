@@ -1,6 +1,7 @@
 """Generate boundary chainage for mind_the_gap"""
 
 import geopandas as gpd
+import pandas as pd
 import numpy as np
 from shapely.ops import unary_union
 from shapely.geometry import MultiPoint
@@ -65,19 +66,22 @@ def prepare_points(buildings, boundary, interval):
     Parameters
     ----------
     buildings : GeoDataFrame
-        Building footprints or centroids
+        Building centroids
     boundary : GeoDataFrame
         AOI boundary
     interval : interval to generate the chainage on
     
     """
 
-    # Convert buildings to points
-
     # Extract line geometry from boundary
+    boundary_line = ([boundary.boundary][0])[0]
 
     # Generate chainage
+    chainage_series = chainage(boundary_line, interval)
+    chainage_gdf = gpd.GeoDataFrame(geometry=chainage_series)
 
     # Combine buildings and chainage
+    all_points_gdf = gpd.GeoDataFrame(pd.concat([buildings,chainage_gdf],
+                                                ignore_index=True))
 
-    pass
+    return all_points_gdf
