@@ -1,0 +1,32 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Mind the Gap
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jack Joseph
+    family-names: Gonzales
+    affiliation: Oak Ridge National Laboratory
+    orcid: 'https://orcid.org/0000-0002-9343-438X'
+    email: gonzalesjj@ornl.gov
+identifiers:
+  - type: doi
+    value: 10.11578/dc.20250320.1
+    description: >-
+      Mind the Gap is an algorithm for detecting areas of
+      missing data in building footprints.
+repository-code: 'https://github.com/ORNL/mind_the_gap'
+abstract: >-
+  Mind the Gap is an algorithm for detecting gaps in
+  building footprints datasets, with a preference for
+  finding the rectangular-shaped gaps caused by missing
+  imagery tiles. It works best on country-sized datasets or
+  smaller, or larger datasets divided into smaller chunks.
+keywords:
+  - geospatial
+  - building-intelligence
+version: 1.0.0
