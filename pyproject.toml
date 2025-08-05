@@ -3,7 +3,7 @@ name = "mind-t-gap"
 packages = [
     {include = "mind_the_gap"}
 ]
-version = "1.0.0"
+version = "1.0.2"
 description = "Mind the Gap is an algorithm for detecting gaps in building footprints datasets "
 authors = ["Jack Gonzales <gonzalesjj@ornl.gov>"]
 readme = "README.md"
